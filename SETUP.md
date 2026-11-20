@@ -1,57 +1,88 @@
 # Getting warbag live
 
-Everything runs on **Vercel** (website + Neon database), with **Cloudflare** for the domain and **Resend** for email. Same shape as Chirk.
+Warbag runs on **Vercel** (website + Neon database), with **Cloudflare** for the domain and **Resend** for email. Do the parts in order. Every step is 🟢 PRODUCTION (warbag has no demo environment).
 
-## 1. Vercel project and database (done)
+## Part A · Check the database connection (2 minutes)
 
-The `warbag` repo is imported into Vercel, and a Neon database is connected through the project's **Storage** tab.
+1. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Environment Variables.**
+2. In the list, find a variable named exactly **`DATABASE_URL`**.
+   - You should see it, with Production and Preview ticked. Done, go to Part B.
+   - If you only see names like `STORAGE_URL` or `POSTGRES_URL`, the Neon database was connected with a different prefix. Go to **Vercel → project `warbag` → Storage → (your Neon database) → Projects** (or **Settings**), disconnect `warbag`, then **Connect Project → `warbag`**, and in **Custom Prefix** type `DATABASE`. Check step 2 again.
 
-Check one thing: **Settings → Environment Variables** must list `DATABASE_URL`. If you see `STORAGE_URL` or similar instead, the database was connected with a different prefix: open **Storage → the database → Settings** (or disconnect and reconnect it) and set **Custom Prefix** to `DATABASE`.
+## Part B · Point warbag.rodeo at Vercel (10 minutes, plus waiting)
 
-The database tables are created automatically on every deploy (`scripts/migrate.mjs` runs before the build). There's nothing to paste into Neon.
+1. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Domains → Add Domain.**
+2. Type `warbag.rodeo` and click **Add**. When asked about `www`, choose the option that **redirects `www.warbag.rodeo` to `warbag.rodeo`**.
+3. Vercel now shows both domains as **Invalid Configuration** with the DNS records it wants. Leave this tab open. You'll usually see:
+   - `warbag.rodeo`: **Type `A`**, **Name `@`**, **Value** an IP address (often `216.198.79.1` or `76.76.21.21`).
+   - `www.warbag.rodeo`: **Type `CNAME`**, **Name `www`**, **Value** ending in `vercel-dns.com` (often project-specific, like `abc123.vercel-dns-017.com`).
+   Use the exact values Vercel shows you, not these examples.
+4. 🟢 PRODUCTION · In a new tab: **Cloudflare → warbag.rodeo → DNS → Records.**
+5. Remove anything in the way: if there are existing **A**, **AAAA** or **CNAME** records named `warbag.rodeo` (shown as `@`) or `www`, click **Edit → Delete** on each. Leave **MX** and **TXT** records alone.
+6. Click **Add record**:
+   - **Type:** `A`
+   - **Name:** `@`
+   - **IPv4 address:** the A value from Vercel (step 3)
+   - **Proxy status:** click the orange cloud so it turns **grey (DNS only)**
+   - **TTL:** Auto
+   - Click **Save**.
+7. Click **Add record** again:
+   - **Type:** `CNAME`
+   - **Name:** `www`
+   - **Target:** the CNAME value from Vercel (step 3)
+   - **Proxy status:** **grey (DNS only)**
+   - **TTL:** Auto
+   - Click **Save**.
+8. Back on the **Vercel → Domains** tab, wait 2 to 15 minutes and refresh. You should see **Valid Configuration** on both domains. If either stays red after 30 minutes, send Claude a screenshot of the Vercel Domains page and the Cloudflare DNS Records page.
 
-## 2. Environment variables
+## Part C · Email for sign-in codes (5 minutes)
 
-**Vercel → warbag → Settings → Environment Variables.** Add these for **Production** and **Preview**, and mark the secret as **Sensitive**:
+Your Resend account has no free domain slots, so warbag sends from the already-verified `chirk.fyi` domain for now. Codes arrive from "warbag" at `warbag@chirk.fyi`. Switching to a warbag.rodeo address later only changes two settings.
 
-| Name | Value | Without it |
-|---|---|---|
-| `BETTER_AUTH_SECRET` | A long random string. Generate one at [generate-secret.vercel.app/32](https://generate-secret.vercel.app/32). Keep it; changing it signs everyone out. | Sign-in doesn't work |
-| `OWNER_EMAIL` | The email you'll sign in with. On each deploy, this account is created (if needed) and made admin. | No one can sign in (warbag is invite only) |
-| `BETTER_AUTH_URL` | `https://warbag.rodeo` (Production only, once the domain works) | Sign-in links use the `.vercel.app` address |
-| `RESEND_API_KEY` | A Resend API key with sending access (see section 4) | Sign-in codes can't be sent |
-| `EMAIL_FROM` | The sender, e.g. `warbag <hello@warbag.rodeo>` | Sign-in codes can't be sent |
+1. 🟢 PRODUCTION · **Resend (resend.com) → API Keys → Create API Key.**
+2. Fill in:
+   - **Name:** `warbag`
+   - **Permission:** `Sending access`
+   - **Domain:** `chirk.fyi`
+3. Click **Add**. Copy the key (starts with `re_`). Resend only shows it once; keep the tab open until Part D is done.
 
-After adding or changing variables: **Deployments → ⋯ on the latest → Redeploy**.
+## Part D · Warbag's settings in Vercel (5 minutes)
 
-## 3. Your Cloudflare domain
+1. 🟢 PRODUCTION · Make a secret: open **https://generate-secret.vercel.app/32** and copy the text it shows. (Refreshing gives a new one; use any one, once.)
+2. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Environment Variables.** For each row below: type the **Key**, paste or type the **Value**, tick the **Environments** shown, turn on **Sensitive** where it says so, click **Save**.
 
-The site stays on Vercel; Cloudflare just points `warbag.rodeo` at it.
+| Key | Value | Environments | Sensitive |
+|---|---|---|---|
+| `BETTER_AUTH_SECRET` | the secret from step 1 | Production, Preview | On |
+| `OWNER_EMAIL` | the email you'll sign in with | Production, Preview | Off |
+| `RESEND_API_KEY` | the `re_...` key from Part C | Production, Preview | On |
+| `EMAIL_FROM` | `warbag <warbag@chirk.fyi>` | Production, Preview | Off |
+| `BETTER_AUTH_URL` | `https://warbag.rodeo` | Production only | Off |
 
-1. **Vercel → warbag → Settings → Domains.** Type `warbag.rodeo` and click **Add**. Choose the option that also adds `www.warbag.rodeo` (redirecting to `warbag.rodeo`).
-2. Vercel shows the DNS records it wants, usually an **A** record for `@` and a **CNAME** for `www`. Leave that page open.
-3. **Cloudflare → warbag.rodeo → DNS → Records.**
-   - If there are already records named `warbag.rodeo` (`@`) or `www` (from a parking page or the registrar), **edit** those rather than adding duplicates. Delete any extra `A`, `AAAA` or `CNAME` records on `@` or `www` that Vercel didn't ask for.
-   - Copy **Type**, **Name** and **Value/Target** exactly as Vercel shows them.
-   - Set **Proxy status** to **DNS only** (grey cloud, not orange). Vercel needs this to issue the HTTPS certificate.
-4. Back in Vercel, within a few minutes both domains should show **Valid Configuration**.
-5. Add `BETTER_AUTH_URL=https://warbag.rodeo` (section 2) and redeploy.
+3. You should now see those five plus `DATABASE_URL` in the list.
 
-Leave Cloudflare's **MX** and **TXT** records alone; they're for email.
+Keep `BETTER_AUTH_SECRET` forever. Changing it signs everyone out.
 
-If anything stays red, send Claude a screenshot of the Vercel Domains page and the Cloudflare DNS page.
+## Part E · Turn it on (5 minutes)
 
-## 4. Email (sign-in codes)
+1. 🟢 PRODUCTION · **GitHub → hudsontaylorford/warbag → Pull requests →** the open sign-in PR.
+2. Scroll to the bottom. You should see the **check** with a green tick. (If it's red, don't merge; tell Claude.)
+3. Click **Merge pull request → Confirm merge.**
+4. 🟢 PRODUCTION · **Vercel → project `warbag` → Deployments.** The top deployment says **Building**, then **Ready** after about 2 minutes, labeled **Production**.
+5. Click it → **Build Logs**. Near the top you should see:
+   - `migrate: applied 0001_auth.sql`
+   - `migrate: owner account created`
+   If you see `migrate: no DATABASE_URL, skipping` instead, redo Part A, then **⋯ → Redeploy** on that deployment.
 
-warbag sends sign-in codes through Resend. Your Resend account has no free domain slots, so pick one:
+## Part F · Check it works (2 minutes)
 
-- **A. Upgrade Resend** to a plan with more domains, then **Resend → Domains → Add domain** `warbag.rodeo`. Resend shows a few DNS records (TXT, MX, maybe CNAME); add each in **Cloudflare → warbag.rodeo → DNS → Records**, **DNS only**. When Resend says **Verified**, create an API key (**Sending access**, domain `warbag.rodeo`) and set `EMAIL_FROM` to `warbag <hello@warbag.rodeo>`.
-- **B. For now, send from chirk.fyi.** In Resend, create a **new** API key just for warbag (Sending access, domain `chirk.fyi`) and set `EMAIL_FROM` to `warbag <warbag@chirk.fyi>`. Free and works today; codes just come from a chirk address. Switching to A later is changing two variables.
+1. On your phone, open **https://warbag.rodeo**. You should see "warbag · Coming soon" and a **Sign in** link.
+2. Tap **Sign in**, enter your `OWNER_EMAIL`, tap **Send code**.
+3. Within a minute an email arrives from **warbag** (`warbag@chirk.fyi`), subject "123456 is your warbag code". Check spam the first time.
+4. Enter the code and tap **Sign in**. You should land on your warbag home showing "Signed in as" your email.
 
-Local development needs neither: codes are printed in the terminal running `npm run dev`.
+If no email arrives: **Vercel → project `warbag` → Logs**, filter for "Email", and send Claude a screenshot.
 
-## 5. Check it works
+## Later
 
-1. Open the site and tap **Sign in**.
-2. Enter your `OWNER_EMAIL`. A 6-digit code arrives by email.
-3. Enter it. You land on your warbag home.
+Changing setup? Update this file in the same PR.
