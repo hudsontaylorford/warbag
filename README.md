@@ -6,11 +6,18 @@ Personal site, app launcher and shared tools at [warbag.rodeo](https://warbag.ro
 - Next: [ROADMAP.md](ROADMAP.md) · Now: [STATUS.md](STATUS.md)
 - Look: [docs/DESIGN.md](docs/DESIGN.md) · Words: [docs/LANGUAGE.md](docs/LANGUAGE.md)
 
+Going live: [SETUP.md](SETUP.md)
+
 ## Develop
+
+Needs Node 22 and any Postgres. Copy `.env.example` to `.env.local` and fill it in.
 
 ```bash
 npm install
+npm run migrate
 npm run dev
 ```
 
-Checks: `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+Sign-in codes print in the dev server's terminal when Resend isn't configured.
+
+Checks: `npm run lint`, `npm run typecheck`, `npm run build`, and `TEST_DATABASE_URL=... npm run test:e2e` (the tests wipe that database).

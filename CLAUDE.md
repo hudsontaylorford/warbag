@@ -58,6 +58,12 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 - Before calling something done: `npm run lint`, `npx tsc --noEmit`, `npm run build`, plus tests for any logic or access rule touched.
 - Optional PR "Context / decisions" section: 1-3 bullets, under 100 words, only for things the diff doesn't explain.
 
+## Setup steps for Hudson
+
+- **Always say which environment.** Every setup step, script or settings change starts with **🟢 PRODUCTION** (warbag has only production for now) and names the exact service, project and screen (e.g. "Vercel → project `warbag` → Settings → Environment Variables").
+- Fill in every exact value already known (URLs, Vercel Key and Value, DNS Type / Name / Value, sender addresses, file names) instead of describing where to find them. Numbered steps, one action each, in the order they must happen, with a check at the end ("you should see ...").
+- `SETUP.md` holds the full current steps; keep it in sync when setup changes.
+
 ## ChatGPT handoffs (only when Hudson asks)
 
 Hudson sometimes uses ChatGPT for planning and review (read-only on GitHub). Exchanges go through the Drive folder "Warbag — AI Handoffs" and happen **only when Hudson asks**: no polling, status logs or acknowledgements. Claude writes only its own `Claude → ChatGPT` notes, one short doc per exchange, titled like `WRB-20261120-01 · Claude → ChatGPT · Topic · v1`; corrections are a new version. Never edit ChatGPT's notes or the protocol. No secrets or personal content in a note unless Hudson approves it.
