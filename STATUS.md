@@ -1,8 +1,8 @@
 # Status
 
-**2026-11-20.** Ground rules adopted (CLAUDE.md, docs/DECISIONS.md). Next.js 16 + TypeScript + Tailwind scaffold with a placeholder home page. Lint, type check and build pass. Nothing deployed; no Vercel project, database or auth yet.
+**2026-11-20.** Ground rules adopted. Sign-in (PR 1) built: invite-only email codes with Better Auth on Neon, a placeholder signed-in home, and browser tests for the sign-in flow. Vercel project and Neon database exist; env vars, domain and email still need setting up (see SETUP.md).
 
 Waiting on:
-- GitHub repo `warbag` to be created so this can be pushed.
+- Hudson: env vars, domain and an email choice (SETUP.md sections 2-4).
 - Design direction (Hudson).
 - lovewillwin handover pack (sticky notes, songwriting, apartment watcher).
