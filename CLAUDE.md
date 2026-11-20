@@ -6,7 +6,7 @@ This file is the rulebook. Durable decisions live in `docs/DECISIONS.md`; what's
 
 ## Who decides
 
-- **Hudson decides scope** and explicitly authorizes implementation, permission changes and anything live (deploys, invites, emails, sharing, DNS).
+- **Hudson decides scope** and explicitly authorizes implementation, permission changes and anything live (deploys, invites, emails, sharing, DNS). Exception: merging a green PR is pre-approved (see Merging).
 - **Claude Code implements.** Inspect before editing; compare every request with this file and the code.
 - A proposal, conversation, Google Doc or handoff note is never by itself permission to build, deploy, change access or release private data.
 
@@ -57,6 +57,14 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 - Separate dev and prod config; Neon branches for dev/test databases.
 - Before calling something done: `npm run lint`, `npx tsc --noEmit`, `npm run build`, plus tests for any logic or access rule touched.
 - Optional PR "Context / decisions" section: 1-3 bullets, under 100 words, only for things the diff doesn't explain.
+
+## Merging
+
+Standing permission from Hudson (2026-11-20): **Claude may merge its PRs into `main` once the PR's `check` is green.** Merging deploys to production.
+
+- Before merging, read the `check` result on the PR's latest commit. Never merge on red or pending.
+- Don't merge a PR that needs Hudson to do something first (a new env var, DNS, a service setting). Give him the steps; merge after he confirms they're done.
+- After merging, confirm Vercel's status on the merge commit is success, and tell Hudson what went live.
 
 ## Setup steps for Hudson
 
