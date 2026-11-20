@@ -1,8 +1,9 @@
 # Status
 
-**2026-11-20.** Ground rules adopted. Sign-in (PR 1) built: invite-only email codes with Better Auth on Neon, a placeholder signed-in home, and browser tests for the sign-in flow. Vercel project and Neon database exist; env vars, domain and email still need setting up (see SETUP.md).
+**2026-11-20.** Live at https://warbag.rodeo with invite-only sign-in (PR 1). PR 2 adds the access rules (groups, app access, item grants, share links, activity log) as a tested server library; no screens use them yet.
+
+Next: PR 3 (app registry, public homepage, signed-in launcher), then PR 4 (admin screens: invite people, groups, access), then Gyfte.
 
 Waiting on:
-- Hudson: env vars, domain and an email choice (SETUP.md sections 2-4).
 - Design direction (Hudson).
 - lovewillwin handover pack (sticky notes, songwriting, apartment watcher).

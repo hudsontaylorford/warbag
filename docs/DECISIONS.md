@@ -2,6 +2,19 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-20 · Access model (PR 2)
+
+Rules in `src/lib/access`, tests in `tests/db/access.test.ts`.
+
+- **Admins run the place, not the content.** Admins manage people, groups and app access, but being admin does not open anyone's items. Gift lists, notes and songs stay private to their owner and whoever they share with. (This is what keeps Gyfte surprises safe even from the admin.)
+- **Levels:** view < contribute < manage. The owner always has manage. Managers can share onward; only managers see or change who has access.
+- **Groups** are created and filled by admins. People see only the groups they're in and can share only with those, so group names and members stay private.
+- **App access** decides who sees an app in the launcher and can make their own items. Item grants and links work regardless, so you can share one list with someone who doesn't use the app.
+- **Share links** open one item, never grant manage, can expire, are revoked instantly, and die with the account that made them. Tokens are 192-bit random and stored as-is so "Copy link" keeps working; hashing them would only protect against someone who can already read the items themselves.
+- **Refusals look like "not found"**, so guessed URLs can't confirm something exists.
+- **Nothing is cached:** every request re-checks, so removals apply on the next page load.
+- **Activity log:** every access change is recorded in `audit_events` (who, what, when).
+
 ## 2026-11-20 · Sign-in and database setup (PR 1)
 
 - **Invite only.** Better Auth email codes with sign-up turned off. An email without an account gets the same "code is on its way" reply and no email, so the sign-in page never reveals who has access. The owner account comes from `OWNER_EMAIL`; everyone else will be invited by an admin.
