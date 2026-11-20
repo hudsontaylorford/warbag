@@ -2,6 +2,20 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-20 · Gyfte decisions (Hudson)
+
+1. **Lists for people without an account** (kids): a parent owns and manages the list. A list's owner and the person it's for can differ.
+2. **Claims are a per-list setting:** Off, Named (others see who claimed) or Anonymous (others see that it's claimed, not by whom). In every mode the person the list is for never sees claims.
+3. **Occasions:** Christmas and birthdays.
+4. **History:** import every year from the 2020-2025 sheet, cleaned up (tracking junk stripped from links, "Link 1 / Link 2" and "or" rows merged into one item, old X and strikethrough marks handled). Everyone can delete their own old entries.
+
+## 2026-11-20 · Launcher (PR 3)
+
+- **One app registry** (`src/lib/apps.ts`): id, name, short description, native or external, link, live or coming soon. The launcher shows the apps `canUseApp` allows: admins see all, others only what's been shared with them.
+- **External apps** (Chirk, Crewmaxxing) open in a new tab and show where they go (e.g. "chirk.fyi ↗"). Warbag shares no login or data with them.
+- **Shared header** (`AppHeader`) on every signed-in page: warbag (back to the launcher), the app name, Sign out.
+- The public homepage stays a placeholder (and `noindex`) until Hudson decides what it shows.
+
 ## 2026-11-20 · Access model (PR 2)
 
 Rules in `src/lib/access`, tests in `tests/db/access.test.ts`.

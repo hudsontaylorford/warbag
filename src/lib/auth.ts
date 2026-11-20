@@ -26,7 +26,8 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // refresh at most once a day
   },
   rateLimit: {
-    enabled: true,
+    // Tests sign in many times a minute; production always limits.
+    enabled: process.env.NODE_ENV === "production" || process.env.AUTH_RATE_LIMIT !== "off",
     storage: "database", // memory limits don't survive serverless instances
   },
   plugins: [
