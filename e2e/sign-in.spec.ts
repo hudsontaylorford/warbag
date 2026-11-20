@@ -31,7 +31,7 @@ test("the owner signs in with a code, and signs out", async ({ page }) => {
   await page.getByLabel("Code").fill(code);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByText(`Signed in as ${OWNER}`)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your apps" })).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/$/);

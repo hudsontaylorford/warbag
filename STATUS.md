@@ -1,9 +1,9 @@
 # Status
 
-**2026-11-20.** Live at https://warbag.rodeo with invite-only sign-in (PR 1). PR 2 adds the access rules (groups, app access, item grants, share links, activity log) as a tested server library; no screens use them yet.
+**2026-11-20.** Live at https://warbag.rodeo: invite-only sign-in, access rules (groups, app access, item grants, share links) and the signed-in launcher listing Gyfte (coming soon), Chirk and Crewmaxxing.
 
-Next: PR 3 (app registry, public homepage, signed-in launcher), then PR 4 (admin screens: invite people, groups, access), then Gyfte.
+Next: admin screens (invite people, groups, app access), then Gyfte.
 
 Waiting on:
 - Design direction (Hudson).
-- lovewillwin handover pack (sticky notes, songwriting, apartment watcher).
+- App packages kept somewhere permanent (Hudson); old app data exports when each app is rebuilt.

@@ -29,6 +29,7 @@ export default defineConfig({
       BETTER_AUTH_SECRET: "test-secret-not-for-production-0123456789",
       BETTER_AUTH_URL: `http://localhost:${PORT}`,
       EMAIL_OUTBOX_FILE: OUTBOX,
+      AUTH_RATE_LIMIT: "off",
     },
   },
 });

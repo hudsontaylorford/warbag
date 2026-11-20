@@ -2,8 +2,8 @@
 
 Order of work. Each step is approved by Hudson before it starts.
 
-1. **Foundation:** Vercel project + Neon, Better Auth sign-in, users / groups / grants / share links, app registry (one list of every app: name, icon, URL, native or external, who can see it), public homepage, signed-in launcher, admin for invites and access, shared UI primitives.
-2. **Gyfte** (gift lists): per-person wishlists by year with history, links, sizes and colors, hidden claims so the recipient never sees what's been bought, family group sharing. Import the 2020-2025 Google Sheet.
+1. **Foundation** (sign-in, access rules and launcher done; admin screens next): Vercel project + Neon, Better Auth sign-in, users / groups / grants / share links, app registry (one list of every app: name, icon, URL, native or external, who can see it), public homepage, signed-in launcher, admin for invites and access, shared UI primitives.
+2. **Gyfte** (gift lists): lists per person for Christmas and birthdays, links, sizes and colors, parents manage kids' lists, claims set per list (Off, Named, Anonymous; the person a list is for never sees them), family group sharing. Import and clean up the 2020-2025 Google Sheet. Needs the admin screens (invite people, groups) first.
 3. **Microsites and presentations:** hosted pages at stable URLs, private, group-shared or public link, listed in the launcher.
 4. **Sticky notes:** rebuild of the lovewillwin version (handover pack pending).
 5. **Songwriting:** rebuild, multi-user. Owned songs, collaborators, version history; no live co-editing until there's a real need.

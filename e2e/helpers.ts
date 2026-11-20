@@ -31,3 +31,12 @@ export async function requestCode(page: Page, email: string) {
   await page.getByRole("button", { name: "Send code" }).click();
   await expect(page.getByText(`If ${email} has access`)).toBeVisible();
 }
+
+/** Signs in through the real form, reading the code from the test outbox. */
+export async function signIn(page: Page, email: string) {
+  await page.goto("/sign-in");
+  await requestCode(page, email);
+  await page.getByLabel("Code").fill(await latestCode(email));
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/home$/);
+}
