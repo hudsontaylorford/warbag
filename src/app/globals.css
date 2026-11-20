@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. The look is not decided yet (see docs/DESIGN.md).
+  Every color, font and radius the app uses comes from here, so a
+  design direction lands as a change to this block, not a rewrite.
+*/
+@theme {
+  --color-ink: #1c1917;
+  --color-soft: #78716c;
+  --color-line: #e7e5e4;
+  --color-wash: #f5f5f4;
+  --color-page: #ffffff;
+  --color-accent: #3d5a99;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
