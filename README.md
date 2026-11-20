@@ -20,4 +20,9 @@ npm run dev
 
 Sign-in codes print in the dev server's terminal when Resend isn't configured.
 
-Checks: `npm run lint`, `npm run typecheck`, `npm run build`, and `TEST_DATABASE_URL=... npm run test:e2e` (the tests wipe that database).
+Checks: `npm run lint`, `npm run typecheck`, `npm run build`, then with a throwaway database (the tests wipe it):
+
+```bash
+TEST_DATABASE_URL=postgres://... npm test
+TEST_DATABASE_URL=postgres://... npm run test:e2e
+```
