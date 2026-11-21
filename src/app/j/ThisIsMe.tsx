@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { thisIsMeAction } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 
-export function ThisIsMe({ token, userId }: { token: string; userId: string }) {
+export function ThisIsMe({ token, userId, from }: { token: string; userId: string; from?: string }) {
   const [state, formAction, pending] = useActionState(thisIsMeAction, {});
   if (state.ok) {
     return (
@@ -17,6 +17,7 @@ export function ThisIsMe({ token, userId }: { token: string; userId: string }) {
     <form action={formAction} className="flex flex-col items-end gap-1">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="userId" value={userId} />
+      {from && <input type="hidden" name="from" value={from} />}
       <button
         type="submit"
         disabled={pending}

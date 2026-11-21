@@ -15,7 +15,7 @@ export default async function FamilyLinkListPage({ params }: { params: Promise<{
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <div>
-        <Link href={`/j/${token}`} className="text-accent underline-offset-4 hover:underline">
+        <Link href={`/j/${token}?from=${listId}`} className="text-accent underline-offset-4 hover:underline">
           ‹ {list.groupName}
         </Link>
         <h1 className="mt-2 title break-words">{list.title}</h1>
@@ -47,7 +47,11 @@ export default async function FamilyLinkListPage({ params }: { params: Promise<{
         <p className="text-soft">No gifts on this list yet.</p>
       )}
       <p className="text-sm text-soft">
-        To claim a gift, go back and tap <span className="font-semibold text-ink">This is me</span> by your name.
+        To claim a gift,{" "}
+        <Link href={`/j/${token}?from=${listId}`} className="text-accent underline-offset-4 hover:underline">
+          go back
+        </Link>{" "}
+        and tap <span className="font-semibold text-ink">This is me</span> by your name. The email brings you back to this list.
       </p>
     </main>
   );

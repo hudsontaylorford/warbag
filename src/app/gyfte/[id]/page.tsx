@@ -53,7 +53,7 @@ export default async function ListPage({
   const editHistory = list.past && canManage && wantsHistoryEdit;
   const canEdit = canManage && (!list.past || editHistory);
   const hidden: Record<string, string> = editHistory ? { history: "1" } : {};
-  const copyYear = !previewName && list.past && list.isOwner ? copyTargetYear(list.occasion, list.occasionDate) : null;
+  const copyYear = !previewName && list.canCopyForward ? copyTargetYear(list.occasion, list.occasionDate) : null;
   const wanted = list.items.filter((i) => !i.receivedAt);
   const received = list.items.filter((i) => i.receivedAt);
   const previous = canEdit && !list.past && list.items.length === 0 ? await previousItems(actor, list.id) : null;
@@ -153,7 +153,7 @@ export default async function ListPage({
         {copyYear && !editHistory && list.items.length > 0 && (
           <Section
             title={`Copy to ${copyYear}`}
-            hint={`Copies the gifts you pick to ${list.recipientName}'s ${occasionLabel(list.occasion, `${copyYear}-01-01`)} list (made if needed). Claims aren't copied, gifts already there are skipped, and this list stays as it is.`}
+            hint={`Copies the gifts you pick to ${list.recipientName}'s ${occasionLabel(list.occasion, `${copyYear}-01-01`)} list (made if needed${list.groupName ? `, in ${list.groupName}` : ""}). Claims aren't copied, gifts already there are skipped, and this list stays as it is.`}
           >
             <CheckboxListForm
               action={copyForwardAction}

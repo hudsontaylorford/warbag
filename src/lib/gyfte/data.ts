@@ -93,7 +93,10 @@ export type ListDetail = {
   role: Role;
   past: boolean;
   isOwner: boolean;
+  /** Owner, or a parent of every kid on a kid's list: may copy it to this year. */
+  canCopyForward: boolean;
   groupId: string | null;
+  groupName: string | null;
   /** Whether this viewer sees claims, and may claim. False for the recipient. */
   claims: { visible: boolean; canClaim: boolean };
   items: Item[];
@@ -306,7 +309,18 @@ export async function getList(actor: Actor, listId: string): Promise<ListDetail>
     role,
     past,
     isOwner: list.owner_id === actor.id,
+    canCopyForward: past && atLeast(role, "manage") && (await mayCopyForward(actor, list)),
     groupId: list.group_id,
+    // Group names stay private to members, so only members get it.
+    groupName: list.group_id
+      ? ((
+          await pool.query<{ name: string }>(
+            `select g.name from gyfte_groups g join group_members m on m.group_id = g.access_group_id
+             where g.id = $1 and m.user_id = $2`,
+            [list.group_id, actor.id],
+          )
+        ).rows[0]?.name ?? null)
+      : null,
     claims: { visible, canClaim: visible && !past && atLeast(role, "contribute") },
     items: rows,
   };
@@ -443,6 +457,19 @@ export async function bringForward(actor: Actor, listId: string, itemIds: string
 
 // ---------------------------------------------------------------- copy forward
 
+/** The owner, or for a kid's list a parent of every kid on it. */
+async function mayCopyForward(actor: Actor, list: Pick<ListRow, "id" | "owner_id">, key?: string | null): Promise<boolean> {
+  if (list.owner_id === actor.id) return true;
+  const k = key === undefined ? await kidKeyOf(list.id) : key;
+  if (!k) return false;
+  const kidIds = k.split(",");
+  const { rowCount } = await pool.query(
+    "select 1 from gyfte_kid_parents where user_id = $1 and kid_id = any($2::uuid[])",
+    [actor.id, kidIds],
+  );
+  return (rowCount ?? 0) >= kidIds.length;
+}
+
 /**
  * "Copy to this year": copies chosen gifts from a past (or any earlier) list
  * to the same person's current list for that occasion, creating it if
@@ -456,16 +483,9 @@ export async function copyForward(
   itemIds: string[],
 ): Promise<{ listId: string; copied: number; skipped: number }> {
   const { list: from } = await listWithRole(actor, fromListId, "manage");
-  // The owner, or for a kid's list any of the kid's parents.
   const key = await kidKeyOf(from.id);
+  if (!(await mayCopyForward(actor, from, key))) throw new AccessDenied();
   const kidIds = key ? key.split(",") : [];
-  if (from.owner_id !== actor.id) {
-    const { rowCount } = await pool.query(
-      "select 1 from gyfte_kid_parents where user_id = $1 and kid_id = any($2::uuid[])",
-      [actor.id, kidIds],
-    );
-    if (!key || (rowCount ?? 0) < kidIds.length) throw new AccessDenied();
-  }
   const now = today();
   const date = from.occasion === "christmas" ? nextChristmas(now) : nextBirthday(from.occasion_date, now);
   if (date <= from.occasion_date) throw new InputError("This list is already the current one.");

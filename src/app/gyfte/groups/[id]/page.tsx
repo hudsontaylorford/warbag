@@ -23,10 +23,10 @@ export default async function GroupPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ year?: string; as?: string }>;
+  searchParams: Promise<{ year?: string; as?: string; imported?: string }>;
 }) {
   const { id } = await params;
-  const { year: wantYear, as } = await searchParams;
+  const { year: wantYear, as, imported } = await searchParams;
   const user = await requireUser(`/gyfte/groups/${id}`);
   const actor = { id: user.id, isAdmin: user.isAdmin === true };
   const { viewer, previewName } = await viewerFor(actor, as);
@@ -77,6 +77,12 @@ export default async function GroupPage({
           <h1 className="mt-2 title break-words">{page.name}</h1>
           {page.isSample && <p className="text-sm text-soft">Made-up people and lists, only visible to you. Delete it any time.</p>}
         </div>
+
+        {imported === "1" && !previewName && (
+          <p role="status" className="rounded-[var(--radius-control)] bg-wash px-4 py-3 text-sm">
+            Import done ✓ These lists are shared with everyone in {page.name}. Past years are read-only.
+          </p>
+        )}
 
         <nav aria-label="Years" className="flex flex-wrap gap-x-4 gap-y-1">
           {page.years.map((y) =>

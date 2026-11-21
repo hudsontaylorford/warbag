@@ -108,6 +108,14 @@ describeDb("kids", () => {
       [old.rows[0].id],
     );
 
+    // The co-parent sees Copy to this year, with the group it lands in; others don't.
+    expect((await getList(dad, old.rows[0].id))).toMatchObject({ canCopyForward: true, groupName: "Family" });
+    await admin.query(
+      `insert into item_grants (app, item_type, item_id, user_id, role) values ('gyfte', 'list', $1, $2, 'manage')`,
+      [old.rows[0].id, aunt.id],
+    );
+    expect((await getList(aunt, old.rows[0].id)).canCopyForward).toBe(false); // manager, not a parent
+    await expect(copyForward(aunt, old.rows[0].id, [gift.rows[0].id])).rejects.toBeInstanceOf(AccessDenied);
     const copied = await copyForward(dad, old.rows[0].id, [gift.rows[0].id]); // co-parent copies
     expect(await kidsOfList(copied.listId)).toEqual([kid]);
     expect((await getList(mom, copied.listId)).items.map((i) => i.name)).toEqual(["Blocks"]);

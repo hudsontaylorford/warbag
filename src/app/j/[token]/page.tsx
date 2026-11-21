@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Monogram } from "@/components/ui/Monogram";
 import { notFound, redirect } from "next/navigation";
 import { currentActor } from "@/lib/session";
-import { memberGroupIdForLink, publicGroupPage, type GroupRowView } from "@/lib/gyfte/groups";
+import { memberGroupIdForLink, publicGroupPage, returnPath, type GroupRowView } from "@/lib/gyfte/groups";
 import { ThisIsMe } from "../ThisIsMe";
 
 export const metadata: Metadata = { title: "Gift lists · warbag", robots: { index: false, follow: false } };
@@ -17,14 +17,17 @@ export default async function FamilyLinkPage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ year?: string }>;
+  /** from: the list they opened before coming back here, so sign-in can return to it. */
+  searchParams: Promise<{ year?: string; from?: string }>;
 }) {
   const { token } = await params;
-  const { year: wantYear } = await searchParams;
+  const sp = await searchParams;
+  const wantYear = sp.year;
+  const from = typeof sp.from === "string" ? sp.from : undefined;
   const actor = await currentActor();
   if (actor) {
     const groupId = await memberGroupIdForLink(actor, token);
-    if (groupId) redirect(`/gyfte/groups/${groupId}`);
+    if (groupId) redirect(await returnPath(groupId, from));
   }
   const page = await publicGroupPage(token, wantYear);
   if (!page) notFound();
@@ -45,7 +48,7 @@ export default async function FamilyLinkPage({
           <span className="text-sm text-soft">No list yet</span>
         )}
       </div>
-      {r.userId && thisYear && <ThisIsMe token={token} userId={r.userId} />}
+      {r.userId && thisYear && <ThisIsMe token={token} userId={r.userId} from={from} />}
     </li>
   );
 
