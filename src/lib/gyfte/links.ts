@@ -74,7 +74,7 @@ export function storeName(link: string): string {
 
 /**
  * A readable name guessed from the link itself, e.g.
- * amazon.com/YONGHEE-Travertine-Coasters/dp/B0DT... -> "Yonghee Travertine Coasters".
+ * amazon.com/STONEWARE-Stone-Coasters/dp/B000... -> "Stoneware Stone Coasters".
  * Falls back to "Something from <store>". Always editable afterwards.
  */
 export function nameFromLink(link: string): string {

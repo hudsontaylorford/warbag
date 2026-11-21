@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte spreadsheet import (PR C)
+
+- **Two steps:** upload an .xlsx (Google Sheets: File, Download, Microsoft Excel) into a private draft (`gyfte_imports`, owner only, one open draft per person), review, then Import. The file isn't kept; the source sheet is never changed.
+- **Reader** (`src/lib/gyfte/sheet-import.ts`): one Christmas list per tab per year. Handles links behind "Here" / "Link 1" / product titles, ditto and "or" rows merged into the gift above, X marks and strikethrough as Got it, a price in the first column, sizes Google turned into dates, rows before any year heading (newest year assumed), and headings ("Clothes", ALL-CAPS lines) as unticked rows. Every guess is shown as a note on the row.
+- **Applying:** lists are owned by the importer and private; the tab picked as "me" is marked as theirs. Lists that already exist (same person and Christmas) are skipped, so importing twice can't duplicate. Received gifts become Got it on that Christmas.
+- **Later:** connect an imported list (e.g. "Molly") to that person's account when they join, so they own their own history.
+- Tests use a made-up spreadsheet with the same quirks; no family data in the repo (earlier tests' real links and gift names replaced with fictional ones).
+- `exceljs` reads the file; its old `uuid` dependency is overridden to a fixed version (audit stays at zero).
+
 ## 2026-11-21 · Gyfte bulk add (Hudson: "pretty generous import rules")
 
 - **"Add several at once"** under the Add box: paste many gifts, see a live preview, untick anything that isn't a gift, then "Add N gifts". They go on top in paste order.

@@ -37,15 +37,15 @@ const URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"']+/gi;
 const BULLET_RE = /^\s*(?:[-*•·▪◦‣–—>]+|\d{1,3}[.)]|\(\d{1,3}\)|\[[ xX✓]?\]|[☐☑✔✓])\s*/;
 const PRICE_RE = /(?:\b(?:under|around|about|max|up to)\s+|~|<\s*)?\$\s?\d[\d,]*(?:\.\d{1,2})?(?:\s*(?:-|to)\s*\$?\s?\d[\d,]*)?/i;
 const SIZE_RE = /\(?\bsize[:\s]+([a-z0-9./\- ]{1,12}?)\)?(?=[,;)]|\s+[-–—]|\s*$)/i;
-const COLOR_RE = /\(?\bcolou?r[:\s]+([^,;()]{1,30}?)\)?(?=[,;)]|\s+[-–—]|\s*$)/i;
-const HEADER_RE = /^(gift\s*\/?\s*idea|gift|idea|item|description|size|colou?r|location|link|other|notes?|price)$/i;
+const COLOR_RE = /\(?\bcolou?r\s*:\s*([^,;()]{1,30}?)\)?(?=[,;)]|\s+[-–—]|\s*$)/i;
+export const HEADER_RE = /^(gift\s*\/?\s*idea|gift|idea|item|description|size|colou?r|location|link|other|notes?|price)$/i;
 const YEAR_RE = /^(?:19|20)\d{2}(?:\.0)?(?:\s*list:?)?$/i;
 
 function trimLink(raw: string): string {
   return raw.replace(/[),.;:!?\]]+$/, "");
 }
 
-function tidy(text: string): string {
+export function tidy(text: string): string {
   return text
     .replace(/\s+/g, " ")
     .replace(/^[\s\-–—:;,|·]+|[\s\-–—:;,|·]+$/g, "")
@@ -54,7 +54,7 @@ function tidy(text: string): string {
 }
 
 /** Links found in the text (cleaned), the raw first one (for naming), and the rest. */
-function linksIn(text: string): { links: string[]; firstRaw: string; rest: string } {
+export function linksIn(text: string): { links: string[]; firstRaw: string; rest: string } {
   const links: string[] = [];
   let firstRaw = "";
   const rest = text.replace(URL_RE, (m) => {
@@ -70,7 +70,7 @@ function linksIn(text: string): { links: string[]; firstRaw: string; rest: strin
 }
 
 /** Pulls price, size and color phrases out of free text. */
-function details(text: string): { rest: string; price: string; size: string; color: string } {
+export function details(text: string): { rest: string; price: string; size: string; color: string } {
   let rest = text;
   let price = "";
   let size = "";

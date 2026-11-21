@@ -16,39 +16,39 @@ describe("bulk add parsing", () => {
 
   it("splits a link from its name, and names bare links from the address", () => {
     const [a, b] = parseBulk(
-      "Pura diffuser https://pura.com/products/pura-plus?utm_source=x\nhttps://www.amazon.com/Travertine-Coasters/dp/B0DTK92MHP/ref=x",
+      "Oil diffuser https://shop.example.com/products/diffuser-plus?utm_source=x\nhttps://www.amazon.com/Stone-Coasters/dp/B000000001/ref=x",
     );
-    expect(a).toMatchObject({ name: "Pura diffuser", links: ["https://pura.com/products/pura-plus"] });
-    expect(b).toMatchObject({ name: "Travertine Coasters", links: ["https://www.amazon.com/dp/B0DTK92MHP"] });
+    expect(a).toMatchObject({ name: "Oil diffuser", links: ["https://shop.example.com/products/diffuser-plus"] });
+    expect(b).toMatchObject({ name: "Stone Coasters", links: ["https://www.amazon.com/dp/B000000001"] });
   });
 
   it("pulls out prices, sizes and colors", () => {
-    expect(parseBulk("Ronaldo jersey - under $30 (size 6-7)")[0]).toMatchObject({
-      name: "Ronaldo jersey",
+    expect(parseBulk("Soccer jersey - under $30 (size 6-7)")[0]).toMatchObject({
+      name: "Soccer jersey",
       price: "under $30",
       size: "6-7",
     });
-    expect(parseBulk("Blundstones, color: rustic brown, size 9.5, $200")[0]).toMatchObject({
-      name: "Blundstones",
-      color: "rustic brown",
+    expect(parseBulk("Chelsea boots, color: dark brown, size 9.5, $200")[0]).toMatchObject({
+      name: "Chelsea boots",
+      color: "dark brown",
       size: "9.5",
       price: "$200",
     });
   });
 
-  it("reads rows pasted from the family sheet", () => {
+  it("reads rows pasted from a sheet with the family sheet's columns", () => {
     const sheet = [
       "Gift / Idea\tDescription\tSize\tColor\tLocation\tOther",
       "2025",
-      "I'd love a large leather tote\t\tLarge\tBrown\tPortland Leather has a good one but i'm not picky on the brand\t",
-      "Owala water bottle\t\t24oz\tSunny Daze\thttps://owalalife.com/products/freesip?variant=1&gclid=abc\t",
-      "Keyboard - under $30\thttps://a.co/d/132bFof\t\t\t\t",
+      "A big canvas tote\t\tLarge\tOlive\tAny shop is fine, not picky on the brand\t",
+      "Steel water bottle\t\t24oz\tYellow\thttps://shop.example.com/products/bottle?variant=1&gclid=abc\t",
+      "Keyboard - under $30\thttps://a.co/d/EXAMPLE1\t\t\t\t",
     ].join("\n");
     const gifts = parseBulk(sheet);
-    expect(gifts.map((g) => g.name)).toEqual(["I'd love a large leather tote", "Owala water bottle", "Keyboard"]);
-    expect(gifts[0]).toMatchObject({ size: "Large", color: "Brown", notes: expect.stringContaining("Portland Leather") });
-    expect(gifts[1]).toMatchObject({ size: "24oz", color: "Sunny Daze", links: ["https://owalalife.com/products/freesip?variant=1"] });
-    expect(gifts[2]).toMatchObject({ price: "under $30", links: ["https://a.co/d/132bFof"] });
+    expect(gifts.map((g) => g.name)).toEqual(["A big canvas tote", "Steel water bottle", "Keyboard"]);
+    expect(gifts[0]).toMatchObject({ size: "Large", color: "Olive", notes: expect.stringContaining("not picky") });
+    expect(gifts[1]).toMatchObject({ size: "24oz", color: "Yellow", links: ["https://shop.example.com/products/bottle?variant=1"] });
+    expect(gifts[2]).toMatchObject({ price: "under $30", links: ["https://a.co/d/EXAMPLE1"] });
   });
 
   it("skips header rows, year lines and exact repeats", () => {
@@ -63,6 +63,10 @@ describe("bulk add parsing", () => {
 
   it("numbers gifts in paste order for the preview", () => {
     expect(parseBulk("A\n\nB\nC").map((g) => g.index)).toEqual([0, 1, 2]);
+  });
+
+  it("doesn't read the word color in a name as a color", () => {
+    expect(parseBulk("color film camera")[0]).toMatchObject({ name: "color film camera", color: "" });
   });
 
   it("flags likely headings in a bulleted paste, and only there", () => {
