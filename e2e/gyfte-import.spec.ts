@@ -25,6 +25,6 @@ test("import a gift spreadsheet: review, untick, import into History", async ({ 
   await expect(page.getByText("Import done ✓")).toBeVisible();
   await page.getByText(/History \(\d+\)/).click();
   await page.getByRole("link", { name: /Avery · Christmas 2025/ }).click();
-  await expect(page.getByText("Rain jacket")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Rain jacket/ })).toBeVisible();
   await expect(page.getByText("Hiking socks")).toHaveCount(0);
 });

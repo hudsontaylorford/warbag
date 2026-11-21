@@ -43,6 +43,7 @@ export function CheckboxListForm({
   selected,
   empty,
   submitLabel = "Save",
+  hidden = {},
 }: {
   action: Action;
   id: string;
@@ -51,6 +52,8 @@ export function CheckboxListForm({
   selected: string[];
   empty?: string;
   submitLabel?: string;
+  /** Extra hidden form fields. */
+  hidden?: Record<string, string>;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [dirty, setDirty] = useState(false);
@@ -58,6 +61,9 @@ export function CheckboxListForm({
   return (
     <form action={(form) => { setDirty(false); return formAction(form); }} className="flex flex-col gap-3">
       <input type="hidden" name="id" value={id} />
+      {Object.entries(hidden).map(([k, v]) => (
+        <input key={k} type="hidden" name={k} value={v} />
+      ))}
       <fieldset className="flex flex-col divide-y divide-line border-y border-line" onChange={() => setDirty(true)}>
         <legend className="sr-only">{legend}</legend>
         {options.map((o) => (
@@ -125,11 +131,14 @@ export function ConfirmForm({
   id,
   label,
   consequence,
+  hidden = {},
 }: {
   action: Action;
   id: string;
   label: string;
   consequence: string;
+  /** Extra hidden form fields. */
+  hidden?: Record<string, string>;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [asking, setAsking] = useState(false);
@@ -145,6 +154,9 @@ export function ConfirmForm({
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="id" value={id} />
+      {Object.entries(hidden).map(([k, v]) => (
+        <input key={k} type="hidden" name={k} value={v} />
+      ))}
       <p className="text-sm">{consequence}</p>
       <div className="flex max-w-sm gap-3">
         <Button type="submit" variant="danger" disabled={pending}>

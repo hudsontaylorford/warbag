@@ -18,11 +18,14 @@ export function ItemRow({
   store,
   canEdit,
   canClaim,
+  history = false,
 }: {
   item: Item;
   store: string;
   canEdit: boolean;
   canClaim: boolean;
+  /** Editing a list in History (only after "Edit history"). */
+  history?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [starState, starAction, starPending] = useActionState(setStarredAction, {});
@@ -53,6 +56,8 @@ export function ItemRow({
         {canEdit ? (
           <form action={starAction}>
             <input type="hidden" name="id" value={item.id} />
+            {history && <input type="hidden" name="history" value="1" />}
+
             <input type="hidden" name="starred" value={String(!item.starred)} />
             <button
               type="submit"
@@ -87,12 +92,22 @@ export function ItemRow({
       {starState.error && <Alert>{starState.error}</Alert>}
       {item.claim !== undefined && !received && <ClaimButton itemId={item.id} claim={item.claim} canClaim={canClaim} />}
 
-      {canEdit && open && <EditItem item={item} received={received} onDone={() => setOpen(false)} />}
+      {canEdit && open && <EditItem item={item} received={received} history={history} onDone={() => setOpen(false)} />}
     </div>
   );
 }
 
-function EditItem({ item, received, onDone }: { item: Item; received: boolean; onDone: () => void }) {
+function EditItem({
+  item,
+  received,
+  history,
+  onDone,
+}: {
+  item: Item;
+  received: boolean;
+  history: boolean;
+  onDone: () => void;
+}) {
   const [saveState, saveAction, saving] = useActionState(updateItemAction, {});
   const [gotState, gotAction, gotPending] = useActionState(setReceivedAction, {});
   const [delState, delAction, deleting] = useActionState(deleteItemAction, {});
@@ -103,6 +118,8 @@ function EditItem({ item, received, onDone }: { item: Item; received: boolean; o
     <div className="flex flex-col gap-4 rounded-lg bg-wash p-4">
       <form action={saveAction} className="flex flex-col gap-3">
         <input type="hidden" name="id" value={item.id} />
+            {history && <input type="hidden" name="history" value="1" />}
+
         <Field label="Name" name="name" defaultValue={item.name} required maxLength={200} />
         <div className="grid grid-cols-2 gap-3">
           <Field label="Size" name="size" defaultValue={item.size} maxLength={80} />
@@ -151,6 +168,8 @@ function EditItem({ item, received, onDone }: { item: Item; received: boolean; o
       <div className="flex flex-wrap gap-3 border-t border-line pt-4">
         <form action={gotAction} className="flex-1">
           <input type="hidden" name="id" value={item.id} />
+            {history && <input type="hidden" name="history" value="1" />}
+
           <input type="hidden" name="received" value={String(!received)} />
           <Button type="submit" variant="quiet" disabled={gotPending}>
             {received ? "Move back to the list" : "Got it"}
@@ -165,6 +184,8 @@ function EditItem({ item, received, onDone }: { item: Item; received: boolean; o
         ) : (
           <form action={delAction} className="flex w-full flex-col gap-3">
             <input type="hidden" name="id" value={item.id} />
+            {history && <input type="hidden" name="history" value="1" />}
+
             <p className="text-sm">Delete {item.name}? This can&apos;t be undone.</p>
             <div className="flex gap-3">
               <Button type="submit" variant="danger" disabled={deleting}>

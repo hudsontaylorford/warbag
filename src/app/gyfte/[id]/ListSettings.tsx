@@ -12,17 +12,21 @@ export function ListSettings({
   recipientName,
   date,
   claimsMode,
+  history = false,
 }: {
   listId: string;
   recipientName: string;
   date: string;
   claimsMode: string;
+  history?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(updateListAction, {});
   const [mode, setMode] = useState(claimsMode);
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="id" value={listId} />
+      {history && <input type="hidden" name="history" value="1" />}
+
       <Field label="Who it's for" name="recipientName" defaultValue={recipientName} required maxLength={80} />
       <Field label="Date" name="date" type="date" defaultValue={date} required />
       <Choice

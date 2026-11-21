@@ -114,11 +114,11 @@ describeDb("gyfte lists and items", () => {
 
   it("brings forward unreceived gifts from the same person's last list only", async () => {
     const old = await createList(molly, { forMe: true, recipientName: "Molly", occasion: "christmas", date: "2025-12-25" });
-    const keep = await addItem(molly, old, "Candle set");
-    const got = await addItem(molly, old, "Earrings");
-    await setReceived(molly, got, true);
+    const keep = await addItem(molly, old, "Candle set", { history: true });
+    const got = await addItem(molly, old, "Earrings", { history: true });
+    await setReceived(molly, got, true, { history: true });
     const kid = await createList(molly, { forMe: false, recipientName: "Lennox", occasion: "christmas", date: "2025-12-25" });
-    await addItem(molly, kid, "Jersey");
+    await addItem(molly, kid, "Jersey", { history: true });
 
     const next = await createList(molly, { forMe: true, recipientName: "Molly", occasion: "christmas", date: "2026-12-25" });
     const prev = await previousItems(molly, next);
