@@ -39,11 +39,24 @@ export default async function FamilyLinkPage({
       <div className="flex min-w-0 flex-col">
         <span className={`break-words ${r.nested ? "" : "font-semibold"}`}>
           {r.nested && <span aria-hidden className="text-soft">↳ </span>}
-          {r.name}
+          {r.list || r.latest ? (
+            <Link
+              href={`/j/${token}/l/${(r.list ?? r.latest)!.id}`}
+              className="underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              {r.name}
+            </Link>
+          ) : (
+            r.name
+          )}
         </span>
         {r.list ? (
           <Link href={`/j/${token}/l/${r.list.id}`} className="text-sm text-accent underline-offset-4 hover:underline">
             {r.list.gifts} {r.list.gifts === 1 ? "gift" : "gifts"} ›
+          </Link>
+        ) : r.latest ? (
+          <Link href={`/j/${token}/l/${r.latest.id}`} className="text-sm text-accent underline-offset-4 hover:underline">
+            {r.latest.year} list ›
           </Link>
         ) : (
           <span className="text-sm text-soft">No list yet</span>

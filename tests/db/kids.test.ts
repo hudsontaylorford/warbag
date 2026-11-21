@@ -134,6 +134,36 @@ describeDb("kids", () => {
     expect(await seen(outsider)).toBeUndefined();
   });
 
+  it("names with no list this year open their latest earlier list, if the viewer may see it", async () => {
+    const kid = await addKid(mom, groupId, "Lennox");
+    const access = (await groupPage(hudson, groupId)).accessGroupId;
+    const old = async (name: string, recipient: string | null, date: string, shared: boolean) => {
+      const { rows } = await admin.query<{ id: string }>(
+        `insert into gyfte_lists (owner_id, recipient_user_id, recipient_name, occasion, occasion_date, group_id)
+         values ($1, $2, $3, 'christmas', $4, $5) returning id`,
+        [mom.id, recipient, name, date, groupId],
+      );
+      if (shared) {
+        await admin.query(
+          `insert into item_grants (app, item_type, item_id, group_id, role) values ('gyfte', 'list', $1, $2, 'contribute')`,
+          [rows[0].id, access],
+        );
+      }
+      return rows[0].id;
+    };
+    await old("Mom", mom.id, "2023-12-25", true);
+    const mom2024 = await old("Mom", mom.id, "2024-12-25", true);
+    const kid2024 = await old("Lennox", null, "2024-12-25", true);
+    await admin.query("insert into gyfte_list_kids (list_id, kid_id) values ($1, $2)", [kid2024, kid]);
+    await old("Dad", dad.id, "2024-12-25", false); // not shared with the group
+
+    const page = await groupPage(aunt, groupId);
+    const row = (name: string) => page.christmas.find((r) => r.name === name)!;
+    expect(row("Mom")).toMatchObject({ list: null, latest: { id: mom2024, year: "2024" } });
+    expect(row("Lennox")).toMatchObject({ list: null, latest: { id: kid2024, year: "2024" } });
+    expect(row("Dad").latest).toBeNull(); // aunt can't see Dad's old list
+  });
+
   it("hands a removed parent's kid lists to the other parent", async () => {
     const kid = await addKid(mom, groupId, "Lennox");
     await addKidParent(mom, kid, dad.id);
