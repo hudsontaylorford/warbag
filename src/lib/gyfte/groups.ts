@@ -1,5 +1,5 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { pool } from "../db";
 import { InputError } from "../errors";
 import {
@@ -14,6 +14,7 @@ import {
 import { atLeast } from "../access/roles";
 import { displayName } from "./data";
 import { isoDay, isPast, listTitle, nextChristmas, type Occasion } from "./occasions";
+import { auth } from "../auth";
 
 /**
  * Gyfte groups: a family or circle with a page showing its people and each
@@ -30,12 +31,12 @@ import { isoDay, isPast, listTitle, nextChristmas, type Occasion } from "./occas
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const SAMPLE_EMAIL_DOMAIN = "sample.invalid";
 
-type GroupRow = { id: string; name: string; access_group_id: string; is_sample: boolean };
+type GroupRow = { id: string; name: string; access_group_id: string; is_sample: boolean; invite_token: string | null };
 
 async function loadGroup(groupId: string): Promise<GroupRow | null> {
   if (!UUID.test(groupId)) return null;
   const { rows } = await pool.query<GroupRow>(
-    "select id, name, access_group_id, is_sample from gyfte_groups where id = $1",
+    "select id, name, access_group_id, is_sample, invite_token from gyfte_groups where id = $1",
     [groupId],
   );
   return rows[0] ?? null;
@@ -113,6 +114,14 @@ export type GroupPage = {
  */
 export async function groupPage(viewer: Actor, groupId: string, wantYear?: string): Promise<GroupPage> {
   const group = await groupForMember(viewer, groupId);
+  return buildGroupPage(group, viewer, wantYear);
+}
+
+/**
+ * The page for a member (`viewer`: only lists they can open) or for a
+ * family-link visitor (`viewer` null: every list filed in the group).
+ */
+async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: string): Promise<GroupPage> {
   const members = await pool.query<{ id: string; name: string; email: string }>(
     `select u.id, u.name, u.email from group_members m join "user" u on u.id = m.user_id
      where m.group_id = $1 order by lower(coalesce(nullif(u.name, ''), u.email))`,
@@ -135,6 +144,10 @@ export async function groupPage(viewer: Actor, groupId: string, wantYear?: strin
   );
   const visible: (typeof lists.rows)[number][] = [];
   for (const l of lists.rows) {
+    if (!viewer) {
+      visible.push(l);
+      continue;
+    }
     const role = await itemRole(viewer, { app: "gyfte", type: "list", id: l.id, ownerId: l.owner_id });
     if (atLeast(role, "view")) visible.push(l);
   }
@@ -152,7 +165,7 @@ export async function groupPage(viewer: Actor, groupId: string, wantYear?: strin
   const christmasLists = inYear.filter((l) => l.occasion === "christmas");
   const christmas: GroupRowView[] = members.rows.map((m) => {
     const list = christmasLists.find((l) => l.recipient_user_id === m.id);
-    return { name: displayName(m.name, m.email), userId: m.id, isYou: m.id === viewer.id, list: list ? view(list) : null };
+    return { name: displayName(m.name, m.email), userId: m.id, isYou: m.id === viewer?.id, list: list ? view(list) : null };
   });
   // Lists for people without accounts (kids), and for anyone not in the group.
   for (const l of christmasLists) {
@@ -162,9 +175,9 @@ export async function groupPage(viewer: Actor, groupId: string, wantYear?: strin
   }
   const birthdays: GroupRowView[] = inYear
     .filter((l) => l.occasion === "birthday")
-    .map((l) => ({ name: l.recipient_name, userId: l.recipient_user_id, isYou: l.recipient_user_id === viewer.id, list: view(l) }));
+    .map((l) => ({ name: l.recipient_name, userId: l.recipient_user_id, isYou: l.recipient_user_id === viewer?.id, list: view(l) }));
 
-  const samplePeople = group.is_sample
+  const samplePeople = group.is_sample && viewer
     ? (
         await pool.query<{ id: string; name: string }>(
           `select u.id, u.name from sample_people s join "user" u on u.id = s.user_id
@@ -365,4 +378,114 @@ export async function deleteSampleFamily(actor: Actor, groupId: string): Promise
   } finally {
     client.release();
   }
+}
+
+// ---------------------------------------------------------------- family links
+
+const TOKEN = /^[A-Za-z0-9_-]{32}$/;
+
+/** The group's family link token (admins who are members; never for samples). */
+export async function familyLink(actor: Actor, groupId: string): Promise<string | null> {
+  requireAdmin(actor);
+  const group = await groupForMember(actor, groupId);
+  return group.invite_token;
+}
+
+/**
+ * Turns the family link on (a new link each time: "Replace" stops the old
+ * one) or off. Admin and member of the group; sample groups have no link.
+ */
+export async function setFamilyLink(actor: Actor, groupId: string, on: boolean): Promise<string | null> {
+  requireAdmin(actor);
+  const group = await groupForMember(actor, groupId);
+  if (group.is_sample) throw new InputError("The sample family can't have a family link.");
+  const token = on ? randomBytes(24).toString("base64url") : null;
+  await pool.query("update gyfte_groups set invite_token = $2 where id = $1", [group.id, token]);
+  await pool.query("insert into audit_events (actor_id, action, target) values ($1, $2, $3)", [
+    actor.id,
+    on ? "group.link.new" : "group.link.off",
+    `gyfte-group/${group.id}`,
+  ]);
+  return token;
+}
+
+async function groupByToken(token: string): Promise<GroupRow | null> {
+  if (!TOKEN.test(token)) return null;
+  const { rows } = await pool.query<GroupRow>(
+    "select id, name, access_group_id, is_sample, invite_token from gyfte_groups where invite_token = $1 and not is_sample",
+    [token],
+  );
+  return rows[0] ?? null;
+}
+
+/** Is this signed-in person a member of the link's group? (Then they get the real page.) */
+export async function memberGroupIdForLink(actor: Actor, token: string): Promise<string | null> {
+  const group = await groupByToken(token);
+  return group && (await isMember(actor, group.access_group_id)) ? group.id : null;
+}
+
+/**
+ * What a family link shows: names, years and wanted-gift counts, for every
+ * list filed in the group. No claims; nobody is signed in by this.
+ */
+export async function publicGroupPage(token: string, wantYear?: string): Promise<GroupPage | null> {
+  const group = await groupByToken(token);
+  return group ? buildGroupPage(group, null, wantYear) : null;
+}
+
+export type PublicGift = { id: string; name: string; notes: string; size: string; color: string; price: string; links: string[]; starred: boolean };
+
+/** One list in the link's group: wanted gifts only, no claims. */
+export async function publicGroupList(
+  token: string,
+  listId: string,
+): Promise<{ title: string; groupName: string; gifts: PublicGift[] } | null> {
+  const group = await groupByToken(token);
+  if (!group || !UUID.test(listId)) return null;
+  const { rows } = await pool.query<{ recipient_name: string; occasion: Occasion; d: string }>(
+    `select recipient_name, occasion, to_char(occasion_date, 'YYYY-MM-DD') as d from gyfte_lists where id = $1 and group_id = $2`,
+    [listId, group.id],
+  );
+  if (!rows[0]) return null;
+  const gifts = await pool.query<PublicGift>(
+    `select id, name, notes, size, color, price, links, starred from gyfte_items
+     where list_id = $1 and received_at is null order by starred desc, position asc`,
+    [listId],
+  );
+  return { title: listTitle(rows[0].recipient_name, rows[0].occasion, rows[0].d), groupName: group.name, gifts: gifts.rows };
+}
+
+export const THIS_IS_ME_LIMIT = { perPerson: 3, perGroup: 30, minutes: 15 };
+
+/**
+ * "This is me": emails that person a one-tap sign-in link at the address
+ * on their account. Picking someone else's name only sends them an email;
+ * nothing about their account is shown. Limited per person and per group.
+ */
+export async function sendThisIsMe(token: string, userId: string, headers: Headers): Promise<{ name: string }> {
+  const group = await groupByToken(token);
+  if (!group) throw new InputError("This family link isn't working anymore. Ask for a new one.");
+  const { rows } = await pool.query<{ email: string; name: string }>(
+    `select u.email, u.name from group_members m join "user" u on u.id = m.user_id
+     where m.group_id = $1 and m.user_id = $2`,
+    [group.access_group_id, userId],
+  );
+  const person = rows[0];
+  if (!person || person.email.endsWith(`@${SAMPLE_EMAIL_DOMAIN}`)) throw new InputError("That person isn't in this group.");
+
+  const { rows: recent } = await pool.query<{ mine: number; all: number }>(
+    `select count(*) filter (where user_id = $1)::int as mine, count(*)::int as all
+     from sign_in_link_sends where group_id = $2 and sent_at > now() - make_interval(mins => $3)`,
+    [userId, group.id, THIS_IS_ME_LIMIT.minutes],
+  );
+  if (recent[0].mine >= THIS_IS_ME_LIMIT.perPerson || recent[0].all >= THIS_IS_ME_LIMIT.perGroup) {
+    throw new InputError("A sign-in link was just sent. Check your email, or try again in 15 minutes.");
+  }
+
+  await pool.query("insert into sign_in_link_sends (user_id, group_id) values ($1, $2)", [userId, group.id]);
+  await auth.api.signInMagicLink({
+    body: { email: person.email, callbackURL: `/gyfte/groups/${group.id}`, metadata: { group: group.name } },
+    headers,
+  });
+  return { name: displayName(person.name, person.email) };
 }

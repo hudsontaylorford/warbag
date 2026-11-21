@@ -20,7 +20,7 @@ import {
 import { claimItem, dismissClaim, unclaimItem } from "@/lib/gyfte/claims";
 import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib/gyfte/sharing";
 import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
-import { createGyfteGroup, createSampleFamily, deleteSampleFamily, startMyGroupList } from "@/lib/gyfte/groups";
+import { createGyfteGroup, createSampleFamily, deleteSampleFamily, setFamilyLink, startMyGroupList } from "@/lib/gyfte/groups";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 /** Set only by forms shown in Edit history mode. */
@@ -227,4 +227,12 @@ export async function startMyGroupListAction(_: FormState, form: FormData): Prom
   });
   if (state.ok) redirect(`/gyfte/${id}`);
   return state;
+}
+
+export async function setFamilyLinkAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const on = text(form, "on") === "1";
+    await setFamilyLink(actor, text(form, "id"), on);
+    return on ? "New link ready. Old links stop working." : "Family link turned off";
+  }, "Only admins can manage the family link.");
 }

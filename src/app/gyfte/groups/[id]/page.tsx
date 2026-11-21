@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
-import { groupPage, viewerFor, type GroupRowView } from "@/lib/gyfte/groups";
+import { familyLink, groupPage, viewerFor, type GroupRowView } from "@/lib/gyfte/groups";
+import { siteUrl } from "@/lib/site";
+import { FamilyLink } from "./FamilyLink";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { ConfirmForm } from "@/components/ui/forms";
 import { deleteSampleAction } from "../../actions";
@@ -36,6 +38,7 @@ export default async function GroupPage({
     return s ? `?${s}` : "";
   };
   const thisYearIsCurrent = page.year === page.years[page.years.length - 1];
+  const linkToken = actor.isAdmin && !previewName && !page.isSample ? await familyLink(actor, page.id) : null;
 
   const Row = ({ r }: { r: GroupRowView }) => (
     <li className={rowCls}>
@@ -104,6 +107,7 @@ export default async function GroupPage({
 
         {actor.isAdmin && !previewName && (
           <div className="flex flex-col gap-6 border-t border-line pt-6">
+            {!page.isSample && <FamilyLink groupId={page.id} url={linkToken ? `${siteUrl()}/j/${linkToken}` : null} />}
             <Link href={`/admin/groups/${page.accessGroupId}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
               Manage who&apos;s in this group ›
             </Link>

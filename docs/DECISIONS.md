@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Family links and "This is me" (step 2)
+
+- **Family link** (`/j/<token>`, one per group, admins only; not for sample groups): Copy, Replace (old link stops) or Turn off on the group page. Anyone with it sees the group's people, years and wanted gifts (received gifts hidden), never claims, without signing in. Signed-in members who open it go to the real group page.
+- **"This is me"** next to a member's name emails *that person* a one-tap sign-in link (Better Auth magic link: existing accounts only, single use, one hour, stored hashed), at the address on their account; the page never shows it. Picking someone else's name only sends them an email. Limited to 3 sends per person and 30 per group per 15 minutes.
+- Tapping the emailed link signs them in on that device (60-day session) and lands them on the group page, where they can claim and "Start my list". Kids have no button; parents manage them.
+- Everyone who joins this way is a normal warbag account (the same one every app uses).
+- Not done yet: personal sign-in links to text one person (option C); request-a-group for non-admins.
+
 ## 2026-11-21 · Gyfte groups and the sample family (Hudson)
 
 - **A Gyfte group is a page:** group > year > each person's list (Christmas that year, then that year's birthdays). People with no list yet show "No list yet"; you get "Start my list". Year links show only years with lists you can open.
