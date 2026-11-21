@@ -23,6 +23,7 @@ import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/g
 import { createGyfteGroup, createSampleFamily, deleteSampleFamily, setFamilyLink, startMyGroupList } from "@/lib/gyfte/groups";
 import { addKid, addKidParent, startKidList } from "@/lib/gyfte/kids";
 import { approveJoinRequest, declineJoinRequest } from "@/lib/gyfte/join";
+import { connectName } from "@/lib/gyfte/connect";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 /** Set only by forms shown in Edit history mode. */
@@ -280,4 +281,12 @@ export async function approveJoinAction(_: FormState, form: FormData): Promise<F
 
 export async function declineJoinAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction((actor) => declineJoinRequest(actor, text(form, "id")).then(() => "Declined"));
+}
+
+export async function connectNameAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const name = text(form, "name");
+    const { lists } = await connectName(actor, text(form, "id"), name, text(form, "userId"));
+    return `Connected ${lists} ${lists === 1 ? "list" : "lists"} for ${name}.`;
+  });
 }

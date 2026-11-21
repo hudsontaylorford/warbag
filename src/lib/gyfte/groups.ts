@@ -243,6 +243,14 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
       christmas.push({ name: l.recipient_name, userId: null, isYou: false, list: view(l), joint: (listKids.get(l.id) ?? []).length > 1 });
     }
   }
+  // Name-only people with only earlier lists (e.g. imported history): one row, opening the latest.
+  const shown = new Set(christmas.filter((r) => !r.userId && !r.nested && r.list).map((r) => r.name.toLowerCase()));
+  for (const l of earlier) {
+    const key = l.recipient_name.toLowerCase();
+    if (l.recipient_user_id || (listKids.get(l.id) ?? []).length > 0 || shown.has(key)) continue;
+    shown.add(key);
+    christmas.push({ name: l.recipient_name, userId: null, isYou: false, list: null, latest: { id: l.id, year: l.d.slice(0, 4) } });
+  }
 
   const myKids = viewer ? kids.filter((k) => k.parentIds.includes(viewer.id)).map((k) => ({ id: k.id, name: k.name })) : [];
   const allMine = myKids.map((k) => k.id).sort().join(",");
