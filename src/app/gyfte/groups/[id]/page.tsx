@@ -15,6 +15,8 @@ import { StartMyList } from "./StartMyList";
 import { GyfteNav } from "../../GyfteNav";
 import { JoinRequests } from "./JoinRequests";
 import { joinRequests } from "@/lib/gyfte/join";
+import { nameOnlyLists } from "@/lib/gyfte/connect";
+import { ConnectNames } from "./ConnectNames";
 import { ViewAsBanner, ViewAsPicker } from "./ViewAs";
 
 export const metadata: Metadata = { title: "Group · Gyfte" };
@@ -46,6 +48,7 @@ export default async function GroupPage({
   const linkToken = actor.isAdmin && !previewName && !page.isSample ? await familyLink(actor, page.id) : null;
   const kids = previewName ? [] : await myKids(viewer);
   const requests = actor.isAdmin && !previewName && !page.isSample ? await joinRequests(actor, page.id) : [];
+  const nameOnly = actor.isAdmin && !previewName && !page.isSample ? await nameOnlyLists(actor, page.id) : [];
   const members = page.christmas.filter((r) => r.userId).map((r) => ({ id: r.userId!, name: r.name }));
 
   const Row = ({ r }: { r: GroupRowView }) =>
@@ -160,6 +163,7 @@ export default async function GroupPage({
             </summary>
             <div className="mt-4 flex flex-col gap-8">
         {actor.isAdmin && !page.isSample && <JoinRequests requests={requests} />}
+        {actor.isAdmin && !page.isSample && <ConnectNames groupId={page.id} names={nameOnly} members={members} />}
         {thisYearIsCurrent && (
           <YourKids
             groupId={page.id}

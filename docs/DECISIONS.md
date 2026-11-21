@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Connecting name-only lists to people
+
+- **Lists under just a name** (from an import's "Just a name", or a list for someone without an account) can be connected to a person in the group from the group page's Manage, by an admin in that group.
+- **Connect moves every year at once** in that group: the person becomes the owner and the one the list is for, the same as if the import had matched them. Claims stay, and are hidden from them like on any list of theirs. Lists in other groups aren't touched. It's in the activity log.
+- **It refuses rather than merges** when the person already has a list for the same Christmas; the message names the year.
+- **Group pages show name-only people who only have past lists** as a row that opens their latest list, so imported history is reachable before it's connected.
+
 ## 2026-11-21 · Ask to join (request with email, Hudson approves)
 
 - **On a family link,** "Not on here? Ask to join" takes a name and email. The reply is "Welcome to Gyfte" and one sentence: once added, come back and tap This is me. It's the same reply whether or not the email already has an account, so the form reveals nothing.
