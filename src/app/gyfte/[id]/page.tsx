@@ -10,6 +10,9 @@ import { CheckboxListForm, ConfirmForm, Section } from "@/components/ui/forms";
 import { AddBox } from "./AddBox";
 import { ItemRow } from "./ItemRow";
 import { ListSettings } from "./ListSettings";
+import { ShareSection } from "./ShareSection";
+import { sharingFor } from "@/lib/gyfte/sharing";
+import { siteUrl } from "@/lib/site";
 import { bringForwardAction, deleteListAction } from "../actions";
 
 export const metadata: Metadata = { title: "List · Gyfte" };
@@ -35,6 +38,7 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
   const wanted = list.items.filter((i) => !i.receivedAt);
   const received = list.items.filter((i) => i.receivedAt);
   const previous = canEdit && list.items.length === 0 ? await previousItems(actor, list.id) : null;
+  const sharing = canEdit ? await sharingFor(actor, list.id) : null;
 
   return (
     <>
@@ -67,7 +71,7 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
           <ul className="divide-y divide-line border-y border-line">
             {wanted.map((item) => (
               <li key={item.id}>
-                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} />
+                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} />
               </li>
             ))}
           </ul>
@@ -81,18 +85,25 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
             <ul className="mt-2 divide-y divide-line border-y border-line">
               {received.map((item) => (
                 <li key={item.id}>
-                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} />
+                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} />
                 </li>
               ))}
             </ul>
           </details>
         )}
 
+        {sharing && <ShareSection listId={list.id} sharing={sharing} siteUrl={siteUrl()} />}
+
         {canEdit && (
           <details>
             <summary className="min-h-11 cursor-pointer content-center font-semibold">List settings</summary>
             <div className="mt-4 flex flex-col gap-8">
-              <ListSettings listId={list.id} recipientName={list.recipientName} date={list.occasionDate} />
+              <ListSettings
+                listId={list.id}
+                recipientName={list.recipientName}
+                date={list.occasionDate}
+                claimsMode={list.claimsMode}
+              />
               <Section title="Delete list">
                 <ConfirmForm
                   action={deleteListAction}

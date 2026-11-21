@@ -1,5 +1,6 @@
 import "server-only";
 import { pool } from "../db";
+import { atLeast } from "../access/roles";
 import {
   AccessDenied,
   canUseApp,
@@ -59,6 +60,12 @@ export type ListSummary = {
   mine: boolean;
 };
 
+/**
+ * Claim info on an item. Only present when the viewer may see claims:
+ * never for the person the list is for, never when claims are off.
+ */
+export type ItemClaim = { mine: boolean; by: string | null } | null;
+
 export type Item = {
   id: string;
   name: string;
@@ -69,6 +76,7 @@ export type Item = {
   links: string[];
   starred: boolean;
   receivedAt: Date | null;
+  claim?: ItemClaim;
 };
 
 export type ListDetail = {
@@ -80,6 +88,8 @@ export type ListDetail = {
   claimsMode: ClaimMode;
   role: Role;
   past: boolean;
+  /** Whether this viewer sees claims, and may claim. False for the recipient. */
+  claims: { visible: boolean; canClaim: boolean };
   items: Item[];
 };
 
@@ -104,7 +114,7 @@ async function loadList(listId: string): Promise<ListRow | null> {
 }
 
 /** The list and the actor's level on it, or AccessDenied. */
-async function listWithRole(actor: Actor, listId: string, need: Role): Promise<{ list: ListRow; role: Role }> {
+export async function listWithRole(actor: Actor, listId: string, need: Role): Promise<{ list: ListRow; role: Role }> {
   const list = await loadList(listId);
   if (!list) throw new AccessDenied();
   const role = await requireItemRole(actor, ref(list), need);
@@ -112,7 +122,7 @@ async function listWithRole(actor: Actor, listId: string, need: Role): Promise<{
 }
 
 /** The item's list, checked for `need`. */
-async function itemWithRole(actor: Actor, itemId: string, need: Role): Promise<{ list: ListRow; role: Role }> {
+export async function itemWithRole(actor: Actor, itemId: string, need: Role): Promise<{ list: ListRow; role: Role }> {
   if (!UUID.test(itemId)) throw new AccessDenied();
   const { rows } = await pool.query<{ list_id: string }>("select list_id from gyfte_items where id = $1", [itemId]);
   if (!rows[0]) throw new AccessDenied();
@@ -200,14 +210,50 @@ export async function createList(
   return rows[0].id;
 }
 
+/**
+ * The claim rule: everyone with access sees claims except the person the
+ * list is for. Claims off means nobody sees or makes them.
+ */
+export function claimsVisibleTo(actor: Actor, list: Pick<ListRow, "recipient_user_id" | "claims_mode">): boolean {
+  return list.claims_mode !== "off" && actor.id !== list.recipient_user_id;
+}
+
+/** "Molly" from a name, or "molly" from molly@example.com. */
+export function displayName(name: string | null, email: string): string {
+  return name?.trim() || email.split("@")[0];
+}
+
 export async function getList(actor: Actor, listId: string): Promise<ListDetail> {
   const { list, role } = await listWithRole(actor, listId, "view");
-  const { rows } = await pool.query(
+  const past = isPast(list.occasion_date, today());
+  const { rows } = await pool.query<Item>(
     `select id, name, notes, size, color, price, links, starred, received_at as "receivedAt"
      from gyfte_items where list_id = $1
      order by (received_at is not null), starred desc, position asc`,
     [list.id],
   );
+
+  const visible = claimsVisibleTo(actor, list);
+  if (visible) {
+    // Claim rows are only ever read for viewers allowed to see them.
+    const claims = await pool.query<{ item_id: string; claimer_id: string; name: string; email: string }>(
+      `select c.item_id, c.claimer_id, u.name, u.email
+       from gyfte_claims c join "user" u on u.id = c.claimer_id
+       where c.list_id = $1 and c.item_id is not null`,
+      [list.id],
+    );
+    const byItem = new Map(claims.rows.map((c) => [c.item_id, c]));
+    for (const item of rows) {
+      const c = byItem.get(item.id);
+      item.claim = c
+        ? {
+            mine: c.claimer_id === actor.id,
+            by: list.claims_mode === "named" ? displayName(c.name, c.email) : null,
+          }
+        : null;
+    }
+  }
+
   return {
     id: list.id,
     title: listTitle(list.recipient_name, list.occasion, list.occasion_date),
@@ -216,7 +262,8 @@ export async function getList(actor: Actor, listId: string): Promise<ListDetail>
     occasionDate: list.occasion_date,
     claimsMode: list.claims_mode,
     role,
-    past: isPast(list.occasion_date, today()),
+    past,
+    claims: { visible, canClaim: visible && !past && atLeast(role, "contribute") },
     items: rows,
   };
 }
