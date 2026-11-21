@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Import into a group (step 4)
+
+- **The review picks a group** ("Put the lists in"; or "No group (private to me)"). Lists are filed there and shared with it; past years stay read-only.
+- **"Who is this?" per tab:** Me; Someone in the group (their history becomes theirs: they own it, the list is for their account); A kid (pick the parent; an existing kid of that parent with the same name is reused, else created); Kids together (split rows: name the kids and a parent, then each row goes to one kid or to "Both / all" on a joint list, unticked rows are skipped); Just a name (managed by the importer, the old behavior); Skip this tab.
+- **Starting guesses only:** your tab is Me; members match by first name; a tab naming two people ("Eleanor and Genevieve") starts as Kids together with those names and no parent picked. Split rows start as "Both"; a row that mentions a kid's name shows a hint but isn't moved.
+- **Checked on the server before writing** (people and parents must be in the group, 2 to 6 kids for a split, your own group only), written in one transaction, and re-importing skips any person-and-Christmas that already exists.
+
 ## 2026-11-21 · Kids under parents (step 3)
 
 - **Kids are their own people in Gyfte** (`gyfte_kids`), no account or email, with one or more parents (`gyfte_kid_parents`). Any group member can add their kid; only parents change a kid or add another parent (someone from one of their groups).
