@@ -5,6 +5,7 @@ import { runAction } from "@/lib/run-action";
 import type { FormState } from "@/components/ui/form-state";
 import {
   addItem,
+  addItems,
   bringForward,
   createList,
   deleteItem,
@@ -137,5 +138,13 @@ export async function revokeLinkAction(_: FormState, form: FormData): Promise<Fo
   return runAction(async (actor) => {
     await revokeListLink(actor, text(form, "id"), text(form, "linkId"));
     return "Link turned off";
+  });
+}
+
+export async function addItemsAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const skip = form.getAll("skip").map(Number).filter(Number.isInteger);
+    const n = await addItems(actor, text(form, "id"), text(form, "text"), skip);
+    return n === 1 ? "Added 1 gift" : `Added ${n} gifts`;
   });
 }
