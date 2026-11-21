@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { Item } from "@/lib/gyfte/data";
+import { ClaimButton } from "./ClaimButton";
 import { deleteItemAction, setReceivedAction, setStarredAction, updateItemAction } from "../actions";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -12,7 +13,17 @@ const iconButton =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50";
 
 /** One gift: name (opens its link), details line, star, and More for editing. */
-export function ItemRow({ item, store, canEdit }: { item: Item; store: string; canEdit: boolean }) {
+export function ItemRow({
+  item,
+  store,
+  canEdit,
+  canClaim,
+}: {
+  item: Item;
+  store: string;
+  canEdit: boolean;
+  canClaim: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [starState, starAction, starPending] = useActionState(setStarredAction, {});
   const details = [item.size, item.color, item.price, store].filter(Boolean).join(" · ");
@@ -74,6 +85,7 @@ export function ItemRow({ item, store, canEdit }: { item: Item; store: string; c
         )}
       </div>
       {starState.error && <Alert>{starState.error}</Alert>}
+      {item.claim !== undefined && !received && <ClaimButton itemId={item.id} claim={item.claim} canClaim={canClaim} />}
 
       {canEdit && open && <EditItem item={item} received={received} onDone={() => setOpen(false)} />}
     </div>

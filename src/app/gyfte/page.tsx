@@ -51,6 +51,10 @@ export default async function GyftePage() {
           <p className="text-soft">No lists yet. Start one for Christmas or a birthday.</p>
         )}
 
+        <Link href="/gyfte/claims" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+          My claims ›
+        </Link>
+
         {past.length > 0 && (
           <details className="group">
             <summary className="min-h-11 cursor-pointer content-center font-semibold">History ({past.length})</summary>

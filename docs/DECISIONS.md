@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte sharing and claims (PR B)
+
+- **Two sharing levels on a list:** "See and claim" (contribute; groups and people) and "Can edit" (manage; people only, e.g. a partner or other parent).
+- **Who you can share with:** your own groups and the people in them (admins: everyone). Nobody discovers who else is on warbag through sharing.
+- **Claims live in `gyfte_claims`**, one active claim per item by a unique index (a race has one winner; the other sees "Someone just claimed this"). A deleted item keeps the claim as "removed" for the claimer until they clear it.
+- **The recipient check is server-side in `getList`:** claim rows are only read for viewers allowed to see them, so the recipient's page carries no claim data at all. Tests break the rule on purpose to prove they catch it.
+- **Share links** are view-only and show only wanted gifts (no received items, no claims) at `/g/<token>`.
+- **The one-tap suggestion** copies the owner's most recent shared list's sharing, only when tapped.
+
 ## 2026-11-21 · Gyfte rules (Hudson, after ChatGPT review WRB-20261120-02)
 
 1. **One list per person per occasion** ("Christmas 2026", "Birthday 2027"); past occasions live under History. Lists never need closing.
