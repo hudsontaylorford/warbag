@@ -2,6 +2,22 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte rules (Hudson, after ChatGPT review WRB-20261120-02)
+
+1. **One list per person per occasion** ("Christmas 2026", "Birthday 2027"); past occasions live under History. Lists never need closing.
+2. **Adding is one box** (paste a link or type a name); size, color, notes, price and extra links sit under "More". Links are cleaned of tracking junk and shown by store name.
+3. **A new list can bring forward** the last list's unreceived items (never its claims), each easy to untick.
+4. **Claims** default to Anonymous (Off and Named stay available per list). One active claimer per item, claimed atomically; only the claimer can undo.
+5. **Who sees claims:** everyone with access to a list except the person it's for. That covers parents on kids' lists and a partner helping manage a list. Each list records who it's for: an account, or just a name (kids). Connecting a name to an account later hides claims from them from then on. Enforced in Gyfte's server code on every read, on top of the shared access rules.
+6. **The person a list is for sees no claim signals at all:** no counts, no locked items (they can edit or delete anything), nothing in history or emails. If they delete a claimed item, the claimer sees "removed" in My claims.
+7. **Share links to a Gyfte list show no claim information;** claiming requires signing in.
+8. **Dates:** Christmas lists are dated December 25. Birthday lists ask for the date once and suggest it for that person's next birthday list. A list moves to History two weeks after its date.
+9. **Sharing a new list** suggests the previous list's people and groups as a confirmation line (Share / Change); sharing never expands silently.
+10. **Import** goes into a private draft Hudson reviews (merged duplicates, unusual rows, X and strikethrough read as received). The source sheet is never changed. Imported lists for people without accounts are owned by Hudson until those lists are connected to their accounts.
+11. **Deferred:** hidden ideas added by others, extra fields, categories, approval steps.
+
+Build order: PR A lists and items, PR B sharing and claims, PR C import and history.
+
 ## 2026-11-21 · People and access screens (PR 5)
 
 - **Admin screens at `/admin`** (header link "People", admins only; everyone else gets "not found"): invite by email, a page per person (name, apps, groups, remove) and per group (members, apps, name, delete).

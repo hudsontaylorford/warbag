@@ -1,8 +1,8 @@
 # Status
 
-**2026-11-21.** Live at https://warbag.rodeo: invite-only sign-in, access rules, the signed-in launcher (Gyfte coming soon, Chirk, Crewmaxxing) and the People screens for inviting people and managing groups and app access.
+**2026-11-21.** Live at https://warbag.rodeo: invite-only sign-in, access rules, the launcher, People screens, and Gyfte with private lists and items (PR A): make a Christmas or birthday list, add gifts from one box (links cleaned and named), edit details under More, star, Got it, bring forward from the last list, History.
 
-Next: Gyfte.
+Next: Gyfte sharing and claims (PR B), then the import of the 2020-2025 sheet (PR C).
 
 Waiting on:
 - Design direction (Hudson).

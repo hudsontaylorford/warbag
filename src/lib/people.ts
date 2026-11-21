@@ -20,12 +20,9 @@ import { siteUrl } from "./site";
  * checks the actor is an admin itself, so screens can't skip the check.
  */
 
-export class InputError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InputError";
-  }
-}
+import { InputError } from "./errors";
+
+export { InputError };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
