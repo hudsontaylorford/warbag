@@ -19,11 +19,13 @@ export function ItemRow({
   canEdit,
   canClaim,
   history = false,
+  readOnly = false,
 }: {
   item: Item;
   store: string;
   canEdit: boolean;
   canClaim: boolean;
+  readOnly?: boolean;
   /** Editing a list in History (only after "Edit history"). */
   history?: boolean;
 }) {
@@ -90,7 +92,7 @@ export function ItemRow({
         )}
       </div>
       {starState.error && <Alert>{starState.error}</Alert>}
-      {item.claim !== undefined && !received && <ClaimButton itemId={item.id} claim={item.claim} canClaim={canClaim} />}
+      {item.claim !== undefined && !received && <ClaimButton itemId={item.id} claim={item.claim} canClaim={canClaim} readOnly={readOnly} />}
 
       {canEdit && open && <EditItem item={item} received={received} history={history} onDone={() => setOpen(false)} />}
     </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireGyfte } from "@/lib/gyfte/page";
 import { listsFor, type ListSummary } from "@/lib/gyfte/data";
+import { myGroups } from "@/lib/gyfte/groups";
+import { GroupTools } from "./GroupTools";
 import { AppHeader } from "@/components/shell/AppHeader";
 
 export const metadata: Metadata = { title: "Gyfte · warbag" };
@@ -30,7 +32,7 @@ function Lists({ lists }: { lists: ListSummary[] }) {
 export default async function GyftePage({ searchParams }: { searchParams: Promise<{ imported?: string }> }) {
   const { user, actor, canCreate } = await requireGyfte("/gyfte");
   const imported = (await searchParams).imported === "1";
-  const { current, past } = await listsFor(actor);
+  const [{ current, past }, groups] = await Promise.all([listsFor(actor), myGroups(actor)]);
 
   return (
     <>
@@ -47,6 +49,30 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
           </Link>
           )}
         </div>
+
+        {(groups.length > 0 || actor.isAdmin) && (
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">Groups</h2>
+            {groups.length > 0 && (
+              <ul className="divide-y divide-line border-y border-line">
+                {groups.map((g) => (
+                  <li key={g.id}>
+                    <Link href={`/gyfte/groups/${g.id}`} className={rowLink}>
+                      <span className="font-semibold">{g.name}</span>
+                      <span className="shrink-0 text-sm text-soft">
+                        {g.isSample ? "Sample · " : ""}
+                        {g.members} {g.members === 1 ? "person" : "people"}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {actor.isAdmin && <GroupTools hasSample={groups.some((g) => g.isSample)} />}
+          </section>
+        )}
+
+        <h2 className="text-lg font-semibold">Your lists</h2>
 
         {imported && (
           <p role="status" className="rounded-lg bg-wash px-4 py-3 text-sm">
