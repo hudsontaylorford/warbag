@@ -13,6 +13,7 @@ import {
 } from "../access";
 import { InputError } from "../errors";
 import { cleanLink, nameFromLink, parseLink } from "./links";
+import { parseBulk } from "./bulk";
 import {
   isClaimMode,
   isOccasion,
@@ -356,6 +357,44 @@ export async function addItem(actor: Actor, listId: string, text: string): Promi
   );
   await touch(list.id);
   return rows[0].id;
+}
+
+/**
+ * Bulk add: re-reads the pasted text here (never trusting the browser's
+ * preview), leaves out the gifts unticked in the preview, and adds the rest
+ * on top of the list in the order they were pasted.
+ */
+export async function addItems(actor: Actor, listId: string, text: string, skip: number[] = []): Promise<number> {
+  const { list } = await listWithRole(actor, listId, "manage");
+  if (text.length > 100_000) throw new InputError("That's too much to paste at once. Try up to 100 gifts.");
+  const leaveOut = new Set(skip);
+  const gifts = parseBulk(text).filter((g) => !leaveOut.has(g.index));
+  if (gifts.length === 0) throw new InputError("Nothing to add. Paste one gift per line.");
+
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    const { rows } = await client.query<{ top: number }>(
+      "select coalesce(min(position), 0) as top from gyfte_items where list_id = $1",
+      [list.id],
+    );
+    const top = Number(rows[0].top);
+    for (const [i, g] of gifts.entries()) {
+      await client.query(
+        `insert into gyfte_items (list_id, name, notes, size, color, price, links, position, created_by)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [list.id, g.name, g.notes, g.size, g.color, g.price, g.links, top - gifts.length + i, actor.id],
+      );
+    }
+    await client.query("update gyfte_lists set updated_at = now() where id = $1", [list.id]);
+    await client.query("commit");
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
+  }
+  return gifts.length;
 }
 
 export async function updateItem(

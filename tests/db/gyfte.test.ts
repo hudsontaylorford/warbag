@@ -4,6 +4,7 @@ import { grantApp, grantItem, createShareLink, itemRole, type Actor } from "@/li
 import {
   AccessDenied,
   addItem,
+  addItems,
   bringForward,
   createList,
   deleteItem,
@@ -160,5 +161,20 @@ describeDb("gyfte lists and items", () => {
     expect(await itemRole(null, ref, { linkToken: link.token })).toBeNull();
     const { rowCount } = await admin.query("select 1 from gyfte_items where list_id = $1", [id]);
     expect(rowCount).toBe(0);
+  });
+
+  it("bulk adds in paste order on top, leaving out unticked lines, managers only", async () => {
+    const id = await christmas(molly, "Molly");
+    await addItem(molly, id, "Already here");
+    const n = await addItems(molly, id, "Clothes\n- Socks $12\n- Hat (size M)\nhttps://www.amazon.com/Cozy-Blanket/dp/B000000001", [0]);
+    expect(n).toBe(3);
+    const { items } = await getList(molly, id);
+    expect(items.map((i) => i.name)).toEqual(["Socks", "Hat", "Cozy Blanket", "Already here"]);
+    expect(items[0].price).toBe("$12");
+    expect(items[1].size).toBe("M");
+
+    await grantItem(molly, { app: "gyfte", type: "list", id, ownerId: molly.id }, { userId: hudson.id }, "contribute");
+    await expect(addItems(hudson, id, "Sneaky")).rejects.toBeInstanceOf(AccessDenied);
+    await expect(addItems(molly, id, "\n\n2025\n")).rejects.toBeInstanceOf(InputError);
   });
 });

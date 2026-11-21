@@ -16,7 +16,7 @@ test("make a Christmas list, add gifts fast, edit one, star, got it, delete", as
   await expect(page.getByText("Wool socks")).toBeVisible();
   await expect(add).toHaveValue("");
   await add.fill("https://www.amazon.com/Pilo-Fabric-Shaver/dp/B0ABCDEF12/ref=x?tag=y&th=1");
-  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("button", { name: "Add", exact: true }).click();
   const shaver = page.getByRole("link", { name: /Pilo Fabric Shaver/ });
   await expect(shaver).toHaveAttribute("href", "https://www.amazon.com/dp/B0ABCDEF12");
   await expect(page.getByText("Amazon", { exact: true })).toBeVisible();
@@ -57,4 +57,27 @@ test("someone without Gyfte gets not found", async ({ page }) => {
   const res = await page.goto("/gyfte");
   expect(page.url()).toContain("/sign-in");
   expect(res?.ok()).toBe(true);
+});
+
+test("paste several gifts at once, untick a heading, add the rest", async ({ page }) => {
+  await signIn(page, OWNER);
+  await page.goto("/gyfte/new");
+  await page.getByLabel("Your name").fill("Bulk");
+  await page.getByRole("button", { name: "Create list" }).click();
+  await expect(page.getByRole("heading", { name: /^Bulk · Christmas/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Add several at once" }).click();
+  await page.getByLabel("Paste several gifts").fill("Clothes\n- Flannel shirt, size L\n- Cast iron pan $40\n");
+  await expect(page.getByText("3 gifts found")).toBeVisible();
+  // "Clothes" looks like a heading, so it starts unticked.
+  await expect(page.getByRole("checkbox", { name: "Clothes" })).not.toBeChecked();
+  await page.getByRole("button", { name: "Add 2 gifts" }).click();
+
+  await expect(page.getByLabel("Add a gift")).toBeVisible();
+  const rows = page.getByRole("listitem");
+  await expect(rows.nth(0)).toContainText("Flannel shirt");
+  await expect(rows.nth(0)).toContainText("L");
+  await expect(rows.nth(1)).toContainText("Cast iron pan");
+  await expect(rows.nth(1)).toContainText("$40");
+  await expect(page.getByText("Clothes")).toHaveCount(0);
 });

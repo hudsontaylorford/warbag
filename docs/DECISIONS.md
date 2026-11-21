@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte bulk add (Hudson: "pretty generous import rules")
+
+- **"Add several at once"** under the Add box: paste many gifts, see a live preview, untick anything that isn't a gift, then "Add N gifts". They go on top in paste order.
+- **Generous parsing** (`src/lib/gyfte/bulk.ts`, pure, shared by preview and server): one gift per line; bullets, numbers and checkboxes stripped; links anywhere on a line (the rest is the name, a bare link is named from its address); prices ("$40", "under $30"), sizes ("size L") and colors ("color: navy") pulled out; spreadsheet rows read in the family sheet's column order; header rows, year lines and exact repeats skipped; up to 100 per paste.
+- **Likely headings** (short un-bulleted lines with no link or details in a mostly bulleted paste, like "Clothes") start unticked.
+- The server re-parses the pasted text itself and only uses the preview's unticked positions; it never trusts parsed gifts from the browser.
+- The same parser will read the 2020-2025 sheet in the import (PR C).
+
 ## 2026-11-21 · Gyfte sharing and claims (PR B)
 
 - **Two sharing levels on a list:** "See and claim" (contribute; groups and people) and "Can edit" (manage; people only, e.g. a partner or other parent).
