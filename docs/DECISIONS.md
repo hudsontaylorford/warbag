@@ -2,6 +2,12 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Second editorial pass (from WRB-20261121-07)
+
+- **One launcher signature, not several:** a faint oversized serif W in the navy field's empty corner. No texture, diagonals or motion. Colors and fonts unchanged.
+- **Desktop launcher uses the width:** headline and apps side by side instead of a stretched phone column.
+- **Gyfte, modest:** list pages lead with the person's name; "Christmas 2026" sits above it and the date line no longer repeats the year. Nothing theatrical above forms.
+
 ## 2026-11-21 · Connecting name-only lists to people
 
 - **Lists under just a name** (from an import's "Just a name", or a list for someone without an account) can be connected to a person in the group from the group page's Manage, by an admin in that group.
