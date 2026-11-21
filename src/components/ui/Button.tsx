@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "quiet";
+  variant?: "primary" | "quiet" | "danger";
 };
 
 const base =
@@ -12,9 +12,10 @@ const base =
 const variants = {
   primary: "bg-ink text-page",
   quiet: "bg-wash text-ink",
+  danger: "bg-red-700 text-white",
 };
 
-/** The one button. Primary for the main action on a screen, quiet for the rest. */
+/** The one button. Primary for the main action on a screen, quiet for the rest, danger only to confirm a delete. */
 export function Button({ variant = "primary", className = "", type = "button", ...rest }: Props) {
   return <button type={type} className={`${base} ${variants[variant]} ${className}`} {...rest} />;
 }

@@ -39,9 +39,9 @@ function AppRow({ app }: { app: App }) {
     return (
       <a href={app.href} target="_blank" rel="noopener noreferrer" className={row}>
         {label}
-        <span className="text-sm text-accent">
-          {hostOf(app.href)} <span aria-hidden>↗</span>
-          <span className="sr-only"> (opens in a new tab)</span>
+        <span className="text-lg text-accent">
+          <span aria-hidden>↗</span>
+          <span className="sr-only">Opens {hostOf(app.href)} in a new tab</span>
         </span>
       </a>
     );

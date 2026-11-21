@@ -5,7 +5,7 @@ import { SignOutButton } from "./SignOutButton";
  * The top bar on every signed-in page: the warbag name (back to the
  * launcher), an optional app name, and the account controls.
  */
-export function AppHeader({ email, app }: { email: string; app?: string }) {
+export function AppHeader({ email, app, isAdmin }: { email: string; app?: string; isAdmin?: boolean }) {
   return (
     <header className="border-b border-line">
       <div className="mx-auto flex max-w-xl items-center justify-between gap-4 px-4">
@@ -27,6 +27,11 @@ export function AppHeader({ email, app }: { email: string; app?: string }) {
         </nav>
         <div className="flex items-center gap-3">
           <span className="hidden text-sm text-soft sm:inline">{email}</span>
+          {isAdmin && (
+            <Link href="/admin" className="min-h-11 content-center px-1 text-sm text-accent underline-offset-4 hover:underline">
+              People
+            </Link>
+          )}
           <SignOutButton />
         </div>
       </div>

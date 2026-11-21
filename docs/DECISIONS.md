@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · People and access screens (PR 5)
+
+- **Admin screens at `/admin`** (header link "People", admins only; everyone else gets "not found"): invite by email, a page per person (name, apps, groups, remove) and per group (members, apps, name, delete).
+- **Inviting** adds the person and, unless unticked, emails them how to sign in. They see no apps until given some, directly or through a group.
+- **Checkbox lists save exactly what's ticked**, recorded in the activity log as individual grants and removals.
+- **Removing someone** deletes their sign-ins, memberships, grants and share links. Admins can't remove themselves. (Apps will decide what happens to a removed person's own items, e.g. Gyfte lists, when they're built.)
+- **Destructive actions take two taps** ("Remove", then "Yes, remove") with the consequence spelled out; no pop-up dialogs.
+- External apps in the launcher show only ↗ (Hudson: no need to show the address).
+
 ## 2026-11-20 · Gyfte decisions (Hudson)
 
 1. **Lists for people without an account** (kids): a parent owns and manages the list. A list's owner and the person it's for can differ.
