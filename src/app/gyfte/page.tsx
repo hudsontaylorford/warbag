@@ -28,7 +28,7 @@ function Lists({ lists }: { lists: ListSummary[] }) {
 }
 
 export default async function GyftePage({ searchParams }: { searchParams: Promise<{ imported?: string }> }) {
-  const { user, actor } = await requireGyfte("/gyfte");
+  const { user, actor, canCreate } = await requireGyfte("/gyfte");
   const imported = (await searchParams).imported === "1";
   const { current, past } = await listsFor(actor);
 
@@ -38,12 +38,14 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
       <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold">Lists</h1>
+          {canCreate && (
           <Link
             href="/gyfte/new"
             className="inline-flex min-h-11 items-center rounded-lg bg-ink px-4 font-semibold text-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             New list
           </Link>
+          )}
         </div>
 
         {imported && (
@@ -55,16 +57,18 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
         {current.length > 0 ? (
           <Lists lists={current} />
         ) : (
-          <p className="text-soft">No lists yet. Start one for Christmas or a birthday.</p>
+          <p className="text-soft">{canCreate ? "No lists yet. Start one for Christmas or a birthday." : "No lists shared with you right now."}</p>
         )}
 
         <div className="flex flex-wrap gap-x-6">
           <Link href="/gyfte/claims" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
             My claims ›
           </Link>
-          <Link href="/gyfte/import" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
-            Import a spreadsheet ›
-          </Link>
+          {canCreate && (
+            <Link href="/gyfte/import" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+              Import a spreadsheet ›
+            </Link>
+          )}
         </div>
 
         {past.length > 0 && (

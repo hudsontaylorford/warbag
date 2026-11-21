@@ -34,8 +34,9 @@ export function ClaimRow({ claim }: { claim: MyClaim }) {
             {claim.received && " · They marked it Got it"}
           </span>
           {claim.removed && <span className="text-sm">Removed from the list. You may not need to get it.</span>}
+          {claim.lostAccess && <span className="text-sm">This list isn&apos;t shared with you anymore.</span>}
         </div>
-        {claim.removed ? (
+        {claim.removed || claim.lostAccess ? (
           <form action={dismissAction}>
             <input type="hidden" name="id" value={claim.id} />
             <button type="submit" disabled={dismissing} className={textButton}>

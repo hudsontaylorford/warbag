@@ -153,8 +153,41 @@ export async function renamePerson(actor: Actor, userId: string, name: string): 
 export async function removePerson(actor: Actor, userId: string): Promise<void> {
   requireAdmin(actor);
   if (userId === actor.id) throw new InputError("You can't remove yourself.");
-  const { rows } = await pool.query<{ email: string }>(`delete from "user" where id = $1 returning email`, [userId]);
-  if (rows[0]) await audit(pool, actor.id, "person.remove", `user/${userId}`, { email: rows[0].email });
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    // Gyfte lists they manage (theirs and their kids') move to the admin
+    // removing them instead of being deleted. Lists that were for them keep
+    // their name but are no longer tied to an account.
+    const moved = await client.query("update gyfte_lists set owner_id = $2, updated_at = now() where owner_id = $1", [
+      userId,
+      actor.id,
+    ]);
+    const { rows } = await client.query<{ email: string }>(`delete from "user" where id = $1 returning email`, [userId]);
+    if (rows[0]) {
+      await audit(client, actor.id, "person.remove", `user/${userId}`, {
+        email: rows[0].email,
+        gyfteListsMovedToActor: moved.rowCount ?? 0,
+      });
+    }
+    await client.query("commit");
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/** What removing someone would change, for the confirmation text. */
+export async function removalImpact(actor: Actor, userId: string): Promise<{ lists: number; claims: number }> {
+  requireAdmin(actor);
+  const { rows } = await pool.query<{ lists: number; claims: number }>(
+    `select (select count(*)::int from gyfte_lists where owner_id = $1) as lists,
+            (select count(*)::int from gyfte_claims where claimer_id = $1 and item_id is not null) as claims`,
+    [userId],
+  );
+  return rows[0];
 }
 
 /** Sets exactly which apps are given to this person directly. */

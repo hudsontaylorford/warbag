@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin-page";
-import { getPerson, listGroups } from "@/lib/people";
+import { getPerson, listGroups, removalImpact } from "@/lib/people";
 import { APPS } from "@/lib/apps";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { CheckboxListForm, ConfirmForm, Section, TextForm } from "@/components/ui/forms";
@@ -21,6 +21,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const [person, groups] = await Promise.all([getPerson(actor, id), listGroups(actor)]);
   if (!person) notFound();
   const isMe = person.id === user.id;
+  const impact = isMe ? null : await removalImpact(actor, person.id);
+  const who = person.name || person.email;
+  const removeText = [
+    `${who} will be signed out and lose access to everything shared with them. Their share links stop working.`,
+    impact && impact.lists > 0
+      ? `The ${impact.lists} Gyfte ${impact.lists === 1 ? "list" : "lists"} they manage will move to you.`
+      : "",
+    impact && impact.claims > 0
+      ? `The ${impact.claims} ${impact.claims === 1 ? "gift" : "gifts"} they said they'd get will become unclaimed.`
+      : "",
+    "This can't be undone, but you can invite them again.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <>
@@ -71,7 +85,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               action={removePersonAction}
               id={person.id}
               label="Remove"
-              consequence={`${person.name || person.email} will be signed out and lose access to everything shared with them. Their share links stop working. This can't be undone, but you can invite them again.`}
+              consequence={removeText}
             />
           </Section>
         )}
