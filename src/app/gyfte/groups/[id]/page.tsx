@@ -13,6 +13,8 @@ import { ConfirmForm } from "@/components/ui/forms";
 import { deleteSampleAction } from "../../actions";
 import { StartMyList } from "./StartMyList";
 import { GyfteNav } from "../../GyfteNav";
+import { JoinRequests } from "./JoinRequests";
+import { joinRequests } from "@/lib/gyfte/join";
 import { ViewAsBanner, ViewAsPicker } from "./ViewAs";
 
 export const metadata: Metadata = { title: "Group · Gyfte" };
@@ -43,6 +45,7 @@ export default async function GroupPage({
   const thisYearIsCurrent = page.year === page.years[page.years.length - 1];
   const linkToken = actor.isAdmin && !previewName && !page.isSample ? await familyLink(actor, page.id) : null;
   const kids = previewName ? [] : await myKids(viewer);
+  const requests = actor.isAdmin && !previewName && !page.isSample ? await joinRequests(actor, page.id) : [];
   const members = page.christmas.filter((r) => r.userId).map((r) => ({ id: r.userId!, name: r.name }));
 
   const Row = ({ r }: { r: GroupRowView }) =>
@@ -134,8 +137,16 @@ export default async function GroupPage({
 
         {!previewName && (thisYearIsCurrent || actor.isAdmin) && (
           <details>
-            <summary className="min-h-11 cursor-pointer content-center font-semibold">Manage</summary>
+            <summary className="min-h-11 cursor-pointer content-center font-semibold">
+              Manage
+              {requests.length > 0 && (
+                <span className="ml-2 rounded-[var(--radius-control)] bg-ember px-2 py-0.5 text-sm text-page">
+                  {requests.length} {requests.length === 1 ? "request" : "requests"}
+                </span>
+              )}
+            </summary>
             <div className="mt-4 flex flex-col gap-8">
+        {actor.isAdmin && !page.isSample && <JoinRequests requests={requests} />}
         {thisYearIsCurrent && (
           <YourKids
             groupId={page.id}

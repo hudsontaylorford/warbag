@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Ask to join (request with email, Hudson approves)
+
+- **On a family link,** "Not on here? Ask to join" takes a name and email. The reply is "Welcome to Gyfte" and one sentence: once added, come back and tap This is me. It's the same reply whether or not the email already has an account, so the form reveals nothing.
+- **Nothing is created until an admin in that group taps Add.** Add creates the account (or finds the existing one) and puts them in the group. No email is sent; This is me on the family link sends the sign-in link. Decline deletes the request. Both are in the activity log.
+- **Limits:** one pending request per email per group (a repeat just updates the name), at most 10 new requests per group per hour and 25 waiting. Turning off the family link stops requests. Sample families never take them.
+- **Where it shows:** a count on the group page's Manage, and the list inside it. Only admins in the group see requests.
+- "Welcome to warbag" is for requests that don't come through a Gyfte link; there are none yet, so only the Gyfte wording exists.
+
 ## 2026-11-21 · Gyfte everyday flow (stage 2, from WRB-20261121-07)
 
 - **Three places, one nav:** My list (lists you look after: yours and your kids'), Family (your group; with one family it opens straight to it), I'm getting (your claims). Lists shared with you outside a group still show on My list under "Shared with you", so nothing disappears.

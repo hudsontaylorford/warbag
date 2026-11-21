@@ -22,6 +22,7 @@ import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib
 import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
 import { createGyfteGroup, createSampleFamily, deleteSampleFamily, setFamilyLink, startMyGroupList } from "@/lib/gyfte/groups";
 import { addKid, addKidParent, startKidList } from "@/lib/gyfte/kids";
+import { approveJoinRequest, declineJoinRequest } from "@/lib/gyfte/join";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 /** Set only by forms shown in Edit history mode. */
@@ -268,4 +269,15 @@ export async function startKidListAction(_: FormState, form: FormData): Promise<
   });
   if (state.ok) redirect(`/gyfte/${id}`);
   return state;
+}
+
+export async function approveJoinAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const { name } = await approveJoinRequest(actor, text(form, "id"));
+    return `${name} is in. They can tap This is me on the family link to sign in.`;
+  });
+}
+
+export async function declineJoinAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => declineJoinRequest(actor, text(form, "id")).then(() => "Declined"));
 }
