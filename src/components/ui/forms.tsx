@@ -42,6 +42,7 @@ export function CheckboxListForm({
   options,
   selected,
   empty,
+  submitLabel = "Save",
 }: {
   action: Action;
   id: string;
@@ -49,6 +50,7 @@ export function CheckboxListForm({
   options: { value: string; label: string; hint?: string; disabled?: boolean }[];
   selected: string[];
   empty?: string;
+  submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [dirty, setDirty] = useState(false);
@@ -77,7 +79,7 @@ export function CheckboxListForm({
       </fieldset>
       <div className="max-w-xs">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
+          {pending ? "Saving…" : submitLabel}
         </Button>
       </div>
       {!dirty && <Result state={state} pending={pending} />}

@@ -8,7 +8,7 @@ test("the owner sees every app, with external ones opening in a new tab", async 
   await signIn(page, OWNER);
   const apps = page.getByRole("list");
   await expect(apps.getByText("Gyfte")).toBeVisible();
-  await expect(apps.getByText("Coming soon")).toBeVisible();
+
 
   const chirk = page.getByRole("link", { name: /Chirk/ });
   await expect(chirk).toHaveAttribute("href", "https://chirk.fyi");

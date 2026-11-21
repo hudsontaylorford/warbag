@@ -28,7 +28,7 @@ export const APPS: readonly App[] = [
     description: "Gift lists",
     kind: "native",
     href: "/gyfte",
-    status: "soon",
+    status: "live",
   },
   {
     id: "chirk",

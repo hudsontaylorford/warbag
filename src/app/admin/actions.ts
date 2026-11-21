@@ -1,8 +1,8 @@
 "use server";
 
-import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
-import { AccessDenied, createGroup, deleteGroup } from "@/lib/access";
+import { createGroup, deleteGroup } from "@/lib/access";
+import { runAction } from "@/lib/run-action";
 import {
   InputError,
   invitePerson,
@@ -14,29 +14,10 @@ import {
   setPersonApps,
   setPersonGroups,
 } from "@/lib/people";
-import { currentActor } from "@/lib/session";
 
 import type { FormState } from "@/components/ui/form-state";
 
-/**
- * Every admin action: signed-in check, then the library call (which checks
- * admin itself), then a plain message for the screen. Inputs are only ids
- * and the requested change; everything else is re-read on the server.
- */
-async function run(work: (actor: { id: string; isAdmin: boolean }) => Promise<string | void>): Promise<FormState> {
-  const actor = await currentActor();
-  if (!actor) return { error: "You're signed out. Sign in again, then retry." };
-  try {
-    const message = await work(actor);
-    refresh();
-    return { ok: true, message: message || "Saved" };
-  } catch (err) {
-    if (err instanceof InputError) return { error: err.message };
-    if (err instanceof AccessDenied) return { error: "Only admins can do this." };
-    console.error("admin action failed", err);
-    return { error: "Something went wrong and nothing was saved. Try again." };
-  }
-}
+const run = (work: Parameters<typeof runAction>[0]) => runAction(work, "Only admins can do this.");
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 const list = (form: FormData, key: string) => form.getAll(key).map(String);
