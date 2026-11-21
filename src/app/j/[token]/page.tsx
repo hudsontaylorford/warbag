@@ -30,9 +30,12 @@ export default async function FamilyLinkPage({
   const thisYear = page.year === page.years[page.years.length - 1];
 
   const Row = ({ r }: { r: GroupRowView }) => (
-    <li className="flex min-h-14 items-center justify-between gap-4 py-2">
+    <li className={`flex min-h-14 items-center justify-between gap-4 py-2 ${r.nested ? "pl-6" : ""}`}>
       <div className="flex min-w-0 flex-col">
-        <span className="font-semibold break-words">{r.name}</span>
+        <span className={`break-words ${r.nested ? "" : "font-semibold"}`}>
+          {r.nested && <span aria-hidden className="text-soft">↳ </span>}
+          {r.name}
+        </span>
         {r.list ? (
           <Link href={`/j/${token}/l/${r.list.id}`} className="text-sm text-accent underline-offset-4 hover:underline">
             {r.list.gifts} {r.list.gifts === 1 ? "gift" : "gifts"} ›

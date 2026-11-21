@@ -69,7 +69,7 @@ describeDb("gyfte groups and the sample family", () => {
     expect(page.isSample).toBe(true);
     expect(page.years).toEqual([String(Number(thisYear()) - 1), thisYear()]);
     expect(page.christmas.map((r) => r.name)).toContain("Sample Kid");
-    expect(page.christmas.filter((r) => r.list).length).toBe(6);
+    expect(page.christmas.filter((r) => r.list).length).toBe(8); // 5 adults, 2 kids, 1 joint list
     expect(page.samplePeople).toHaveLength(5);
     expect((await listsFor(hudson)).current).toEqual([]);
   });

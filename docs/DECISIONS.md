@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Kids under parents (step 3)
+
+- **Kids are their own people in Gyfte** (`gyfte_kids`), no account or email, with one or more parents (`gyfte_kid_parents`). Any group member can add their kid; only parents change a kid or add another parent (someone from one of their groups).
+- **Every parent manages the kid's lists.** The parent who starts a list owns it; the others get "Can edit" on it automatically, including parents added later. Parents see claims (they aren't the recipient).
+- **Joint lists** are lists for several kids together (`gyfte_list_kids` with 2+ kids), shown as "Eleanor & Genevieve (together)": a shared gift exists once and is claimed once.
+- **Year links, bring-forward and Copy to this year follow the kid**, whichever parent started each list; any parent can copy a kid's list forward, and the copy stays in the same group with the same parents.
+- **Group page:** kids sit under their first parent in the group with "Start list" for parents; "Your kids" has Add a kid, Add a parent and "Start a joint list". Kids show in every group their parent is in, never in a sample group.
+- **Removing a parent** hands their kids' lists to another of the kid's parents (or the admin if none).
+- Next: the real import into a group, splitting the joint tab into Eleanor, Genevieve, both (joint list) or skip.
+
 ## 2026-11-21 · Family links and "This is me" (step 2)
 
 - **Family link** (`/j/<token>`, one per group, admins only; not for sample groups): Copy, Replace (old link stops) or Turn off on the group page. Anyone with it sees the group's people, years and wanted gifts (received gifts hidden), never claims, without signing in. Signed-in members who open it go to the real group page.

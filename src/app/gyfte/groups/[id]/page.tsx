@@ -6,6 +6,8 @@ import { AccessDenied } from "@/lib/access";
 import { familyLink, groupPage, viewerFor, type GroupRowView } from "@/lib/gyfte/groups";
 import { siteUrl } from "@/lib/site";
 import { FamilyLink } from "./FamilyLink";
+import { StartKidList, YourKids } from "./Kids";
+import { myKids } from "@/lib/gyfte/kids";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { ConfirmForm } from "@/components/ui/forms";
 import { deleteSampleAction } from "../../actions";
@@ -39,10 +41,13 @@ export default async function GroupPage({
   };
   const thisYearIsCurrent = page.year === page.years[page.years.length - 1];
   const linkToken = actor.isAdmin && !previewName && !page.isSample ? await familyLink(actor, page.id) : null;
+  const kids = previewName ? [] : await myKids(viewer);
+  const members = page.christmas.filter((r) => r.userId).map((r) => ({ id: r.userId!, name: r.name }));
 
   const Row = ({ r }: { r: GroupRowView }) => (
-    <li className={rowCls}>
-      <span className="font-semibold">
+    <li className={`${rowCls} ${r.nested ? "pl-6" : ""}`}>
+      <span className={r.nested ? "" : "font-semibold"}>
+        {r.nested && <span aria-hidden className="text-soft">↳ </span>}
         {r.name}
         {r.isYou && <span className="font-normal text-soft"> (you)</span>}
       </span>
@@ -52,6 +57,8 @@ export default async function GroupPage({
         </Link>
       ) : r.isYou && !previewName && thisYearIsCurrent ? (
         <StartMyList groupId={page.id} year={page.year} />
+      ) : r.kidId && r.canStart && !previewName && thisYearIsCurrent ? (
+        <StartKidList groupId={page.id} kidIds={[r.kidId]} year={page.year} />
       ) : (
         <span className="text-sm text-soft">No list yet</span>
       )}
@@ -103,6 +110,16 @@ export default async function GroupPage({
               ))}
             </ul>
           </section>
+        )}
+
+        {!previewName && thisYearIsCurrent && (
+          <YourKids
+            groupId={page.id}
+            year={page.year}
+            kids={kids}
+            members={members}
+            canStartJoint={page.myKids.length > 1 && !page.hasJointForMyKids}
+          />
         )}
 
         {actor.isAdmin && !previewName && (

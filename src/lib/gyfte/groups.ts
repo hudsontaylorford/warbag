@@ -15,6 +15,7 @@ import { atLeast } from "../access/roles";
 import { displayName } from "./data";
 import { isoDay, isPast, listTitle, nextChristmas, type Occasion } from "./occasions";
 import { auth } from "../auth";
+import { kidsOfMembers, linkListToKids } from "./kids";
 
 /**
  * Gyfte groups: a family or circle with a page showing its people and each
@@ -92,6 +93,14 @@ export type GroupRowView = {
   userId: string | null;
   isYou: boolean;
   list: { id: string; title: string; gifts: number } | null;
+  /** Set on a kid's row (shown under their parent). */
+  kidId?: string;
+  /** A list for siblings together. */
+  joint?: boolean;
+  /** Shown indented under the row above (kids and joint lists). */
+  nested?: boolean;
+  /** The viewer is this kid's parent, so they may start the kid's list. */
+  canStart?: boolean;
 };
 
 export type GroupPage = {
@@ -103,6 +112,10 @@ export type GroupPage = {
   year: string;
   christmas: GroupRowView[];
   birthdays: GroupRowView[];
+  /** The viewer's kids shown in this group (for "Start a joint list"). */
+  myKids: { id: string; name: string }[];
+  /** Whether a joint list for all of myKids already exists this year. */
+  hasJointForMyKids: boolean;
   /** Made-up people an admin may view as (sample groups only). */
   samplePeople: { id: string; name: string }[];
 };
@@ -163,16 +176,63 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
   });
 
   const christmasLists = inYear.filter((l) => l.occasion === "christmas");
-  const christmas: GroupRowView[] = members.rows.map((m) => {
-    const list = christmasLists.find((l) => l.recipient_user_id === m.id);
-    return { name: displayName(m.name, m.email), userId: m.id, isYou: m.id === viewer?.id, list: list ? view(list) : null };
-  });
-  // Lists for people without accounts (kids), and for anyone not in the group.
-  for (const l of christmasLists) {
-    if (!l.recipient_user_id || !members.rows.some((m) => m.id === l.recipient_user_id)) {
-      christmas.push({ name: l.recipient_name, userId: null, isYou: false, list: view(l) });
+
+  // Which kid(s) each list is for.
+  const listKids = new Map<string, string[]>();
+  if (christmasLists.length) {
+    const lk = await pool.query<{ list_id: string; kids: string[] }>(
+      `select list_id, array_agg(kid_id::text order by kid_id) as kids from gyfte_list_kids
+       where list_id = any($1::uuid[]) group by list_id`,
+      [christmasLists.map((l) => l.id)],
+    );
+    for (const r of lk.rows) listKids.set(r.list_id, r.kids);
+  }
+  const kids = await kidsOfMembers(group.access_group_id, group.is_sample);
+  const memberIds = members.rows.map((m) => m.id);
+  const placed = new Set<string>();
+  const christmas: GroupRowView[] = [];
+
+  for (const m of members.rows) {
+    const own = christmasLists.find((l) => l.recipient_user_id === m.id);
+    if (own) placed.add(own.id);
+    christmas.push({ name: displayName(m.name, m.email), userId: m.id, isYou: m.id === viewer?.id, list: own ? view(own) : null });
+
+    // Kids appear once, under their first parent who is in this group.
+    const theirKids = kids.filter((k) => k.parentIds.find((p) => memberIds.includes(p)) === m.id);
+    for (const k of theirKids) {
+      const list = christmasLists.find((l) => (listKids.get(l.id) ?? []).join(",") === k.id);
+      if (list) placed.add(list.id);
+      christmas.push({
+        name: k.name,
+        userId: null,
+        isYou: false,
+        list: list ? view(list) : null,
+        kidId: k.id,
+        nested: true,
+        canStart: Boolean(viewer && k.parentIds.includes(viewer.id)),
+      });
+    }
+    // Joint lists for these kids.
+    const ids = new Set(theirKids.map((k) => k.id));
+    for (const l of christmasLists) {
+      const set = listKids.get(l.id) ?? [];
+      if (set.length > 1 && set.every((id) => ids.has(id)) && !placed.has(l.id)) {
+        placed.add(l.id);
+        christmas.push({ name: `${l.recipient_name} (together)`, userId: null, isYou: false, list: view(l), joint: true, nested: true });
+      }
     }
   }
+  // Anything else filed here (name-only lists, people not in the group).
+  for (const l of christmasLists) {
+    if (!placed.has(l.id) && (!l.recipient_user_id || !memberIds.includes(l.recipient_user_id))) {
+      christmas.push({ name: l.recipient_name, userId: null, isYou: false, list: view(l), joint: (listKids.get(l.id) ?? []).length > 1 });
+    }
+  }
+
+  const myKids = viewer ? kids.filter((k) => k.parentIds.includes(viewer.id)).map((k) => ({ id: k.id, name: k.name })) : [];
+  const allMine = myKids.map((k) => k.id).sort().join(",");
+  const hasJointForMyKids =
+    myKids.length > 1 && christmasLists.some((l) => (listKids.get(l.id) ?? []).join(",") === allMine);
   const birthdays: GroupRowView[] = inYear
     .filter((l) => l.occasion === "birthday")
     .map((l) => ({ name: l.recipient_name, userId: l.recipient_user_id, isYou: l.recipient_user_id === viewer?.id, list: view(l) }));
@@ -197,6 +257,8 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
     christmas,
     birthdays,
     samplePeople,
+    myKids,
+    hasJointForMyKids,
   };
 }
 
@@ -272,6 +334,8 @@ const SAMPLE = {
     "Sample Uncle": ["Grill tools", "Field guide", "Flannel shirt"],
     "Sample Grandma": ["Photo frame", "Garden gloves", "Large-print crosswords"],
     "Sample Kid": ["Building blocks", "Picture book", "Toy train", "Crayons"],
+    "Sample Baby": ["Stacking cups", "Soft blocks", "Board book"],
+    "Sample Baby & Sample Kid": ["Play tent", "Wagon", "Train table"],
   } as Record<string, string[]>,
 };
 
@@ -332,9 +396,31 @@ export async function createSampleFamily(actor: Actor): Promise<string> {
     await makeList(ids[name], ids[name], name, thisYear - 1);
     current[name] = await makeList(ids[name], ids[name], name, thisYear);
   }
-  // The kid's lists are managed by Sample Mom.
-  await makeList(ids["Sample Mom"], null, "Sample Kid", thisYear - 1);
-  current["Sample Kid"] = await makeList(ids["Sample Mom"], null, "Sample Kid", thisYear);
+  // Two kids, with Sample Mom and Sample Dad as parents, their own lists,
+  // and a joint list for gifts for both.
+  const mom = { id: ids["Sample Mom"], isAdmin: false };
+  const kidIds: Record<string, string> = {};
+  for (const name of ["Sample Kid", "Sample Baby"]) {
+    const k = await pool.query<{ id: string }>("insert into gyfte_kids (name, created_by) values ($1, $2) returning id", [
+      name,
+      mom.id,
+    ]);
+    kidIds[name] = k.rows[0].id;
+    await pool.query("insert into gyfte_kid_parents (kid_id, user_id) values ($1, $2), ($1, $3)", [
+      k.rows[0].id,
+      ids["Sample Mom"],
+      ids["Sample Dad"],
+    ]);
+  }
+  const kidList = async (recipient: string, kids: string[], year: number) => {
+    const made = await makeList(mom.id, null, recipient, year);
+    await linkListToKids(mom, made.listId, kids.map((n) => kidIds[n]));
+    return made;
+  };
+  await kidList("Sample Kid", ["Sample Kid"], thisYear - 1);
+  current["Sample Kid"] = await kidList("Sample Kid", ["Sample Kid"], thisYear);
+  current["Sample Baby"] = await kidList("Sample Baby", ["Sample Baby"], thisYear);
+  current["Sample Baby & Sample Kid"] = await kidList("Sample Baby & Sample Kid", ["Sample Kid", "Sample Baby"], thisYear);
 
   // A few claims, so every view has something to show.
   const claim = async (claimer: string, recipient: string, index: number) => {
@@ -347,6 +433,7 @@ export async function createSampleFamily(actor: Actor): Promise<string> {
   await claim("Sample Aunt", "Sample Mom", 0);
   await claim("Sample Dad", "Sample Mom", 2);
   await claim("Sample Grandma", "Sample Kid", 0);
+  await claim("Sample Uncle", "Sample Baby & Sample Kid", 1);
   await claim("Sample Mom", "Sample Aunt", 1);
   await claim("Sample Uncle", "Sample Dad", 1);
   return groupId;
@@ -366,6 +453,12 @@ export async function deleteSampleFamily(actor: Actor, groupId: string): Promise
     await client.query("delete from share_links where app = 'gyfte' and item_type = 'list' and item_id = any($1::text[])", [listIds]);
     await client.query("delete from gyfte_claims where list_id = any($1::uuid[])", [listIds]);
     await client.query("delete from gyfte_lists where id = any($1::uuid[])", [listIds]);
+    await client.query(
+      `delete from gyfte_kids where id in (
+         select p.kid_id from gyfte_kid_parents p join sample_people s on s.user_id = p.user_id
+         where s.gyfte_group_id = $1)`,
+      [group.id],
+    );
     await client.query(
       `delete from "user" where id in (select user_id from sample_people where gyfte_group_id = $1)`,
       [group.id],

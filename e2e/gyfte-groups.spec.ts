@@ -10,7 +10,8 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
   await expect(page.getByRole("heading", { name: "Sample family" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /^Christmas \d{4}$/ })).toBeVisible();
   const rows = page.getByRole("listitem");
-  await expect(rows.filter({ hasText: "Sample Kid" })).toContainText(/\d+ gifts ›/);
+  await expect(rows.filter({ hasText: "Sample Kid" }).first()).toContainText(/\d+ gifts ›/);
+  await expect(rows.filter({ hasText: "(together)" })).toContainText(/\d+ gifts ›/);
   await expect(rows.filter({ hasText: "(you)" })).toContainText("Start my list");
 
   // Last year.
