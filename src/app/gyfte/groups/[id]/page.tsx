@@ -69,13 +69,26 @@ export default async function GroupPage({
     <li className={`${rowCls} ${r.nested ? "pl-6" : ""}`}>
       <span className={r.nested ? "" : "font-semibold"}>
         {r.nested && <span aria-hidden className="text-soft">↳ </span>}
-        {r.name}
+        {r.latest ? (
+          <Link
+            href={`/gyfte/${r.latest.id}${keep({})}`}
+            className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {r.name}
+          </Link>
+        ) : (
+          r.name
+        )}
         {r.isYou && <span className="font-normal text-soft"> (you)</span>}
       </span>
       {r.isYou && !previewName && thisYearIsCurrent ? (
         <StartMyList groupId={page.id} year={page.year} />
       ) : r.kidId && r.canStart && !previewName && thisYearIsCurrent ? (
         <StartKidList groupId={page.id} kidIds={[r.kidId]} year={page.year} />
+      ) : r.latest ? (
+        <Link href={`/gyfte/${r.latest.id}${keep({})}`} className="min-h-11 shrink-0 content-center text-sm text-accent underline-offset-4 hover:underline">
+          {r.latest.year} list ›
+        </Link>
       ) : (
         <span className="text-sm text-soft">No list yet</span>
       )}

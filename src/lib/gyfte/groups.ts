@@ -93,6 +93,8 @@ export type GroupRowView = {
   userId: string | null;
   isYou: boolean;
   list: { id: string; title: string; gifts: number } | null;
+  /** No list this year: their most recent earlier Christmas list, so the name still opens something. */
+  latest?: { id: string; year: string } | null;
   /** Set on a kid's row (shown under their parent). */
   kidId?: string;
   /** A list for siblings together. */
@@ -176,14 +178,20 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
   });
 
   const christmasLists = inYear.filter((l) => l.occasion === "christmas");
+  // Earlier Christmas lists, newest first, for people with none this year.
+  const earlier = visible.filter((l) => l.occasion === "christmas" && l.d.slice(0, 4) < year).reverse();
+  const latestOf = (match: (l: (typeof visible)[number]) => boolean) => {
+    const l = earlier.find(match);
+    return l ? { id: l.id, year: l.d.slice(0, 4) } : null;
+  };
 
-  // Which kid(s) each list is for.
+  // Which kid(s) each list is for (this year's and earlier ones).
   const listKids = new Map<string, string[]>();
-  if (christmasLists.length) {
+  if (christmasLists.length || earlier.length) {
     const lk = await pool.query<{ list_id: string; kids: string[] }>(
       `select list_id, array_agg(kid_id::text order by kid_id) as kids from gyfte_list_kids
        where list_id = any($1::uuid[]) group by list_id`,
-      [christmasLists.map((l) => l.id)],
+      [[...christmasLists, ...earlier].map((l) => l.id)],
     );
     for (const r of lk.rows) listKids.set(r.list_id, r.kids);
   }
@@ -195,7 +203,13 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
   for (const m of members.rows) {
     const own = christmasLists.find((l) => l.recipient_user_id === m.id);
     if (own) placed.add(own.id);
-    christmas.push({ name: displayName(m.name, m.email), userId: m.id, isYou: m.id === viewer?.id, list: own ? view(own) : null });
+    christmas.push({
+      name: displayName(m.name, m.email),
+      userId: m.id,
+      isYou: m.id === viewer?.id,
+      list: own ? view(own) : null,
+      latest: own ? null : latestOf((l) => l.recipient_user_id === m.id),
+    });
 
     // Kids appear once, under their first parent who is in this group.
     const theirKids = kids.filter((k) => k.parentIds.find((p) => memberIds.includes(p)) === m.id);
@@ -207,6 +221,7 @@ async function buildGroupPage(group: GroupRow, viewer: Actor | null, wantYear?: 
         userId: null,
         isYou: false,
         list: list ? view(list) : null,
+        latest: list ? null : latestOf((l) => (listKids.get(l.id) ?? []).join(",") === k.id),
         kidId: k.id,
         nested: true,
         canStart: Boolean(viewer && k.parentIds.includes(viewer.id)),
