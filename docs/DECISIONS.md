@@ -2,12 +2,18 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Safety fixes after the look
+
+- **Family-link sign-in returns to the list you opened.** The list page's "go back" carries the list id; the sign-in email's return path is built on the server from ids and only points at a list in that same group (otherwise the group page). Nothing from the visitor becomes a URL.
+- **Copy to this year shows for co-parents**, not just the list owner, matching what the server already allowed. It names the group the copy goes into; group names are only shown to members.
+- **Import says who will see it:** the review step and the done message name the group the lists are shared with, or say they're private.
+
 ## 2026-11-21 · Look and open answers (Hudson)
 
 - **Visual direction: "Editorial OS"** (see DESIGN.md). Paper and navy palette, Instrument Serif titles, one-letter monograms (W, G). The illustrated logo is paused. Hudson chose to do the look before the next round of Gyfte fixes.
 - **Imported history is shared** with the group it's imported into (already how the import works; the review will say so plainly).
 - **Request to join:** someone without an account can ask to join a group by giving their name and email; Hudson approves before any account exists. Not built yet.
-- **Family link scope:** still open (this year only, or all years). Until Hudson decides, the plan is this year only.
+- **Family link scope:** stays as built: anyone with the link sees every year's lists for the group (names and wanted gifts, never claims). It's a bridge until everyone has an account, then Hudson turns it off.
 
 ## 2026-11-21 · Import into a group (step 4)
 

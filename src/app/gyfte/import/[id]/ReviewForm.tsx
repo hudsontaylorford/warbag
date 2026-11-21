@@ -275,6 +275,11 @@ export function ReviewForm({
           })}
         </div>
 
+        <p className="text-sm">
+          {groupId
+            ? `Everyone in ${groups.find((g) => g.id === groupId)?.name ?? "the group"} will see these lists. Claims stay hidden from the person each list is for.`
+            : "Only you will see these lists until you share them."}
+        </p>
         {applyState.error && <Alert>{applyState.error}</Alert>}
         <div className="max-w-sm">
           <Button type="submit" disabled={applying || keptCount === 0}>

@@ -16,6 +16,7 @@ import {
   memberGroupIdForLink,
   publicGroupList,
   publicGroupPage,
+  returnPath,
   sendThisIsMe,
   setFamilyLink,
   startMyGroupList,
@@ -103,6 +104,22 @@ describeDb("family links and This is me", () => {
     expect(mail.subject).toBe("Your sign-in link for Ford Family");
     expect(mail.text).toMatch(new RegExp(`/api/auth/magic-link/verify\\?token=[^\\s]+callbackURL=%2Fgyfte%2Fgroups%2F${groupId}`));
     expect(sent(await email(aunt.id))).toEqual([]);
+  });
+
+  it("returns a sign-in to the list they opened, only if it's in that group", async () => {
+    const token = (await setFamilyLink(hudson, groupId, true))!;
+    const inGroup = await createList(hudson, { forMe: true, recipientName: "H", occasion: "christmas", date: "" });
+    await addListToGroup(hudson, inGroup, groupId);
+    const elsewhere = await createList(hudson, { forMe: false, recipientName: "X", occasion: "christmas", date: "" });
+
+    expect(await returnPath(groupId, inGroup)).toBe(`/gyfte/${inGroup}`);
+    for (const bad of [elsewhere, "//evil.example", "https://evil.example", "../admin", "", null, undefined]) {
+      expect(await returnPath(groupId, bad)).toBe(`/gyfte/groups/${groupId}`);
+    }
+
+    await sendThisIsMe(token, molly.id, headers(), inGroup);
+    const [mail] = sent(await email(molly.id));
+    expect(mail.text).toMatch(new RegExp(`callbackURL=%2Fgyfte%2F${inGroup}`));
   });
 
   it("limits repeat sends for one person", async () => {

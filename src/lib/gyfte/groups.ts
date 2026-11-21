@@ -548,6 +548,18 @@ export async function publicGroupList(
   return { title: listTitle(rows[0].recipient_name, rows[0].occasion, rows[0].d), groupName: group.name, gifts: gifts.rows };
 }
 
+/**
+ * Where a family-link sign-in lands: the list they were looking at, if it's
+ * in this group, else the group. Built here from ids, never taken from input.
+ */
+export async function returnPath(groupId: string, listId?: string | null): Promise<string> {
+  if (listId && UUID.test(listId)) {
+    const { rowCount } = await pool.query("select 1 from gyfte_lists where id = $1 and group_id = $2", [listId, groupId]);
+    if (rowCount) return `/gyfte/${listId}`;
+  }
+  return `/gyfte/groups/${groupId}`;
+}
+
 export const THIS_IS_ME_LIMIT = { perPerson: 3, perGroup: 30, minutes: 15 };
 
 /**
@@ -555,7 +567,12 @@ export const THIS_IS_ME_LIMIT = { perPerson: 3, perGroup: 30, minutes: 15 };
  * on their account. Picking someone else's name only sends them an email;
  * nothing about their account is shown. Limited per person and per group.
  */
-export async function sendThisIsMe(token: string, userId: string, headers: Headers): Promise<{ name: string }> {
+export async function sendThisIsMe(
+  token: string,
+  userId: string,
+  headers: Headers,
+  fromListId?: string,
+): Promise<{ name: string }> {
   const group = await groupByToken(token);
   if (!group) throw new InputError("This family link isn't working anymore. Ask for a new one.");
   const { rows } = await pool.query<{ email: string; name: string }>(
@@ -577,7 +594,7 @@ export async function sendThisIsMe(token: string, userId: string, headers: Heade
 
   await pool.query("insert into sign_in_link_sends (user_id, group_id) values ($1, $2)", [userId, group.id]);
   await auth.api.signInMagicLink({
-    body: { email: person.email, callbackURL: `/gyfte/groups/${group.id}`, metadata: { group: group.name } },
+    body: { email: person.email, callbackURL: await returnPath(group.id, fromListId), metadata: { group: group.name } },
     headers,
   });
   return { name: displayName(person.name, person.email) };
