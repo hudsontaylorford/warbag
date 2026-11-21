@@ -12,7 +12,7 @@ import { Alert } from "@/components/ui/Alert";
  * Paste many gifts at once. The preview updates as you type; untick
  * anything that isn't a gift (like a heading), then add the rest.
  */
-export function BulkAdd({ listId, onDone }: { listId: string; onDone: () => void }) {
+export function BulkAdd({ listId, history = false, onDone }: { listId: string; history?: boolean; onDone: () => void }) {
   const [text, setText] = useState("");
   const [skip, setSkip] = useState<number[]>([]);
   const gifts = useMemo(() => parseBulk(text), [text]);
@@ -31,6 +31,7 @@ export function BulkAdd({ listId, onDone }: { listId: string; onDone: () => void
   return (
     <form action={formAction} className="flex flex-col gap-3 rounded-lg bg-wash p-4">
       <input type="hidden" name="id" value={listId} />
+      {history && <input type="hidden" name="history" value="1" />}
       {skip.map((i) => (
         <input key={i} type="hidden" name="skip" value={i} />
       ))}

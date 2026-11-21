@@ -7,6 +7,7 @@ import type { FormState } from "@/components/ui/form-state";
 import {
   addItem,
   addItems,
+  copyForward,
   bringForward,
   createList,
   deleteItem,
@@ -21,6 +22,8 @@ import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib
 import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
+/** Set only by forms shown in Edit history mode. */
+const hist = (form: FormData) => ({ history: form.get("history") === "1" });
 
 export async function createListAction(_: FormState, form: FormData): Promise<FormState> {
   let id = "";
@@ -38,7 +41,7 @@ export async function createListAction(_: FormState, form: FormData): Promise<Fo
 
 export async function addItemAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    await addItem(actor, text(form, "id"), text(form, "text"));
+    await addItem(actor, text(form, "id"), text(form, "text"), hist(form));
     return "Added";
   });
 }
@@ -52,21 +55,21 @@ export async function updateItemAction(_: FormState, form: FormData): Promise<Fo
       color: text(form, "color"),
       price: text(form, "price"),
       links: form.getAll("links").map(String),
-    }),
+    }, hist(form)),
   );
 }
 
 export async function setStarredAction(_: FormState, form: FormData): Promise<FormState> {
-  return runAction((actor) => setStarred(actor, text(form, "id"), text(form, "starred") === "true"));
+  return runAction((actor) => setStarred(actor, text(form, "id"), text(form, "starred") === "true", hist(form)));
 }
 
 export async function setReceivedAction(_: FormState, form: FormData): Promise<FormState> {
-  return runAction((actor) => setReceived(actor, text(form, "id"), text(form, "received") === "true"));
+  return runAction((actor) => setReceived(actor, text(form, "id"), text(form, "received") === "true", hist(form)));
 }
 
 export async function deleteItemAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    await deleteItem(actor, text(form, "id"));
+    await deleteItem(actor, text(form, "id"), hist(form));
     return "Deleted";
   });
 }
@@ -84,12 +87,12 @@ export async function updateListAction(_: FormState, form: FormData): Promise<Fo
       recipientName: text(form, "recipientName"),
       date: text(form, "date"),
       claimsMode: text(form, "claimsMode") || undefined,
-    }),
+    }, hist(form)),
   );
 }
 
 export async function deleteListAction(_: FormState, form: FormData): Promise<FormState> {
-  const state = await runAction((actor) => deleteList(actor, text(form, "id")));
+  const state = await runAction((actor) => deleteList(actor, text(form, "id"), hist(form)));
   if (state.ok) redirect("/gyfte");
   return state;
 }
@@ -146,7 +149,7 @@ export async function revokeLinkAction(_: FormState, form: FormData): Promise<Fo
 export async function addItemsAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
     const skip = form.getAll("skip").map(Number).filter(Number.isInteger);
-    const n = await addItems(actor, text(form, "id"), text(form, "text"), skip);
+    const n = await addItems(actor, text(form, "id"), text(form, "text"), skip, hist(form));
     return n === 1 ? "Added 1 gift" : `Added ${n} gifts`;
   });
 }
@@ -179,5 +182,15 @@ export async function applyImportAction(_: FormState, form: FormData): Promise<F
 export async function discardImportAction(_: FormState, form: FormData): Promise<FormState> {
   const state = await runAction((actor) => discardImportDraft(actor, text(form, "id")));
   if (state.ok) redirect("/gyfte/import");
+  return state;
+}
+
+export async function copyForwardAction(_: FormState, form: FormData): Promise<FormState> {
+  let target = "";
+  const state = await runAction(async (actor) => {
+    const r = await copyForward(actor, text(form, "id"), form.getAll("value").map(String));
+    target = r.listId;
+  });
+  if (state.ok) redirect(`/gyfte/${target}`);
   return state;
 }

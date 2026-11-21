@@ -90,6 +90,7 @@ export type ListDetail = {
   claimsMode: ClaimMode;
   role: Role;
   past: boolean;
+  isOwner: boolean;
   /** Whether this viewer sees claims, and may claim. False for the recipient. */
   claims: { visible: boolean; canClaim: boolean };
   items: Item[];
@@ -135,6 +136,21 @@ function clean(raw: unknown, max: number, label: string): string {
   const text = String(raw ?? "").trim().replace(/\s+/g, " ");
   if (text.length > max) throw new InputError(`${label} is at most ${max} characters.`);
   return text;
+}
+
+// ---------------------------------------------------------------- history
+
+/** Write options: `history` is set only from the explicit "Edit history" mode. */
+export type EditOpts = { history?: boolean };
+
+/**
+ * Lists in History are read-only unless the manager deliberately turned on
+ * Edit history, so old records aren't changed by accident.
+ */
+function assertEditable(list: Pick<ListRow, "occasion_date">, opts: EditOpts) {
+  if (isPast(list.occasion_date, today()) && !opts.history) {
+    throw new InputError("This list is in History, so it's read-only. Tap Edit history to change it.");
+  }
 }
 
 // ---------------------------------------------------------------- lists
@@ -275,6 +291,7 @@ export async function getList(actor: Actor, listId: string): Promise<ListDetail>
     claimsMode: list.claims_mode,
     role,
     past,
+    isOwner: list.owner_id === actor.id,
     claims: { visible, canClaim: visible && !past && atLeast(role, "contribute") },
     items: rows,
   };
@@ -284,8 +301,10 @@ export async function updateList(
   actor: Actor,
   listId: string,
   input: { recipientName?: string; date?: string; claimsMode?: string },
+  opts: EditOpts = {},
 ): Promise<void> {
   const { list } = await listWithRole(actor, listId, "manage");
+  assertEditable(list, opts);
   const name = input.recipientName === undefined ? list.recipient_name : clean(input.recipientName, 80, "Name");
   if (!name) throw new InputError("Add who the list is for.");
   const date = input.date === undefined ? list.occasion_date : parseDay(input.date);
@@ -298,8 +317,9 @@ export async function updateList(
   );
 }
 
-export async function deleteList(actor: Actor, listId: string): Promise<void> {
+export async function deleteList(actor: Actor, listId: string, opts: EditOpts = {}): Promise<void> {
   const { list } = await listWithRole(actor, listId, "manage");
+  assertEditable(list, opts);
   await forgetItem(actor, ref(list));
   await pool.query("delete from gyfte_lists where id = $1", [list.id]);
 }
@@ -360,6 +380,8 @@ export async function previousItems(
 
 /** Copies the chosen items from the previous list. Never copies claims. */
 export async function bringForward(actor: Actor, listId: string, itemIds: string[]): Promise<number> {
+  const { list: target } = await listWithRole(actor, listId, "manage");
+  assertEditable(target, {});
   const prev = await previousItems(actor, listId);
   if (!prev) return 0;
   const allowed = new Set(prev.items.map((i) => i.id));
@@ -374,11 +396,71 @@ export async function bringForward(actor: Actor, listId: string, itemIds: string
   return rowCount ?? 0;
 }
 
+// ---------------------------------------------------------------- copy forward
+
+/**
+ * "Copy to this year": copies chosen gifts from a past (or any earlier) list
+ * to the same person's current list for that occasion, creating it if
+ * there isn't one. Never copies claims; skips gifts already on the target
+ * by name; leaves the source unchanged. Owner only, since a new list may be
+ * created in their name.
+ */
+export async function copyForward(
+  actor: Actor,
+  fromListId: string,
+  itemIds: string[],
+): Promise<{ listId: string; copied: number; skipped: number }> {
+  const { list: from } = await listWithRole(actor, fromListId, "manage");
+  if (from.owner_id !== actor.id) throw new AccessDenied();
+  const now = today();
+  const date = from.occasion === "christmas" ? nextChristmas(now) : nextBirthday(from.occasion_date, now);
+  if (date <= from.occasion_date) throw new InputError("This list is already the current one.");
+
+  const { rows: existing } = await pool.query<{ id: string }>(
+    `select id from gyfte_lists
+     where owner_id = $1 and occasion = $2 and occasion_date = $3
+       and (case when $4::text is not null then recipient_user_id = $4
+                 else recipient_user_id is null and lower(recipient_name) = lower($5) end)
+     limit 1`,
+    [from.owner_id, from.occasion, date, from.recipient_user_id, from.recipient_name],
+  );
+  const listId =
+    existing[0]?.id ??
+    (
+      await pool.query<{ id: string }>(
+        `insert into gyfte_lists (owner_id, recipient_user_id, recipient_name, occasion, occasion_date, claims_mode)
+         values ($1, $2, $3, $4, $5, $6) returning id`,
+        [from.owner_id, from.recipient_user_id, from.recipient_name, from.occasion, date, from.claims_mode],
+      )
+    ).rows[0].id;
+
+  const ids = itemIds.filter((id) => UUID.test(id));
+  const { rowCount } = await pool.query(
+    `insert into gyfte_items (list_id, name, notes, size, color, price, links, starred, position, created_by)
+     select $1, i.name, i.notes, i.size, i.color, i.price, i.links, i.starred,
+            coalesce((select min(position) from gyfte_items where list_id = $1), 0) - 1000 + i.position, $4
+     from gyfte_items i
+     where i.list_id = $2 and i.id = any($3::uuid[])
+       and not exists (select 1 from gyfte_items t where t.list_id = $1 and lower(t.name) = lower(i.name))`,
+    [listId, from.id, ids, actor.id],
+  );
+  const copied = rowCount ?? 0;
+  if (copied > 0) await touch(listId);
+  return { listId, copied, skipped: ids.length - copied };
+}
+
+/** The year a "Copy to this year" would copy into, for the button label. */
+export function copyTargetYear(occasion: Occasion, occasionDate: string): string {
+  const now = today();
+  return (occasion === "christmas" ? nextChristmas(now) : nextBirthday(occasionDate, now)).slice(0, 4);
+}
+
 // ---------------------------------------------------------------- items
 
 /** Adds from the one Add box: a link (named from its address) or a name. */
-export async function addItem(actor: Actor, listId: string, text: string): Promise<string> {
+export async function addItem(actor: Actor, listId: string, text: string, opts: EditOpts = {}): Promise<string> {
   const { list } = await listWithRole(actor, listId, "manage");
+  assertEditable(list, opts);
   const raw = text.trim();
   if (!raw) throw new InputError("Type a gift or paste a link.");
   const isLink = parseLink(raw) !== null;
@@ -399,8 +481,15 @@ export async function addItem(actor: Actor, listId: string, text: string): Promi
  * preview), leaves out the gifts unticked in the preview, and adds the rest
  * on top of the list in the order they were pasted.
  */
-export async function addItems(actor: Actor, listId: string, text: string, skip: number[] = []): Promise<number> {
+export async function addItems(
+  actor: Actor,
+  listId: string,
+  text: string,
+  skip: number[] = [],
+  opts: EditOpts = {},
+): Promise<number> {
   const { list } = await listWithRole(actor, listId, "manage");
+  assertEditable(list, opts);
   if (text.length > 100_000) throw new InputError("That's too much to paste at once. Try up to 100 gifts.");
   const leaveOut = new Set(skip);
   const gifts = parseBulk(text).filter((g) => !leaveOut.has(g.index));
@@ -436,8 +525,10 @@ export async function updateItem(
   actor: Actor,
   itemId: string,
   input: { name: string; notes: string; size: string; color: string; price: string; links: string[] },
+  opts: EditOpts = {},
 ): Promise<void> {
   const { list } = await itemWithRole(actor, itemId, "manage");
+  assertEditable(list, opts);
   const name = clean(input.name, 200, "The name");
   if (!name) throw new InputError("Give the gift a name.");
   const links = input.links
@@ -464,15 +555,17 @@ export async function updateItem(
   await touch(list.id);
 }
 
-export async function setStarred(actor: Actor, itemId: string, starred: boolean): Promise<void> {
+export async function setStarred(actor: Actor, itemId: string, starred: boolean, opts: EditOpts = {}): Promise<void> {
   const { list } = await itemWithRole(actor, itemId, "manage");
+  assertEditable(list, opts);
   await pool.query("update gyfte_items set starred = $2, updated_at = now() where id = $1", [itemId, starred]);
   await touch(list.id);
 }
 
 /** "Got it": received items move below the rest and stay as history. */
-export async function setReceived(actor: Actor, itemId: string, received: boolean): Promise<void> {
+export async function setReceived(actor: Actor, itemId: string, received: boolean, opts: EditOpts = {}): Promise<void> {
   const { list } = await itemWithRole(actor, itemId, "manage");
+  assertEditable(list, opts);
   await pool.query(
     "update gyfte_items set received_at = case when $2 then now() else null end, updated_at = now() where id = $1",
     [itemId, received],
@@ -480,8 +573,9 @@ export async function setReceived(actor: Actor, itemId: string, received: boolea
   await touch(list.id);
 }
 
-export async function deleteItem(actor: Actor, itemId: string): Promise<void> {
+export async function deleteItem(actor: Actor, itemId: string, opts: EditOpts = {}): Promise<void> {
   const { list } = await itemWithRole(actor, itemId, "manage");
+  assertEditable(list, opts);
   await pool.query("delete from gyfte_items where id = $1", [itemId]);
   await touch(list.id);
 }

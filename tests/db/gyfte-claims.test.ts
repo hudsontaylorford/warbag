@@ -127,7 +127,7 @@ describeDb("gyfte claims and sharing", () => {
 
     const old = await createList(molly, { forMe: true, recipientName: "Molly", occasion: "christmas", date: "2023-12-25" });
     await setSharing(molly, old, { groupIds: [family], userIds: [], editorIds: [] });
-    const oldItem = await addItem(molly, old, "Old thing");
+    const oldItem = await addItem(molly, old, "Old thing", { history: true });
     await expect(claimItem(dad, oldItem)).rejects.toBeInstanceOf(InputError);
   });
 
@@ -212,7 +212,7 @@ describeDb("gyfte claims and sharing", () => {
   it("never carries claims into a brought-forward gift", async () => {
     const old = await createList(molly, { forMe: true, recipientName: "Molly", occasion: "christmas", date: "2025-12-25" });
     await setSharing(molly, old, { groupIds: [family], userIds: [], editorIds: [] });
-    const gift = await addItem(molly, old, "Boots");
+    const gift = await addItem(molly, old, "Boots", { history: true });
     await admin.query(
       `insert into gyfte_claims (item_id, list_id, claimer_id, item_name, list_title) values ($1, $2, $3, 'Boots', 'x')`,
       [gift, old, dad.id],

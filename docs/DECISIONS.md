@@ -2,6 +2,12 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte history: read-only by default, copy to this year (ChatGPT note WRB-20261121-04, part B)
+
+- **Past lists are read-only** (History = two weeks after the date). Adding, editing, starring, Got it, bulk add, bring-forward into it, settings and delete are refused on the server unless the manager turns on **Edit history** (a banner with Edit history / Done; forms in that mode send an explicit flag). Imported 2020-2025 lists are therefore locked by default.
+- **Sharing stays available on past lists** without Edit history: it doesn't change the record, and sharing old years with family is useful. Claims on past lists were already refused.
+- **Copy to this year** (past lists, owner only): pick gifts (unreceived ones ticked, received ones offered unticked) and copy them to the same person's current list for that occasion, created if needed (Christmas: Dec 25; birthday: next same day). No claims are copied, gifts already there by name are skipped, the old list is unchanged. Owner only because it may create a list in their name; co-managers can still bring gifts forward from the current list.
+
 ## 2026-11-21 · Account name and year links
 
 - **Account page** (`/account`, header link "Account"): your display name, your email, Sign out. The header no longer shows the email or Sign out directly.

@@ -7,7 +7,7 @@ import type { FormState } from "@/components/ui/form-state";
 import { Alert } from "@/components/ui/Alert";
 
 /** The one Add box: type a gift or paste a link, then Add. */
-export function AddBox({ listId }: { listId: string }) {
+export function AddBox({ listId, history = false }: { listId: string; history?: boolean }) {
   const [bulk, setBulk] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,11 +20,12 @@ export function AddBox({ listId }: { listId: string }) {
     return next;
   }, {});
 
-  if (bulk) return <BulkAdd listId={listId} onDone={() => setBulk(false)} />;
+  if (bulk) return <BulkAdd listId={listId} history={history} onDone={() => setBulk(false)} />;
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="id" value={listId} />
+      {history && <input type="hidden" name="history" value="1" />}
       <label htmlFor="add-gift" className="text-sm font-semibold">
         Add a gift
       </label>

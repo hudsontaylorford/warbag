@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireGyfte } from "@/lib/gyfte/page";
-import { AccessDenied, getList, previousItems, yearsOf } from "@/lib/gyfte/data";
+import { AccessDenied, copyTargetYear, getList, previousItems, yearsOf } from "@/lib/gyfte/data";
+import { occasionLabel } from "@/lib/gyfte/occasions";
 import { storeName } from "@/lib/gyfte/links";
 import { atLeast } from "@/lib/access/roles";
 import { AppHeader } from "@/components/shell/AppHeader";
@@ -13,7 +14,7 @@ import { ListSettings } from "./ListSettings";
 import { ShareSection } from "./ShareSection";
 import { sharingFor } from "@/lib/gyfte/sharing";
 import { siteUrl } from "@/lib/site";
-import { bringForwardAction, deleteListAction } from "../actions";
+import { bringForwardAction, copyForwardAction, deleteListAction } from "../actions";
 
 export const metadata: Metadata = { title: "List · Gyfte" };
 
@@ -27,18 +28,31 @@ function formatDay(day: string) {
   });
 }
 
-export default async function ListPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ListPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ edit?: string }>;
+}) {
   const { id } = await params;
+  const wantsHistoryEdit = (await searchParams).edit === "history";
   const { user, actor } = await requireGyfte(`/gyfte/${id}`);
   const list = await getList(actor, id).catch((err) => {
     if (err instanceof AccessDenied) notFound();
     throw err;
   });
-  const canEdit = atLeast(list.role, "manage");
+  const canManage = atLeast(list.role, "manage");
+  // Past lists are read-only until the manager turns on Edit history.
+  const editHistory = list.past && canManage && wantsHistoryEdit;
+  const canEdit = canManage && (!list.past || editHistory);
+  const hidden: Record<string, string> = editHistory ? { history: "1" } : {};
+  const copyYear = list.past && list.isOwner ? copyTargetYear(list.occasion, list.occasionDate) : null;
   const wanted = list.items.filter((i) => !i.receivedAt);
   const received = list.items.filter((i) => i.receivedAt);
-  const previous = canEdit && list.items.length === 0 ? await previousItems(actor, list.id) : null;
-  const sharing = canEdit ? await sharingFor(actor, list.id) : null;
+  const previous = canEdit && !list.past && list.items.length === 0 ? await previousItems(actor, list.id) : null;
+  // Sharing doesn't change the record, so it stays available on past lists.
+  const sharing = canManage ? await sharingFor(actor, list.id) : null;
   const years = await yearsOf(actor, list.id);
   const at = years.findIndex((y) => y.current);
   const prev = at > 0 ? years[at - 1] : null;
@@ -72,7 +86,21 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
           )}
         </div>
 
-        {canEdit && <AddBox listId={list.id} />}
+        {list.past && canManage && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-wash px-4 py-3">
+            <p className="text-sm">
+              {editHistory ? "Editing history. Changes save to this past list." : "This list is in History, so it's read-only."}
+            </p>
+            <Link
+              href={editHistory ? `/gyfte/${list.id}` : `/gyfte/${list.id}?edit=history`}
+              className="min-h-11 content-center text-sm font-semibold text-accent underline-offset-4 hover:underline"
+            >
+              {editHistory ? "Done" : "Edit history"}
+            </Link>
+          </div>
+        )}
+
+        {canEdit && <AddBox listId={list.id} history={editHistory} />}
 
         {previous && (
           <Section title={`Bring gifts forward from ${previous.title}?`} hint="Untick anything you don't want anymore.">
@@ -91,7 +119,7 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
           <ul className="divide-y divide-line border-y border-line">
             {wanted.map((item) => (
               <li key={item.id}>
-                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} />
+                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} />
               </li>
             ))}
           </ul>
@@ -105,11 +133,27 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
             <ul className="mt-2 divide-y divide-line border-y border-line">
               {received.map((item) => (
                 <li key={item.id}>
-                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} />
+                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} />
                 </li>
               ))}
             </ul>
           </details>
+        )}
+
+        {copyYear && !editHistory && list.items.length > 0 && (
+          <Section
+            title={`Copy to ${copyYear}`}
+            hint={`Copies the gifts you pick to ${list.recipientName}'s ${occasionLabel(list.occasion, `${copyYear}-01-01`)} list (made if needed). Claims aren't copied, gifts already there are skipped, and this list stays as it is.`}
+          >
+            <CheckboxListForm
+              action={copyForwardAction}
+              id={list.id}
+              legend="Gifts to copy"
+              options={list.items.map((i) => ({ value: i.id, label: i.receivedAt ? `${i.name} (got it)` : i.name }))}
+              selected={list.items.filter((i) => !i.receivedAt).map((i) => i.id)}
+              submitLabel={`Copy to ${copyYear}`}
+            />
+          </Section>
         )}
 
         {sharing && <ShareSection listId={list.id} sharing={sharing} siteUrl={siteUrl()} />}
@@ -123,6 +167,7 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
                 recipientName={list.recipientName}
                 date={list.occasionDate}
                 claimsMode={list.claimsMode}
+                history={editHistory}
               />
               <Section title="Delete list">
                 <ConfirmForm
@@ -130,6 +175,7 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
                   id={list.id}
                   label="Delete"
                   consequence={`${list.title} and all its gifts will be deleted for everyone. This can't be undone.`}
+                  hidden={hidden}
                 />
               </Section>
             </div>
