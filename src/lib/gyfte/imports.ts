@@ -5,6 +5,7 @@ import { InputError } from "../errors";
 import { AccessDenied, type Actor } from "../access";
 import { canUseGyfte } from "./data";
 import { readGiftSheet, type SheetImport } from "./sheet-import";
+import { applyPlan, type ImportPlan } from "./import-plan";
 
 /**
  * Spreadsheet import, in two steps:
@@ -108,58 +109,19 @@ export async function discardImportDraft(actor: Actor, id: string): Promise<void
 export async function applyImportDraft(
   actor: Actor,
   id: string,
-  choices: { keep: string[]; me: string | null },
+  choices: { keep: string[]; me?: string | null; plan?: Omit<ImportPlan, "keep"> },
 ): Promise<{ lists: number; gifts: number }> {
   const d = await loadDraft(actor, id);
   if (d.appliedAt) throw new InputError("This import is already done.");
-  const keep = new Set(choices.keep);
-  const existing = await existingKeys(actor, d.data);
-  const people = new Set(d.data.lists.map((l) => l.person));
-  const me = choices.me && people.has(choices.me) ? choices.me : null;
-
-  const client = await pool.connect();
-  let lists = 0;
-  let gifts = 0;
-  try {
-    await client.query("begin");
-    for (const list of d.data.lists) {
-      if (existing.has(list.key)) continue;
-      const items = list.items.filter((i) => keep.has(i.key));
-      if (items.length === 0) continue;
-      const date = `${list.year}-12-25`;
-      const { rows } = await client.query<{ id: string }>(
-        `insert into gyfte_lists (owner_id, recipient_user_id, recipient_name, occasion, occasion_date)
-         values ($1, $2, $3, 'christmas', $4) returning id`,
-        [actor.id, list.person === me ? actor.id : null, list.person.slice(0, 80), date],
-      );
-      for (const [i, item] of items.entries()) {
-        await client.query(
-          `insert into gyfte_items (list_id, name, notes, size, color, price, links, position, received_at, created_by)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-          [
-            rows[0].id,
-            item.name,
-            item.notes,
-            item.size,
-            item.color,
-            item.price,
-            item.links,
-            i,
-            item.received ? `${date}T12:00:00Z` : null,
-            actor.id,
-          ],
-        );
-      }
-      lists += 1;
-      gifts += items.length;
-    }
-    await client.query("update gyfte_imports set applied_at = now() where id = $1", [id]);
-    await client.query("commit");
-  } catch (err) {
-    await client.query("rollback");
-    throw err;
-  } finally {
-    client.release();
-  }
-  return { lists, gifts };
+  // Without a plan: the "me" tab is yours, every other tab is a name you manage.
+  const plan: ImportPlan = choices.plan
+    ? { ...choices.plan, keep: choices.keep }
+    : {
+        groupId: null,
+        keep: choices.keep,
+        tabs: Object.fromEntries(
+          [...new Set(d.data.lists.map((l) => l.person))].map((p) => [p, p === choices.me ? { who: "me" } : { who: "name" }]),
+        ),
+      };
+  return applyPlan(actor, id, d.data, plan);
 }

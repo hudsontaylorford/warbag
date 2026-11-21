@@ -169,15 +169,24 @@ export async function uploadImportAction(_: FormState, form: FormData): Promise<
 
 export async function applyImportAction(_: FormState, form: FormData): Promise<FormState> {
   let done = false;
+  let groupId: string | null = null;
   const state = await runAction(async (actor) => {
+    let plan: { groupId: string | null; tabs: Record<string, unknown> };
+    try {
+      plan = JSON.parse(text(form, "plan"));
+    } catch {
+      throw new InputError("Something went wrong reading your choices. Reload the page and try again.");
+    }
+    groupId = typeof plan.groupId === "string" && plan.groupId ? plan.groupId : null;
     const r = await applyImportDraft(actor, text(form, "id"), {
       keep: form.getAll("keep").map(String),
-      me: text(form, "me") || null,
+      // Shape and values are checked in validatePlan on the server.
+      plan: { groupId, tabs: plan.tabs as never },
     });
     done = true;
     return `Imported ${r.lists} lists with ${r.gifts} gifts`;
   });
-  if (done) redirect("/gyfte?imported=1");
+  if (done) redirect(groupId ? `/gyfte/groups/${groupId}?imported=1` : "/gyfte?imported=1");
   return state;
 }
 

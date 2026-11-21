@@ -7,7 +7,7 @@ import ExcelJS from "exceljs";
  * a price column, headings, a size turned into a date, and a tab whose
  * first section has no year. Fictional people and gifts only.
  */
-export async function makeGiftSheet(): Promise<ExcelJS.Workbook> {
+export async function makeGiftSheet(opts: { siblings?: boolean } = {}): Promise<ExcelJS.Workbook> {
   const wb = new ExcelJS.Workbook();
   const home = wb.addWorksheet("Home");
   home.addRow(["2025 Example Family Gifting"]);
@@ -38,11 +38,21 @@ export async function makeGiftSheet(): Promise<ExcelJS.Workbook> {
   sam.addRow(["Board game"]);
   sam.addRow(["2020 LIST:"]);
   sam.addRow([25, "Film camera", "Something fun", "", "", link("https://shop.example.com/camera", "https://shop.example.com/camera")]);
+  if (opts.siblings) {
+    // A tab for two kids together, like the family sheet's joint tab.
+    const kids = wb.addWorksheet("Kit and Lou");
+    kids.addRow(["Kit and Lou"]);
+    kids.addRow(header);
+    kids.addRow([2025]);
+    kids.addRow(["Scooter", "For Kit", "", "Red"]);
+    kids.addRow(["Play kitchen", "For both to share"]);
+    kids.addRow(["Picture books", "Lou loves animals"]);
+  }
   return wb;
 }
 
-export async function giftSheetBuffer(): Promise<ArrayBuffer> {
-  const wb = await makeGiftSheet();
+export async function giftSheetBuffer(opts: { siblings?: boolean } = {}): Promise<ArrayBuffer> {
+  const wb = await makeGiftSheet(opts);
   const buf = await wb.xlsx.writeBuffer();
   return buf instanceof ArrayBuffer ? buf : new Uint8Array(buf as unknown as Buffer).buffer;
 }
