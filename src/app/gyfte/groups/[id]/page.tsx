@@ -68,13 +68,13 @@ export default async function GroupPage({
   return (
     <>
       <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
-      <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/groups/${page.id}${keep({ year: page.year }).replace(/as=[^&]*&?/, "")}`} />}
         <div>
           <Link href={`/gyfte${keep({})}`} className="text-accent underline-offset-4 hover:underline">
             ‹ Gyfte
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold break-words">{page.name}</h1>
+          <h1 className="mt-2 title break-words">{page.name}</h1>
           {page.isSample && <p className="text-sm text-soft">Made-up people and lists, only visible to you. Delete it any time.</p>}
         </div>
 

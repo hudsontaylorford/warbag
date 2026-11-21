@@ -19,7 +19,7 @@ export function FamilyLink({ groupId, url }: { groupId: string; url: string | nu
       </p>
       {url ? (
         <>
-          <input readOnly value={url} aria-label="Family link" className="min-h-11 rounded-lg border border-line bg-wash px-3 text-sm" />
+          <input readOnly value={url} aria-label="Family link" className="min-h-11 rounded-[var(--radius-control)] border border-line bg-wash px-3 text-sm" />
           <div className="flex flex-wrap gap-3">
             <div className="min-w-40 flex-1">
               <Button

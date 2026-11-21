@@ -1,23 +1,64 @@
 @import "tailwindcss";
 
 /*
-  Design tokens. The look is not decided yet (see docs/DESIGN.md).
-  Every color, font and radius the app uses comes from here, so a
-  design direction lands as a change to this block, not a rewrite.
+  Design tokens: "Editorial OS". See docs/DESIGN.md.
+  Every color, font and radius comes from here, so changing the look is a
+  change to this block, not a rewrite. Contrast is checked for each pairing
+  in DESIGN.md (all text pairs pass WCAG AA at normal size).
 */
 @theme {
-  --color-ink: #1c1917;
-  --color-soft: #78716c;
-  --color-line: #e7e5e4;
-  --color-wash: #f5f5f4;
-  --color-page: #ffffff;
-  --color-accent: #3d5a99;
+  /* Paper and ink */
+  --color-page: #f6f0e4; /* warm paper, the page */
+  --color-field: #fffcf5; /* inputs and raised surfaces on paper */
+  --color-wash: #ede4d3; /* quiet surfaces */
+  --color-line: #d9cfbc; /* hairlines */
+  --color-ink: #14293a; /* navy ink: text and primary buttons */
+  --color-soft: #5b6270; /* secondary text */
+
+  /* Accents, used sparingly */
+  --color-accent: #00508f; /* links */
+  --color-ember: #b4461a; /* burnt orange: marks and small highlights */
+  --color-cream: #ffcd82; /* warm cream on navy fields */
+  --color-mist: #c9d3dc; /* secondary text on navy fields */
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  --radius-control: 0.375rem;
+}
+
+/* Page titles: the display serif, big and quiet. */
+@utility title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 1.75rem + 2vw, 3.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+/* Section headings and the display voice at smaller sizes. */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.005em;
 }
 
 body {
   background: var(--color-page);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

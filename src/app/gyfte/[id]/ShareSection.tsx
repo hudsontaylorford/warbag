@@ -35,7 +35,7 @@ export function ShareSection({ listId, sharing, siteUrl }: { listId: string; sha
       )}
 
       {sharing.suggestion && !editing && (
-        <form action={suggestAction} className="flex flex-col gap-3 rounded-lg bg-wash p-4">
+        <form action={suggestAction} className="flex flex-col gap-3 rounded-[var(--radius-control)] bg-wash p-4">
           <input type="hidden" name="id" value={listId} />
           <p>
             Share with <span className="font-semibold">{sharing.suggestion.names.join(", ")}</span>, like{" "}
@@ -170,7 +170,7 @@ function LinkPart({ listId, links, siteUrl }: { listId: string; links: { id: str
       {link ? (
         <>
           <p className="text-sm text-soft">Anyone with this link can see the gifts, but not what&apos;s been claimed, and can&apos;t claim.</p>
-          <input readOnly value={url} aria-label="Share link" className="min-h-11 rounded-lg border border-line bg-wash px-3 text-sm" />
+          <input readOnly value={url} aria-label="Share link" className="min-h-11 rounded-[var(--radius-control)] border border-line bg-wash px-3 text-sm" />
           <div className="flex gap-3">
             <Button
               onClick={async () => {

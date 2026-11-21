@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Monogram } from "@/components/ui/Monogram";
 import { notFound, redirect } from "next/navigation";
 import { currentActor } from "@/lib/session";
 import { memberGroupIdForLink, publicGroupPage, type GroupRowView } from "@/lib/gyfte/groups";
@@ -49,10 +50,13 @@ export default async function FamilyLinkPage({
   );
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <div>
-        <p className="text-sm text-soft">warbag · Gyfte</p>
-        <h1 className="mt-1 text-2xl font-semibold break-words">{page.name}</h1>
+        <p className="flex items-center gap-2 text-sm text-soft">
+          <Monogram letter="G" size="sm" tone="ember" />
+          Gyfte · warbag
+        </p>
+        <h1 className="mt-1 title break-words">{page.name}</h1>
         <p className="mt-2 text-soft">
           Tap <span className="font-semibold text-ink">This is me</span> by your name. We&apos;ll email you a link that
           signs you in, so you can claim gifts and make your own list.

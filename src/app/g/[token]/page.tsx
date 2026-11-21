@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Monogram } from "@/components/ui/Monogram";
 import { notFound } from "next/navigation";
 import { listByLink } from "@/lib/gyfte/sharing";
 import { storeName } from "@/lib/gyfte/links";
@@ -16,10 +17,13 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
   if (!list) notFound();
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <div>
-        <p className="text-sm text-soft">warbag · Gyfte</p>
-        <h1 className="mt-1 text-2xl font-semibold break-words">{list.title}</h1>
+        <p className="flex items-center gap-2 text-sm text-soft">
+          <Monogram letter="G" size="sm" tone="ember" />
+          Gyfte · warbag
+        </p>
+        <h1 className="mt-1 title break-words">{list.title}</h1>
       </div>
       {list.items.length > 0 ? (
         <ul className="divide-y divide-line border-y border-line">

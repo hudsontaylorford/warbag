@@ -1,15 +1,19 @@
 import Link from "next/link";
+import { Monogram } from "@/components/ui/Monogram";
 
 export default function Home() {
   return (
-    <main className="mx-auto max-w-xl px-4 py-16">
-      <h1 className="text-2xl font-semibold">warbag</h1>
-      <p className="mt-2 text-soft">Coming soon.</p>
-      <p className="mt-8">
-        <Link href="/sign-in" className="text-accent underline underline-offset-4">
-          Sign in
-        </Link>
-      </p>
-    </main>
+    <div className="min-h-dvh bg-ink text-page">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-16">
+        <Monogram letter="W" size="lg" tone="cream" label="warbag" />
+        <h1 className="title text-cream">warbag</h1>
+        <p className="text-mist">A personal collection of tools. Coming soon.</p>
+        <p>
+          <Link href="/sign-in" className="text-cream underline underline-offset-4">
+            Sign in
+          </Link>
+        </p>
+      </main>
+    </div>
   );
 }

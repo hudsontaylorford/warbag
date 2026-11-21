@@ -13,12 +13,12 @@ export default async function FamilyLinkListPage({ params }: { params: Promise<{
   if (!list) notFound();
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <div>
         <Link href={`/j/${token}`} className="text-accent underline-offset-4 hover:underline">
           ‹ {list.groupName}
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold break-words">{list.title}</h1>
+        <h1 className="mt-2 title break-words">{list.title}</h1>
       </div>
       {list.gifts.length > 0 ? (
         <ul className="divide-y divide-line border-y border-line">

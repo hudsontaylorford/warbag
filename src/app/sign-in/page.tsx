@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/session";
 import { SignInForm } from "./SignInForm";
+import { Monogram } from "@/components/ui/Monogram";
 
 export const metadata: Metadata = { title: "Sign in · warbag" };
 
@@ -21,7 +22,8 @@ export default async function SignInPage({
 
   return (
     <main className="mx-auto flex max-w-sm flex-col gap-6 px-4 py-16">
-      <h1 className="text-2xl font-semibold">Sign in to warbag</h1>
+      <Monogram letter="W" size="md" label="warbag" />
+      <h1 className="title">Sign in to warbag</h1>
       <SignInForm next={next} />
     </main>
   );

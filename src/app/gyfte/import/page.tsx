@@ -16,12 +16,12 @@ export default async function ImportPage() {
   return (
     <>
       <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
-      <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <div>
           <Link href="/gyfte" className="text-accent underline-offset-4 hover:underline">
             ‹ Lists
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold">Import a gift spreadsheet</h1>
+          <h1 className="mt-2 title">Import a gift spreadsheet</h1>
         </div>
         <ol className="flex list-decimal flex-col gap-2 pl-5">
           <li>

@@ -29,7 +29,7 @@ export function BulkAdd({ listId, history = false, onDone }: { listId: string; h
   }, {});
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-lg bg-wash p-4">
+    <form action={formAction} className="flex flex-col gap-3 rounded-[var(--radius-control)] bg-wash p-4">
       <input type="hidden" name="id" value={listId} />
       {history && <input type="hidden" name="history" value="1" />}
       {skip.map((i) => (
@@ -49,7 +49,7 @@ export function BulkAdd({ listId, history = false, onDone }: { listId: string; h
           setSkip(parseBulk(e.target.value).filter((g) => g.likelyHeading).map((g) => g.index));
         }}
         placeholder={"One gift per line. Links, prices and sizes are picked up.\nPaste from notes, a text, or a spreadsheet."}
-        className="rounded-lg border border-line bg-page px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        className="rounded-[var(--radius-control)] border border-line bg-field px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
       />
 
       {gifts.length > 0 && (

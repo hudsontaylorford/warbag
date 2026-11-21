@@ -67,7 +67,7 @@ export default async function ListPage({
   return (
     <>
       <AppHeader email={user.email} app="Gyfte" isAdmin={me.isAdmin} />
-      <main className="mx-auto flex max-w-xl flex-col gap-8 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8">
         {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/${list.id}`} />}
         <div>
           <Link
@@ -76,7 +76,7 @@ export default async function ListPage({
           >
             {list.groupId ? "‹ Group" : "‹ Lists"}
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold break-words">{list.title}</h1>
+          <h1 className="mt-2 title break-words">{list.title}</h1>
           <p className="text-soft">{formatDay(list.occasionDate)}</p>
           {(prev || next) && (
             <nav aria-label="Other years" className="mt-2 flex items-center gap-4 text-sm">
@@ -97,7 +97,7 @@ export default async function ListPage({
         </div>
 
         {list.past && canManage && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-wash px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-control)] bg-wash px-4 py-3">
             <p className="text-sm">
               {editHistory ? "Editing history. Changes save to this past list." : "This list is in History, so it's read-only."}
             </p>

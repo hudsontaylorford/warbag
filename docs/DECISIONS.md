@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Look and open answers (Hudson)
+
+- **Visual direction: "Editorial OS"** (see DESIGN.md). Paper and navy palette, Instrument Serif titles, one-letter monograms (W, G). The illustrated logo is paused. Hudson chose to do the look before the next round of Gyfte fixes.
+- **Imported history is shared** with the group it's imported into (already how the import works; the review will say so plainly).
+- **Request to join:** someone without an account can ask to join a group by giving their name and email; Hudson approves before any account exists. Not built yet.
+- **Family link scope:** still open (this year only, or all years). Until Hudson decides, the plan is this year only.
+
 ## 2026-11-21 · Import into a group (step 4)
 
 - **The review picks a group** ("Put the lists in"; or "No group (private to me)"). Lists are filed there and shared with it; past years stay read-only.
