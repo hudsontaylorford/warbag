@@ -156,9 +156,19 @@ export async function removePerson(actor: Actor, userId: string): Promise<void> 
   const client = await pool.connect();
   try {
     await client.query("begin");
-    // Gyfte lists they manage (theirs and their kids') move to the admin
-    // removing them instead of being deleted. Lists that were for them keep
-    // their name but are no longer tied to an account.
+    // Kids' lists go to another of the kid's parents, if there is one.
+    await client.query(
+      `update gyfte_lists l set owner_id = (
+         select p.user_id from gyfte_list_kids lk join gyfte_kid_parents p on p.kid_id = lk.kid_id
+         where lk.list_id = l.id and p.user_id <> $1 order by p.added_at limit 1)
+       where l.owner_id = $1 and exists (
+         select 1 from gyfte_list_kids lk join gyfte_kid_parents p on p.kid_id = lk.kid_id
+         where lk.list_id = l.id and p.user_id <> $1)`,
+      [userId],
+    );
+    // Other Gyfte lists they manage move to the admin removing them instead
+    // of being deleted. Lists that were for them keep their name but are no
+    // longer tied to an account.
     const moved = await client.query("update gyfte_lists set owner_id = $2, updated_at = now() where owner_id = $1", [
       userId,
       actor.id,

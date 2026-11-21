@@ -21,6 +21,7 @@ import { claimItem, dismissClaim, unclaimItem } from "@/lib/gyfte/claims";
 import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib/gyfte/sharing";
 import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
 import { createGyfteGroup, createSampleFamily, deleteSampleFamily, setFamilyLink, startMyGroupList } from "@/lib/gyfte/groups";
+import { addKid, addKidParent, startKidList } from "@/lib/gyfte/kids";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 /** Set only by forms shown in Edit history mode. */
@@ -235,4 +236,27 @@ export async function setFamilyLinkAction(_: FormState, form: FormData): Promise
     await setFamilyLink(actor, text(form, "id"), on);
     return on ? "New link ready. Old links stop working." : "Family link turned off";
   }, "Only admins can manage the family link.");
+}
+
+export async function addKidAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await addKid(actor, text(form, "groupId"), text(form, "name"));
+    return "Added";
+  });
+}
+
+export async function addKidParentAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await addKidParent(actor, text(form, "kidId"), text(form, "userId"));
+    return "Parent added";
+  });
+}
+
+export async function startKidListAction(_: FormState, form: FormData): Promise<FormState> {
+  let id = "";
+  const state = await runAction(async (actor) => {
+    id = await startKidList(actor, text(form, "groupId"), form.getAll("kidId").map(String), text(form, "year"));
+  });
+  if (state.ok) redirect(`/gyfte/${id}`);
+  return state;
 }

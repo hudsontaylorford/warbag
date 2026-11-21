@@ -15,6 +15,7 @@ import {
 import { InputError } from "../errors";
 import { cleanLink, nameFromLink, parseLink } from "./links";
 import { parseBulk } from "./bulk";
+import { linkListToKids } from "./kids";
 import {
   isClaimMode,
   isOccasion,
@@ -338,6 +339,34 @@ export async function deleteList(actor: Actor, listId: string, opts: EditOpts = 
   await pool.query("delete from gyfte_lists where id = $1", [list.id]);
 }
 
+// ---------------------------------------------------------------- same person
+
+/** "kidA,kidB" for a kid's or a joint list (sorted ids), or null for an adult's list. */
+async function kidKeyOf(listId: string): Promise<string | null> {
+  const { rows } = await pool.query<{ key: string | null }>(
+    "select string_agg(kid_id::text, ',' order by kid_id) as key from gyfte_list_kids where list_id = $1",
+    [listId],
+  );
+  return rows[0]?.key ?? null;
+}
+
+/**
+ * SQL condition: list `l` is for the same person as the source list.
+ * Kids' lists match by the same kid(s), whoever started them; an account's
+ * lists by the account; name-only lists by owner and name.
+ * Arguments are the positions of: kid key, recipient user id, owner id, recipient name.
+ */
+function sameRecipientSql(k: number, u: number, o: number, n: number): string {
+  const p = (i: number) => "$" + i;
+  return `(case
+    when ${p(k)}::text is not null then
+      (select string_agg(kid_id::text, ',' order by kid_id) from gyfte_list_kids where list_id = l.id) = ${p(k)}
+    when ${p(u)}::text is not null then l.recipient_user_id = ${p(u)}
+    else l.recipient_user_id is null and l.owner_id = ${p(o)} and lower(l.recipient_name) = lower(${p(n)})
+      and not exists (select 1 from gyfte_list_kids where list_id = l.id)
+  end)`;
+}
+
 // ---------------------------------------------------------------- years
 
 export type YearLink = { id: string; year: string; current: boolean };
@@ -350,14 +379,14 @@ export type YearLink = { id: string; year: string; current: boolean };
 export async function yearsOf(actor: Actor, listId: string): Promise<YearLink[]> {
   const { list } = await listWithRole(actor, listId, "view");
   const shared = (await itemsSharedWith(actor, APP, "list")).map((s) => s.id);
+  const key = await kidKeyOf(list.id);
   const { rows } = await pool.query<{ id: string; d: string }>(
-    `select id, to_char(occasion_date, 'YYYY-MM-DD') as d from gyfte_lists
-     where occasion = $1
-       and (case when $2::text is not null then recipient_user_id = $2
-                 else recipient_user_id is null and owner_id = $3 and lower(recipient_name) = lower($4) end)
-       and (owner_id = $5 or id = any($6::uuid[]))
-     order by occasion_date`,
-    [list.occasion, list.recipient_user_id, list.owner_id, list.recipient_name, actor.id, shared],
+    `select l.id, to_char(l.occasion_date, 'YYYY-MM-DD') as d from gyfte_lists l
+     where l.occasion = $1
+       and ${sameRecipientSql(7, 2, 3, 4)}
+       and (l.owner_id = $5 or l.id = any($6::uuid[]))
+     order by l.occasion_date`,
+    [list.occasion, list.recipient_user_id, list.owner_id, list.recipient_name, actor.id, shared, key],
   );
   return rows.map((r) => ({ id: r.id, year: r.d.slice(0, 4), current: r.id === list.id }));
 }
@@ -373,13 +402,15 @@ export async function previousItems(
   listId: string,
 ): Promise<{ title: string; items: { id: string; name: string }[] } | null> {
   const { list } = await listWithRole(actor, listId, "manage");
+  const key = await kidKeyOf(list.id);
   const { rows } = await pool.query(
-    `select id, recipient_name, occasion, to_char(occasion_date, 'YYYY-MM-DD') as occasion_date
-     from gyfte_lists
-     where owner_id = $1 and id <> $2 and occasion_date < $3
-       and (case when $4::text is not null then recipient_user_id = $4 else recipient_user_id is null and lower(recipient_name) = lower($5) end)
-     order by occasion_date desc limit 1`,
-    [list.owner_id, list.id, list.occasion_date, list.recipient_user_id, list.recipient_name],
+    `select l.id, l.recipient_name, l.occasion, to_char(l.occasion_date, 'YYYY-MM-DD') as occasion_date
+     from gyfte_lists l
+     where l.id <> $2 and l.occasion_date < $3
+       and ${sameRecipientSql(6, 4, 1, 5)}
+       and ($6::text is not null or l.owner_id = $1)
+     order by l.occasion_date desc limit 1`,
+    [list.owner_id, list.id, list.occasion_date, list.recipient_user_id, list.recipient_name, key],
   );
   const prev = rows[0];
   if (!prev) return null;
@@ -425,28 +456,53 @@ export async function copyForward(
   itemIds: string[],
 ): Promise<{ listId: string; copied: number; skipped: number }> {
   const { list: from } = await listWithRole(actor, fromListId, "manage");
-  if (from.owner_id !== actor.id) throw new AccessDenied();
+  // The owner, or for a kid's list any of the kid's parents.
+  const key = await kidKeyOf(from.id);
+  const kidIds = key ? key.split(",") : [];
+  if (from.owner_id !== actor.id) {
+    const { rowCount } = await pool.query(
+      "select 1 from gyfte_kid_parents where user_id = $1 and kid_id = any($2::uuid[])",
+      [actor.id, kidIds],
+    );
+    if (!key || (rowCount ?? 0) < kidIds.length) throw new AccessDenied();
+  }
   const now = today();
   const date = from.occasion === "christmas" ? nextChristmas(now) : nextBirthday(from.occasion_date, now);
   if (date <= from.occasion_date) throw new InputError("This list is already the current one.");
 
   const { rows: existing } = await pool.query<{ id: string }>(
-    `select id from gyfte_lists
-     where owner_id = $1 and occasion = $2 and occasion_date = $3
-       and (case when $4::text is not null then recipient_user_id = $4
-                 else recipient_user_id is null and lower(recipient_name) = lower($5) end)
+    `select l.id from gyfte_lists l
+     where l.occasion = $2 and l.occasion_date = $3
+       and ${sameRecipientSql(6, 4, 1, 5)}
+       and ($6::text is not null or l.owner_id = $1)
      limit 1`,
-    [from.owner_id, from.occasion, date, from.recipient_user_id, from.recipient_name],
+    [from.owner_id, from.occasion, date, from.recipient_user_id, from.recipient_name, key],
   );
-  const listId =
-    existing[0]?.id ??
-    (
+  let listId = existing[0]?.id;
+  if (!listId) {
+    const owner = key ? actor : { id: from.owner_id, isAdmin: false };
+    listId = (
       await pool.query<{ id: string }>(
-        `insert into gyfte_lists (owner_id, recipient_user_id, recipient_name, occasion, occasion_date, claims_mode)
-         values ($1, $2, $3, $4, $5, $6) returning id`,
-        [from.owner_id, from.recipient_user_id, from.recipient_name, from.occasion, date, from.claims_mode],
+        `insert into gyfte_lists (owner_id, recipient_user_id, recipient_name, occasion, occasion_date, claims_mode, group_id)
+         values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+        [owner.id, from.recipient_user_id, from.recipient_name, from.occasion, date, from.claims_mode, from.group_id],
       )
     ).rows[0].id;
+    // Same group as before, and for kids, the same parents.
+    if (from.group_id) {
+      const g = await pool.query<{ access_group_id: string }>("select access_group_id from gyfte_groups where id = $1", [
+        from.group_id,
+      ]);
+      if (g.rows[0]) {
+        await pool.query(
+          `insert into item_grants (app, item_type, item_id, group_id, role, created_by) values ('gyfte', 'list', $1, $2, 'contribute', $3)
+           on conflict do nothing`,
+          [listId, g.rows[0].access_group_id, owner.id],
+        );
+      }
+    }
+    if (kidIds.length) await linkListToKids(owner, listId, kidIds);
+  }
 
   const ids = itemIds.filter((id) => UUID.test(id));
   const { rowCount } = await pool.query(
