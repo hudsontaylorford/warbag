@@ -11,6 +11,7 @@ import { viewerFor } from "@/lib/gyfte/groups";
 import { ViewAsBanner } from "../groups/[id]/ViewAs";
 import { CheckboxListForm, ConfirmForm, Section } from "@/components/ui/forms";
 import { AddBox } from "./AddBox";
+import { ListTitle } from "../ListTitle";
 import { ItemRow } from "./ItemRow";
 import { ListSettings } from "./ListSettings";
 import { ShareSection } from "./ShareSection";
@@ -25,7 +26,6 @@ function formatDay(day: string) {
     weekday: "short",
     month: "long",
     day: "numeric",
-    year: "numeric",
     timeZone: "UTC",
   });
 }
@@ -76,7 +76,7 @@ export default async function ListPage({
           >
             {list.groupId ? "‹ Family" : "‹ My list"}
           </Link>
-          <h1 className="mt-2 title break-words">{list.title}</h1>
+          <ListTitle title={list.title} className="mt-2" />
           <p className="text-soft">{formatDay(list.occasionDate)}</p>
           {(prev || next) && (
             <nav aria-label="Other years" className="mt-2 flex items-center gap-4 text-sm">

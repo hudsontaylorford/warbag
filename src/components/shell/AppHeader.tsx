@@ -21,7 +21,7 @@ export function AppHeader({
   const link = `min-h-11 content-center px-1 text-sm underline-offset-4 hover:underline ${dark ? "text-cream" : "text-accent"}`;
   return (
     <header className={dark ? "" : "border-b border-line"}>
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4">
+      <div className={`mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 ${dark ? "md:max-w-5xl" : ""}`}>
         <nav aria-label="Main" className="flex min-h-16 items-center gap-3">
           <Link
             href="/home"

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { publicGroupList } from "@/lib/gyfte/groups";
 import { storeName } from "@/lib/gyfte/links";
+import { ListTitle } from "@/app/gyfte/ListTitle";
 
 export const metadata: Metadata = { title: "Gift list · warbag", robots: { index: false, follow: false } };
 
@@ -18,7 +19,7 @@ export default async function FamilyLinkListPage({ params }: { params: Promise<{
         <Link href={`/j/${token}?from=${listId}`} className="text-accent underline-offset-4 hover:underline">
           ‹ {list.groupName}
         </Link>
-        <h1 className="mt-2 title break-words">{list.title}</h1>
+        <ListTitle title={list.title} className="mt-2" />
       </div>
       {list.gifts.length > 0 ? (
         <ul className="divide-y divide-line border-y border-line">

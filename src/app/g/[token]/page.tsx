@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ListTitle } from "@/app/gyfte/ListTitle";
 import Link from "next/link";
 import { Monogram } from "@/components/ui/Monogram";
 import { notFound } from "next/navigation";
@@ -23,7 +24,7 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
           <Monogram letter="G" size="sm" tone="ember" />
           Gyfte · warbag
         </p>
-        <h1 className="mt-1 title break-words">{list.title}</h1>
+        <ListTitle title={list.title} className="mt-1" />
       </div>
       {list.items.length > 0 ? (
         <ul className="divide-y divide-line border-y border-line">
