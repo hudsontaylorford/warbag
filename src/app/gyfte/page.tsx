@@ -27,8 +27,9 @@ function Lists({ lists }: { lists: ListSummary[] }) {
   );
 }
 
-export default async function GyftePage() {
+export default async function GyftePage({ searchParams }: { searchParams: Promise<{ imported?: string }> }) {
   const { user, actor } = await requireGyfte("/gyfte");
+  const imported = (await searchParams).imported === "1";
   const { current, past } = await listsFor(actor);
 
   return (
@@ -45,15 +46,26 @@ export default async function GyftePage() {
           </Link>
         </div>
 
+        {imported && (
+          <p role="status" className="rounded-lg bg-wash px-4 py-3 text-sm">
+            Import done ✓ Past years are under History. They&apos;re private to you until you share them.
+          </p>
+        )}
+
         {current.length > 0 ? (
           <Lists lists={current} />
         ) : (
           <p className="text-soft">No lists yet. Start one for Christmas or a birthday.</p>
         )}
 
-        <Link href="/gyfte/claims" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
-          My claims ›
-        </Link>
+        <div className="flex flex-wrap gap-x-6">
+          <Link href="/gyfte/claims" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+            My claims ›
+          </Link>
+          <Link href="/gyfte/import" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+            Import a spreadsheet ›
+          </Link>
+        </div>
 
         {past.length > 0 && (
           <details className="group">

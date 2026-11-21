@@ -15,9 +15,9 @@ test("make a Christmas list, add gifts fast, edit one, star, got it, delete", as
   await add.press("Enter");
   await expect(page.getByText("Wool socks")).toBeVisible();
   await expect(add).toHaveValue("");
-  await add.fill("https://www.amazon.com/Pilo-Fabric-Shaver/dp/B0ABCDEF12/ref=x?tag=y&th=1");
+  await add.fill("https://www.amazon.com/Wool-Throw-Blanket/dp/B0ABCDEF12/ref=x?tag=y&th=1");
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  const shaver = page.getByRole("link", { name: /Pilo Fabric Shaver/ });
+  const shaver = page.getByRole("link", { name: /Wool Throw Blanket/ });
   await expect(shaver).toHaveAttribute("href", "https://www.amazon.com/dp/B0ABCDEF12");
   await expect(page.getByText("Amazon", { exact: true })).toBeVisible();
 
@@ -37,7 +37,7 @@ test("make a Christmas list, add gifts fast, edit one, star, got it, delete", as
   await expect(page.getByRole("listitem").first()).toContainText("Wool socks");
 
   // Got it moves the shaver under "Got it (1)".
-  const shaverRow = page.getByRole("listitem").filter({ hasText: "Pilo Fabric Shaver" });
+  const shaverRow = page.getByRole("listitem").filter({ hasText: "Wool Throw Blanket" });
   await shaverRow.getByRole("button", { name: "More" }).click();
   await shaverRow.getByRole("button", { name: "Got it" }).click();
   await expect(page.getByText("Got it (1)")).toBeVisible();

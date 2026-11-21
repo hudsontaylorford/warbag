@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { runAction } from "@/lib/run-action";
+import { InputError } from "@/lib/errors";
 import type { FormState } from "@/components/ui/form-state";
 import {
   addItem,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/gyfte/data";
 import { claimItem, dismissClaim, unclaimItem } from "@/lib/gyfte/claims";
 import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib/gyfte/sharing";
+import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 
@@ -147,4 +149,35 @@ export async function addItemsAction(_: FormState, form: FormData): Promise<Form
     const n = await addItems(actor, text(form, "id"), text(form, "text"), skip);
     return n === 1 ? "Added 1 gift" : `Added ${n} gifts`;
   });
+}
+
+export async function uploadImportAction(_: FormState, form: FormData): Promise<FormState> {
+  let id = "";
+  const state = await runAction(async (actor) => {
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) throw new InputError("Choose a file first.");
+    id = await createImportDraft(actor, file.name, await file.arrayBuffer());
+  });
+  if (state.ok) redirect(`/gyfte/import/${id}`);
+  return state;
+}
+
+export async function applyImportAction(_: FormState, form: FormData): Promise<FormState> {
+  let done = false;
+  const state = await runAction(async (actor) => {
+    const r = await applyImportDraft(actor, text(form, "id"), {
+      keep: form.getAll("keep").map(String),
+      me: text(form, "me") || null,
+    });
+    done = true;
+    return `Imported ${r.lists} lists with ${r.gifts} gifts`;
+  });
+  if (done) redirect("/gyfte?imported=1");
+  return state;
+}
+
+export async function discardImportAction(_: FormState, form: FormData): Promise<FormState> {
+  const state = await runAction((actor) => discardImportDraft(actor, text(form, "id")));
+  if (state.ok) redirect("/gyfte/import");
+  return state;
 }

@@ -71,11 +71,11 @@ describeDb("gyfte lists and items", () => {
     await addItem(
       molly,
       id,
-      "https://www.amazon.com/YONGHEE-Travertine-Coasters/dp/B0DTK92MHP/ref=abc?pd_rd_w=x&th=1",
+      "https://www.amazon.com/STONEWARE-Stone-Coasters/dp/B000000001/ref=abc?pd_rd_w=x&th=1",
     );
     const { items } = await getList(molly, id);
     // Newest first.
-    expect(items[0]).toMatchObject({ name: "Yonghee Travertine Coasters", links: ["https://www.amazon.com/dp/B0DTK92MHP"] });
+    expect(items[0]).toMatchObject({ name: "Stoneware Stone Coasters", links: ["https://www.amazon.com/dp/B000000001"] });
     expect(items[1]).toMatchObject({ name: "Pearl earrings", links: [] });
     await expect(addItem(molly, id, "   ")).rejects.toBeInstanceOf(InputError);
   });
@@ -84,17 +84,17 @@ describeDb("gyfte lists and items", () => {
     const id = await christmas(molly, "Molly");
     const item = await addItem(molly, id, "Boots");
     await updateItem(molly, item, {
-      name: "Blundstones",
-      notes: "Rustic brown",
+      name: "Chelsea boots",
+      notes: "Dark brown",
       size: "9.5",
       color: "Brown",
       price: "$200",
-      links: ["https://www.blundstone.com/?utm_source=x", ""],
+      links: ["https://shop.example.com/?utm_source=x", ""],
     });
     expect((await getList(molly, id)).items[0]).toMatchObject({
-      name: "Blundstones",
+      name: "Chelsea boots",
       size: "9.5",
-      links: ["https://www.blundstone.com/"],
+      links: ["https://shop.example.com/"],
     });
     await expect(
       updateItem(molly, item, { name: "x", notes: "", size: "", color: "", price: "", links: ["javascript:alert(1)"] }),
