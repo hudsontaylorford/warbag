@@ -52,7 +52,7 @@ export function YourKids({
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Your kids</h2>
+      <h2 className="heading">Your kids</h2>
       <p className="text-sm text-soft">
         Kids don&apos;t need an account. Their parents manage their lists and see what&apos;s been claimed.
       </p>

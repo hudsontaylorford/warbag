@@ -52,7 +52,7 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
 
         {(groups.length > 0 || actor.isAdmin) && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">Groups</h2>
+            <h2 className="heading">Groups</h2>
             {groups.length > 0 && (
               <ul className="divide-y divide-line border-y border-line">
                 {groups.map((g) => (
@@ -72,7 +72,7 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
           </section>
         )}
 
-        <h2 className="text-lg font-semibold">Your lists</h2>
+        <h2 className="heading">Your lists</h2>
 
         {imported && (
           <p role="status" className="rounded-[var(--radius-control)] bg-wash px-4 py-3 text-sm">

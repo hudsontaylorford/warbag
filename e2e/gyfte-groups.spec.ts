@@ -8,7 +8,7 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
   await page.getByRole("button", { name: "Try a sample family" }).click();
 
   await expect(page.getByRole("heading", { name: "Sample family" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /^Christmas \d{4}$/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Christmas", exact: true })).toBeVisible();
   const rows = page.getByRole("listitem");
   await expect(rows.filter({ hasText: "Sample Kid" }).first()).toContainText(/\d+ gifts ›/);
   await expect(rows.filter({ hasText: "(together)" })).toContainText(/\d+ gifts ›/);
@@ -16,8 +16,10 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
 
   // Last year.
   const years = page.getByRole("navigation", { name: "Years" }).getByRole("link");
+  const lastYear = (await years.first().textContent())!;
   await years.first().click();
-  await expect(page.getByRole("heading", { name: /^Christmas \d{4}$/ })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Years" }).locator('[aria-current="page"]')).toHaveText(lastYear);
+  await expect(page.getByRole("heading", { name: "Christmas", exact: true })).toBeVisible();
 
   // View as Sample Aunt: her own list has no claim info; Mom's list shows claims.
   await page.getByLabel("View as").selectOption({ label: "Sample Aunt" });

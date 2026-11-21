@@ -12,7 +12,7 @@ export function FamilyLink({ groupId, url }: { groupId: string; url: string | nu
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Family link</h2>
+      <h2 className="heading">Family link</h2>
       <p className="text-sm text-soft">
         Post it in the family chat. Anyone with it sees names and gifts, never claims. &quot;This is me&quot; emails that
         person a one-tap sign-in link.

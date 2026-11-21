@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Stage 2 answers (Hudson)
+
+- **Family as the landing view** when the way you arrived makes it sensible (a family link or a group page); otherwise Gyfte opens on your own lists.
+- **Section headings in the serif**, larger and simpler (a word or two; the year nav carries the year, so headings don't repeat it).
+- **After asking to join:** "Welcome to Gyfte" when they came through a Gyfte link, "Welcome to warbag" otherwise, plus one plain sentence on what happens next.
+- **Lighter repeated actions:** "I'll get this" and "This is me" are soft filled buttons (still 44px), so gift and people names lead.
+
 ## 2026-11-21 · Safety fixes after the look
 
 - **Family-link sign-in returns to the list you opened.** The list page's "go back" carries the list id; the sign-in email's return path is built on the server from ids and only points at a list in that same group (otherwise the group page). Nothing from the visitor becomes a URL.
