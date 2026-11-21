@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte everyday flow (stage 2, from WRB-20261121-07)
+
+- **Three places, one nav:** My list (lists you look after: yours and your kids'), Family (your group; with one family it opens straight to it), I'm getting (your claims). Lists shared with you outside a group still show on My list under "Shared with you", so nothing disappears.
+- **Organizer tools are under Manage**, closed by default: groups, new group, sample family and import on Gyfte home; your kids, family link and members on a group page.
+- **Sharing is a status line** on a list ("Shared with Ford Family"), opened to change it. Nothing about sharing changed; it's only folded away.
+- **Gift rows** keep the star and More in a fixed right column. A group with one year doesn't show a year nav.
+- The second editorial pass (one launcher signature, modest Gyfte typography) is a separate PR after Hudson sees this flow.
+
 ## 2026-11-21 · Stage 2 answers (Hudson)
 
 - **Family as the landing view** when the way you arrived makes it sensible (a family link or a group page); otherwise Gyfte opens on your own lists.

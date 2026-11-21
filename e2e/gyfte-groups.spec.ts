@@ -5,6 +5,7 @@ import { signIn } from "./helpers";
 test("sample family: browse years, view as made-up people, then delete it", async ({ page }) => {
   await signIn(page, OWNER);
   await page.goto("/gyfte");
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Try a sample family" }).click();
 
   await expect(page.getByRole("heading", { name: "Sample family" })).toBeVisible();
@@ -22,6 +23,7 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
   await expect(page.getByRole("heading", { name: "Christmas", exact: true })).toBeVisible();
 
   // View as Sample Aunt: her own list has no claim info; Mom's list shows claims.
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByLabel("View as").selectOption({ label: "Sample Aunt" });
   await expect(page.getByText("Viewing as Sample Aunt. Read-only.")).toBeVisible();
   await page.getByRole("navigation", { name: "Years" }).getByRole("link").last().click().catch(() => {});
@@ -30,7 +32,7 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
   await expect(page.getByText(/Claimed|getting this|Not claimed/)).toHaveCount(0);
   await expect(page.getByLabel("Add a gift")).toHaveCount(0);
 
-  await page.getByRole("link", { name: "‹ Group" }).click();
+  await page.getByRole("link", { name: "‹ Family" }).click();
   await page.getByRole("listitem").filter({ hasText: "Sample Mom" }).getByRole("link").click();
   await expect(page.getByText("You're getting this ✓")).toBeVisible(); // Aunt claimed the apron
   await expect(page.getByText("Claimed").first()).toBeVisible();
@@ -39,10 +41,12 @@ test("sample family: browse years, view as made-up people, then delete it", asyn
   // Stop viewing as, back on the group, delete the sample family.
   await page.getByRole("link", { name: "Stop" }).click();
   await expect(page.getByText("Viewing as")).toHaveCount(0);
-  await page.getByRole("link", { name: "‹ Group" }).click();
+  await page.getByRole("link", { name: "‹ Family" }).click();
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Delete sample family" }).click();
   await page.getByRole("button", { name: "Yes, delete sample family" }).click();
   await expect(page).toHaveURL(/\/gyfte$/);
+  await page.locator("summary", { hasText: "Manage" }).click();
   await expect(page.getByRole("link", { name: /Sample family/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Try a sample family" })).toBeVisible();
 });

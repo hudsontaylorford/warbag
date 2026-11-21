@@ -8,6 +8,7 @@ test("import a spreadsheet into a group, splitting a kids' tab", async ({ page }
   const tag = randomUUID().slice(0, 4);
   await signIn(page, OWNER);
   await page.goto("/gyfte");
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "New group" }).click();
   await page.getByLabel("Group name").fill(`Import ${tag}`);
   await page.getByRole("button", { name: "Create group" }).click();

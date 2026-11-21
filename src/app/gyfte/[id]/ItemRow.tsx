@@ -55,6 +55,7 @@ export function ItemRow({
           {item.notes && <span className="text-sm break-words whitespace-pre-line">{item.notes}</span>}
         </div>
 
+        <div className="flex shrink-0 items-start">
         {canEdit ? (
           <form action={starAction}>
             <input type="hidden" name="id" value={item.id} />
@@ -85,11 +86,12 @@ export function ItemRow({
             type="button"
             aria-expanded={open}
             onClick={() => setOpen(!open)}
-            className="min-h-11 shrink-0 px-2 text-sm text-accent underline-offset-4 hover:underline"
+            className="min-h-11 w-14 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline"
           >
             {open ? "Close" : "More"}
           </button>
         )}
+        </div>
       </div>
       {starState.error && <Alert>{starState.error}</Alert>}
       {item.claim !== undefined && !received && <ClaimButton itemId={item.id} claim={item.claim} canClaim={canClaim} readOnly={readOnly} />}

@@ -49,7 +49,7 @@ test("make a Christmas list, add gifts fast, edit one, star, got it, delete", as
   await expect(page.getByText("Wool socks")).toHaveCount(0);
 
   // The launcher list counts what's still wanted.
-  await page.getByRole("link", { name: "‹ Lists" }).click();
+  await page.getByRole("link", { name: "‹ My list" }).click();
   await expect(page.getByRole("link", { name: /Tester · Christmas/ })).toContainText("0 gifts");
 });
 

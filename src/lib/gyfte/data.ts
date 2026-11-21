@@ -62,6 +62,10 @@ export type ListSummary = {
   occasionDate: string;
   itemCount: number;
   mine: boolean;
+  /** Owner, or shared with manage (e.g. a co-parent on a kid's list). */
+  canManage: boolean;
+  /** Filed in a group the viewer is in, so it shows under Family. */
+  inMyGroup: boolean;
 };
 
 /**
@@ -182,11 +186,15 @@ export async function canOpenGyfte(actor: Actor): Promise<boolean> {
 
 /** Lists this person owns or that are shared with them, current and past. */
 export async function listsFor(actor: Actor): Promise<{ current: ListSummary[]; past: ListSummary[] }> {
-  const shared = (await itemsSharedWith(actor, APP, "list")).map((s) => s.id);
+  const grants = await itemsSharedWith(actor, APP, "list");
+  const shared = grants.map((s) => s.id);
+  const managed = new Set(grants.filter((g) => atLeast(g.role, "manage")).map((g) => g.id));
   const { rows } = await pool.query(
     `select l.id, l.owner_id, l.recipient_name, l.occasion,
        to_char(l.occasion_date, 'YYYY-MM-DD') as occasion_date,
-       (select count(*)::int from gyfte_items i where i.list_id = l.id and i.received_at is null) as item_count
+       (select count(*)::int from gyfte_items i where i.list_id = l.id and i.received_at is null) as item_count,
+       exists (select 1 from gyfte_groups g join group_members m on m.group_id = g.access_group_id
+               where g.id = l.group_id and m.user_id = $1) as in_my_group
      from gyfte_lists l
      where (l.owner_id = $1 or l.id = any($2::uuid[]))
        -- Sample-group lists stay on the sample group's page.
@@ -203,6 +211,8 @@ export async function listsFor(actor: Actor): Promise<{ current: ListSummary[]; 
     occasionDate: r.occasion_date,
     itemCount: r.item_count,
     mine: r.owner_id === actor.id,
+    canManage: r.owner_id === actor.id || managed.has(r.id),
+    inMyGroup: r.in_my_group,
     past: isPast(r.occasion_date, now),
   }));
   return {

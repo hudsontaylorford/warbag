@@ -11,6 +11,7 @@ test("family link: open without signing in, This is me, tap the emailed link, yo
   // The owner makes a group and its family link.
   await signIn(page, OWNER);
   await page.goto("/gyfte");
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "New group" }).click();
   await page.getByLabel("Group name").fill(`Fam ${tag}`);
   await page.getByRole("button", { name: "Create group" }).click();
@@ -27,6 +28,7 @@ test("family link: open without signing in, This is me, tap the emailed link, yo
   );
   await db.end();
 
+  await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Make a family link" }).click();
   const link = await page.getByLabel("Family link").inputValue();
   expect(link).toMatch(/\/j\/[A-Za-z0-9_-]{32}$/);

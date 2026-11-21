@@ -22,16 +22,19 @@ export function ShareSection({ listId, sharing, siteUrl }: { listId: string; sha
   const [suggestState, suggestAction, suggesting] = useActionState(shareLikeLastAction, {});
   const summary = sharing.shared.map((s) => (s.canEdit ? `${s.name} (can edit)` : s.name)).join(", ");
 
+  const linkCount = sharing.links.length;
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="heading">Sharing</h2>
-
-      {sharing.shared.length > 0 ? (
-        <p>
-          Shared with <span className="font-semibold">{summary}</span>. They can see this list and claim gifts.
-        </p>
-      ) : (
-        <p className="text-soft">Only you can see this list.</p>
+    <details className="group border-t border-line pt-4">
+      <summary className="flex min-h-11 cursor-pointer flex-col justify-center">
+        <span className="font-semibold">Sharing</span>
+        <span className="text-sm text-soft">
+          {sharing.shared.length > 0 ? `Shared with ${summary}` : "Only you can see this list"}
+          {linkCount > 0 ? " · plus a view-only link" : ""}
+        </span>
+      </summary>
+      <div className="mt-4 flex flex-col gap-4">
+      {sharing.shared.length > 0 && (
+        <p className="text-sm">They can see this list and claim gifts.</p>
       )}
 
       {sharing.suggestion && !editing && (
@@ -66,7 +69,8 @@ export function ShareSection({ listId, sharing, siteUrl }: { listId: string; sha
       )}
 
       <LinkPart listId={listId} links={sharing.links} siteUrl={siteUrl} />
-    </section>
+      </div>
+    </details>
   );
 }
 
