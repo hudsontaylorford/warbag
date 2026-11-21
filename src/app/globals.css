@@ -37,6 +37,14 @@
 }
 
 /* Section headings and the display voice at smaller sizes. */
+@utility heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.875rem;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
 @utility display {
   font-family: var(--font-display);
   font-weight: 400;

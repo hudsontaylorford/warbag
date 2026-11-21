@@ -26,7 +26,7 @@ export function Section({ title, hint, children }: { title: string; hint?: strin
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="heading">{title}</h2>
         {hint && <p className="text-sm text-soft">{hint}</p>}
       </div>
       {children}

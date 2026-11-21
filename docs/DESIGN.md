@@ -31,7 +31,7 @@ All colors and fonts come from the `@theme` block in `src/app/globals.css`. Comp
 
 Contrast (WCAG): ink on page 13.1:1, soft on page 5.4:1 (4.9:1 on wash), accent on page 7.3:1, cream on ink 10.2:1, mist on ink 9.8:1, paper letter on ember 4.8:1. Every text pairing passes AA.
 
-- **Type:** `title` (Instrument Serif, 36 to 52px, for page titles) and `display` (the serif at any size: app names, monograms). Body and controls use the system sans. No serif below 20px.
+- **Type:** `title` (Instrument Serif, 36 to 52px, for page titles), `heading` (the serif at 30px, for section headings: short, a word or two) and `display` (the serif at any size: app names, monograms). Body and controls use the system sans. No serif below 20px.
 - **Corners:** one radius, `--radius-control` (6px), on buttons, fields, panels and monograms.
 - **Dark mode:** not designed yet. The launcher's navy field is a deliberate dark surface, not dark mode.
 

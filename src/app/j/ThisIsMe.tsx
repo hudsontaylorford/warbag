@@ -21,7 +21,7 @@ export function ThisIsMe({ token, userId, from }: { token: string; userId: strin
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-[var(--radius-control)] border border-ink px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+        className="min-h-11 rounded-[var(--radius-control)] bg-wash px-3 text-sm font-semibold hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
       >
         {pending ? "Sending…" : "This is me"}
       </button>

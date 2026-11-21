@@ -30,7 +30,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
           </p>
         </div>
 
-        <Section title="People in this group">
+        <Section title="People">
           <CheckboxListForm
             action={setGroupMembersAction}
             id={group.id}

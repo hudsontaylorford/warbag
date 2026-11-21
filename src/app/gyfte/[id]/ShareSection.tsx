@@ -24,7 +24,7 @@ export function ShareSection({ listId, sharing, siteUrl }: { listId: string; sha
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">Sharing</h2>
+      <h2 className="heading">Sharing</h2>
 
       {sharing.shared.length > 0 ? (
         <p>

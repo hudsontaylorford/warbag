@@ -54,7 +54,7 @@ export function ClaimButton({
     body = (
       <form action={claimFormAction}>
         <input type="hidden" name="id" value={itemId} />
-        <button type="submit" disabled={claiming} className={`${small} border border-ink`}>
+        <button type="submit" disabled={claiming} className={`${small} bg-wash text-ink hover:bg-line`}>
           {claiming ? "Claiming…" : "I'll get this"}
         </button>
       </form>

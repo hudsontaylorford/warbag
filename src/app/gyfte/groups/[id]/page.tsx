@@ -44,18 +44,31 @@ export default async function GroupPage({
   const kids = previewName ? [] : await myKids(viewer);
   const members = page.christmas.filter((r) => r.userId).map((r) => ({ id: r.userId!, name: r.name }));
 
-  const Row = ({ r }: { r: GroupRowView }) => (
+  const Row = ({ r }: { r: GroupRowView }) =>
+    r.list ? (
+      <li>
+        <Link
+          href={`/gyfte/${r.list.id}${keep({})}`}
+          className={`${rowCls} ${r.nested ? "pl-6" : ""} hover:bg-wash focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
+        >
+          <span className={r.nested ? "" : "font-semibold"}>
+            {r.nested && <span aria-hidden className="text-soft">↳ </span>}
+            {r.name}
+            {r.isYou && <span className="font-normal text-soft"> (you)</span>}
+          </span>
+          <span className="shrink-0 text-accent">
+            {r.list.gifts} {r.list.gifts === 1 ? "gift" : "gifts"} ›
+          </span>
+        </Link>
+      </li>
+    ) : (
     <li className={`${rowCls} ${r.nested ? "pl-6" : ""}`}>
       <span className={r.nested ? "" : "font-semibold"}>
         {r.nested && <span aria-hidden className="text-soft">↳ </span>}
         {r.name}
         {r.isYou && <span className="font-normal text-soft"> (you)</span>}
       </span>
-      {r.list ? (
-        <Link href={`/gyfte/${r.list.id}${keep({})}`} className="text-accent underline-offset-4 hover:underline">
-          {r.list.gifts} {r.list.gifts === 1 ? "gift" : "gifts"} ›
-        </Link>
-      ) : r.isYou && !previewName && thisYearIsCurrent ? (
+      {r.isYou && !previewName && thisYearIsCurrent ? (
         <StartMyList groupId={page.id} year={page.year} />
       ) : r.kidId && r.canStart && !previewName && thisYearIsCurrent ? (
         <StartKidList groupId={page.id} kidIds={[r.kidId]} year={page.year} />
@@ -99,7 +112,7 @@ export default async function GroupPage({
         </nav>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">Christmas {page.year}</h2>
+          <h2 className="heading">Christmas</h2>
           <ul className="divide-y divide-line border-y border-line">
             {page.christmas.map((r) => (
               <Row key={`${r.userId ?? r.name}-${r.list?.id ?? "none"}`} r={r} />
@@ -109,7 +122,7 @@ export default async function GroupPage({
 
         {page.birthdays.length > 0 && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">Birthdays in {page.year}</h2>
+            <h2 className="heading">Birthdays</h2>
             <ul className="divide-y divide-line border-y border-line">
               {page.birthdays.map((r) => (
                 <Row key={r.list!.id} r={r} />

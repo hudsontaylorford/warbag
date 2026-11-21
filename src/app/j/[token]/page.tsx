@@ -81,7 +81,7 @@ export default async function FamilyLinkPage({
       </nav>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">Christmas {page.year}</h2>
+        <h2 className="heading">Christmas</h2>
         <ul className="divide-y divide-line border-y border-line">
           {page.christmas.map((r) => (
             <Row key={`${r.userId ?? r.name}-${r.list?.id ?? "none"}`} r={r} />
@@ -91,7 +91,7 @@ export default async function FamilyLinkPage({
 
       {page.birthdays.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">Birthdays in {page.year}</h2>
+          <h2 className="heading">Birthdays</h2>
           <ul className="divide-y divide-line border-y border-line">
             {page.birthdays.map((r) => (
               <Row key={r.list!.id} r={{ ...r, userId: null }} />

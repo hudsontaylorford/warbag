@@ -30,8 +30,8 @@ export default async function ImportPage() {
           <li>Choose that file below. Nothing is added yet: you&apos;ll review everything first.</li>
         </ol>
         <p className="text-sm text-soft">
-          Each person&apos;s tab becomes one Christmas list per year. Imported lists are private to you until you share
-          them. Your spreadsheet isn&apos;t changed.
+          Each person&apos;s tab becomes one Christmas list per year. You pick the group they go in (shared with it) or
+          keep them private. Your spreadsheet isn&apos;t changed.
         </p>
         <UploadForm />
       </main>
