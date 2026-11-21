@@ -130,6 +130,22 @@ export async function canUseApp(actor: Actor, app: string): Promise<boolean> {
   return (rowCount ?? 0) > 0;
 }
 
+/**
+ * Has anything in this app been shared with this person (directly or
+ * through a group)? Being shared an item lets you open the app to see it,
+ * even without app access of your own (which is about making new items).
+ */
+export async function hasItemGrants(actor: Actor, app: string): Promise<boolean> {
+  const { rowCount } = await pool.query(
+    `select 1 from item_grants
+     where app = $1 and (user_id = $2 or group_id in
+       (select group_id from group_members where user_id = $2))
+     limit 1`,
+    [app, actor.id],
+  );
+  return (rowCount ?? 0) > 0;
+}
+
 export async function grantApp(actor: Actor, app: string, to: Grantee): Promise<void> {
   requireAdmin(actor);
   if (!SLUG.test(app)) throw new Error(`Invalid app id: ${app}`);

@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte safety fixes and next steps (Hudson, after ChatGPT notes WRB-20261121-02 and -03)
+
+- **Removing a person moves the Gyfte lists they manage to the admin removing them** (theirs and their kids'), instead of deleting them. Lists that were for them keep the name but lose the account link. Gifts they claimed become unclaimed. The confirmation spells out both counts first.
+- **My claims freezes** once a list stops being shared with you: only the name you saw when claiming, no link, no later edits; you can Clear it.
+- **A list shared with you opens Gyfte** even without Gyfte app access (the launcher shows Gyfte, the list opens, claiming works). App access is only needed to make your own lists and imports. Matches the access rule that item grants work on their own.
+- **Kids (approved direction, not built yet):** each child is their own person in Gyfte with their own lists and year-by-year history, managed by one or more parents, no account needed. Gifts for siblings together live on a joint list so they can be claimed once; each child's page links to it. The import review assigns rows from a joint tab to one child, both (joint list) or skip. Parents see claims; the child never would once they have an account.
+- **Order:** safety fixes, then account display name and a per-person year navigator, then kids (and connecting imported name-only lists to people), then the real import, then photos (upload or image link), then automatic link previews.
+- Link names also read the product from the query when the path has none (`/product?id=fm-1` -> "FM 1").
+
 ## 2026-11-21 · Gyfte spreadsheet import (PR C)
 
 - **Two steps:** upload an .xlsx (Google Sheets: File, Download, Microsoft Excel) into a private draft (`gyfte_imports`, owner only, one open draft per person), review, then Import. The file isn't kept; the source sheet is never changed.

@@ -30,6 +30,7 @@ describe("gift links", () => {
     expect(nameFromLink(jcrew)).toBe("Cotton Rollneck Sweater");
     expect(nameFromLink(shop)).toBe("Diffuser Plus");
     expect(nameFromLink("https://a.co/d/EXAMPLE1")).toBe("Something from Amazon");
+    expect(nameFromLink("https://www.cuvave.com/product?id=fm-1")).toBe("FM 1");
   });
 
   it("tells links from plain names", () => {

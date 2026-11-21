@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Review import · Gyfte" };
 
 export default async function ReviewImportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, actor } = await requireGyfte(`/gyfte/import/${id}`);
+  const { user, actor } = await requireGyfte(`/gyfte/import/${id}`, { needCreate: true });
   const draft = await getImportDraft(actor, id).catch((err) => {
     if (err instanceof AccessDenied) notFound();
     throw err;

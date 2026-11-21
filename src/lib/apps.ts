@@ -1,5 +1,5 @@
 import "server-only";
-import { canUseApp, type Actor } from "./access";
+import { canUseApp, hasItemGrants, type Actor } from "./access";
 
 /**
  * Every app warbag knows about, in launcher order. This is the only list:
@@ -9,8 +9,9 @@ import { canUseApp, type Actor } from "./access";
  * - external: its own product and login (Chirk, CMX); warbag only links to it.
  * - status "soon": shown to people with access, not openable yet.
  *
- * Who sees an app is decided by `canUseApp` (admins see all; others need
- * app access). App names here never appear on public pages.
+ * Who sees an app: admins, people with app access (`canUseApp`), and
+ * people something in the app was shared with (`hasItemGrants`). App names
+ * here never appear on public pages.
  */
 export type App = {
   id: string;
@@ -54,7 +55,9 @@ export function getApp(id: string): App | undefined {
 
 /** The apps this person may see, in launcher order. */
 export async function appsFor(actor: Actor): Promise<App[]> {
-  const allowed = await Promise.all(APPS.map((app) => canUseApp(actor, app.id)));
+  const allowed = await Promise.all(
+    APPS.map(async (app) => (await canUseApp(actor, app.id)) || (await hasItemGrants(actor, app.id))),
+  );
   return APPS.filter((_, i) => allowed[i]);
 }
 

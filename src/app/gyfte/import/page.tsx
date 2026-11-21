@@ -9,7 +9,7 @@ import { UploadForm } from "./UploadForm";
 export const metadata: Metadata = { title: "Import · Gyfte" };
 
 export default async function ImportPage() {
-  const { user, actor } = await requireGyfte("/gyfte/import");
+  const { user, actor } = await requireGyfte("/gyfte/import", { needCreate: true });
   const open = await openDraftId(actor);
   if (open) redirect(`/gyfte/import/${open}`);
 

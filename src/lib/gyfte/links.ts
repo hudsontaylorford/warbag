@@ -94,5 +94,16 @@ export function nameFromLink(link: string): string {
       .join(" ");
     if (name.length >= 3) return name.slice(0, 200);
   }
+  // Some shops name the product in the query: /product?id=fm-1 -> "FM 1".
+  for (const key of ["id", "product", "item", "name", "slug", "p"]) {
+    const value = url.searchParams.get(key);
+    if (!value || !/[a-z]/i.test(value) || value.length > 60) continue;
+    const name = value
+      .split(/[-_+\s]+/)
+      .filter(Boolean)
+      .map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
+      .join(" ");
+    if (name.length >= 2) return name.slice(0, 200);
+  }
   return `Something from ${storeName(link)}`;
 }

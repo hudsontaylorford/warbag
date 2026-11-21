@@ -5,6 +5,7 @@ import {
   AccessDenied,
   canUseApp,
   forgetItem,
+  hasItemGrants,
   itemsSharedWith,
   requireItemRole,
   type Actor,
@@ -138,8 +139,14 @@ function clean(raw: unknown, max: number, label: string): string {
 
 // ---------------------------------------------------------------- lists
 
+/** May make their own lists (app access). */
 export async function canUseGyfte(actor: Actor): Promise<boolean> {
   return canUseApp(actor, APP);
+}
+
+/** May open Gyfte at all: app access, or a list shared with them. */
+export async function canOpenGyfte(actor: Actor): Promise<boolean> {
+  return (await canUseApp(actor, APP)) || (await hasItemGrants(actor, APP));
 }
 
 /** Lists this person owns or that are shared with them, current and past. */

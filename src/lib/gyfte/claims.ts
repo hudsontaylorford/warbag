@@ -4,7 +4,8 @@ import { InputError } from "../errors";
 import { listTitle } from "./occasions";
 import { AccessDenied, claimsVisibleTo, itemWithRole } from "./data";
 import { isPast } from "./occasions";
-import type { Actor } from "../access";
+import { atLeast } from "../access/roles";
+import { itemRole, type Actor } from "../access";
 
 /**
  * Claims: "I'll get this". The rules:
@@ -62,6 +63,8 @@ export type MyClaim = {
   link: string | null;
   received: boolean;
   removed: boolean;
+  /** The list isn't shared with you anymore: only what you saw when claiming. */
+  lostAccess: boolean;
 };
 
 /**
@@ -71,19 +74,46 @@ export type MyClaim = {
  */
 export async function myClaims(actor: Actor): Promise<MyClaim[]> {
   const { rows } = await pool.query(
-    `select c.id, c.item_id as "itemId", c.list_id as "listId",
-       coalesce(i.name, c.item_name) as "itemName", c.list_title as "listTitle",
+    `select c.id, c.item_id as "itemId", c.list_id as "listId", l.owner_id as "ownerId",
+       c.item_name as "savedName", i.name as "liveName", c.list_title as "listTitle",
        i.links[1] as link, i.received_at is not null as received, c.item_id is null as removed
-     from gyfte_claims c left join gyfte_items i on i.id = c.item_id
+     from gyfte_claims c
+     left join gyfte_items i on i.id = c.item_id
+     left join gyfte_lists l on l.id = c.list_id
      where c.claimer_id = $1
      order by c.item_id is null desc, c.list_title, c.created_at`,
     [actor.id],
   );
-  return rows;
+  // Live details only for lists you can still open; otherwise what you saw.
+  const canView = new Map<string, boolean>();
+  for (const r of rows) {
+    if (!r.listId || !r.ownerId || canView.has(r.listId)) continue;
+    const role = await itemRole(actor, { app: "gyfte", type: "list", id: r.listId, ownerId: r.ownerId });
+    canView.set(r.listId, atLeast(role, "view"));
+  }
+  return rows.map((r) => {
+    const open = !r.removed && r.listId !== null && canView.get(r.listId) === true;
+    return {
+      id: r.id,
+      itemId: open ? r.itemId : null,
+      listId: open ? r.listId : null,
+      itemName: open ? (r.liveName ?? r.savedName) : r.savedName,
+      listTitle: r.listTitle,
+      link: open ? r.link : null,
+      received: open ? r.received : false,
+      removed: r.removed,
+      lostAccess: !r.removed && !open,
+    };
+  });
 }
 
-/** Clears a "removed" claim from My claims. Only your own, only removed ones. */
+/**
+ * Clears a claim from My claims: your own, when the gift was removed or the
+ * list is no longer shared with you. (Claims you can still see use Undo.)
+ */
 export async function dismissClaim(actor: Actor, claimId: string): Promise<void> {
   if (!/^[0-9a-f-]{36}$/i.test(claimId)) return;
-  await pool.query("delete from gyfte_claims where id = $1 and claimer_id = $2 and item_id is null", [claimId, actor.id]);
+  const mine = (await myClaims(actor)).find((c) => c.id === claimId);
+  if (!mine || !(mine.removed || mine.lostAccess)) return;
+  await pool.query("delete from gyfte_claims where id = $1 and claimer_id = $2", [claimId, actor.id]);
 }
