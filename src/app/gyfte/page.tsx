@@ -37,13 +37,13 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
   return (
     <>
       <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
-      <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold">Lists</h1>
+          <h1 className="title">Lists</h1>
           {canCreate && (
           <Link
             href="/gyfte/new"
-            className="inline-flex min-h-11 items-center rounded-lg bg-ink px-4 font-semibold text-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-ink px-4 font-semibold text-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             New list
           </Link>
@@ -75,7 +75,7 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
         <h2 className="text-lg font-semibold">Your lists</h2>
 
         {imported && (
-          <p role="status" className="rounded-lg bg-wash px-4 py-3 text-sm">
+          <p role="status" className="rounded-[var(--radius-control)] bg-wash px-4 py-3 text-sm">
             Import done ✓ Past years are under History. They&apos;re private to you until you share them.
           </p>
         )}

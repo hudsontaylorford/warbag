@@ -39,12 +39,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   return (
     <>
       <AppHeader email={user.email} app="People" isAdmin />
-      <main className="mx-auto flex max-w-xl flex-col gap-10 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div>
           <Link href="/admin" className="text-accent underline-offset-4 hover:underline">
             ‹ People
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold break-words">{person.name || person.email}</h1>
+          <h1 className="mt-2 title break-words">{person.name || person.email}</h1>
           <p className="text-soft break-words">
             {person.email}
             {person.isAdmin && " · Admin"}

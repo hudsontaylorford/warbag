@@ -38,12 +38,12 @@ export function AddBox({ listId, history = false }: { listId: string; history?: 
           maxLength={2000}
           autoComplete="off"
           placeholder="Type a gift or paste a link"
-          className="min-h-13 min-w-0 flex-1 rounded-lg border border-line bg-page px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+          className="min-h-13 min-w-0 flex-1 rounded-[var(--radius-control)] border border-line bg-field px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
         <button
           type="submit"
           disabled={pending}
-          className="min-h-13 shrink-0 rounded-lg bg-ink px-5 font-semibold text-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+          className="min-h-13 shrink-0 rounded-[var(--radius-control)] bg-ink px-5 font-semibold text-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
         >
           {pending ? "Adding…" : "Add"}
         </button>

@@ -17,7 +17,7 @@ export function Choice({
   return (
     <fieldset className="flex flex-col gap-1.5">
       <legend className="mb-1.5 text-sm font-semibold">{legend}</legend>
-      <div className="flex flex-col divide-y divide-line rounded-lg border border-line">
+      <div className="flex flex-col divide-y divide-line rounded-[var(--radius-control)] border border-line">
         {options.map((o) => (
           <label key={o.value} className="flex min-h-13 cursor-pointer items-center gap-3 px-4 py-2">
             <input

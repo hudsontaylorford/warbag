@@ -12,7 +12,7 @@ export function ViewAsPicker({ groupId, year, people }: { groupId: string; year:
       <select
         defaultValue=""
         onChange={(e) => e.target.value && router.push(`/gyfte/groups/${groupId}?year=${year}&as=${e.target.value}`)}
-        className="min-h-13 rounded-lg border border-line bg-page px-3 text-base"
+        className="min-h-13 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base"
       >
         <option value="">Pick a made-up person…</option>
         {people.map((p) => (
@@ -28,7 +28,7 @@ export function ViewAsPicker({ groupId, year, people }: { groupId: string; year:
 
 export function ViewAsBanner({ name, exitHref }: { name: string; exitHref: string }) {
   return (
-    <div role="status" className="flex items-center justify-between gap-3 rounded-lg bg-ink px-4 py-3 text-page">
+    <div role="status" className="flex items-center justify-between gap-3 rounded-[var(--radius-control)] bg-ink px-4 py-3 text-page">
       <span className="text-sm">
         Viewing as <span className="font-semibold">{name}</span>. Read-only.
       </span>

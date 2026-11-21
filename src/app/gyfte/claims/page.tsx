@@ -15,12 +15,12 @@ export default async function MyClaimsPage() {
   return (
     <>
       <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
-      <main className="mx-auto flex max-w-xl flex-col gap-6 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <div>
           <Link href="/gyfte" className="text-accent underline-offset-4 hover:underline">
             ‹ Lists
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold">My claims</h1>
+          <h1 className="mt-2 title">My claims</h1>
         </div>
         {claims.length > 0 ? (
           <ul className="divide-y divide-line border-y border-line">

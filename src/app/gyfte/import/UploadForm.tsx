@@ -16,7 +16,7 @@ export function UploadForm() {
           name="file"
           required
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          className="min-h-13 rounded-lg border border-line bg-page px-3 py-3 text-base file:mr-3 file:rounded-md file:border-0 file:bg-wash file:px-3 file:py-2 file:font-semibold"
+          className="min-h-13 rounded-[var(--radius-control)] border border-line bg-field px-3 py-3 text-base file:mr-3 file:rounded-md file:border-0 file:bg-wash file:px-3 file:py-2 file:font-semibold"
         />
       </label>
       {state.error && <Alert>{state.error}</Alert>}

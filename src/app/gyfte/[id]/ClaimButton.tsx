@@ -6,7 +6,7 @@ import { claimAction, unclaimAction } from "../actions";
 import { Alert } from "@/components/ui/Alert";
 
 const small =
-  "min-h-11 rounded-lg px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 " +
+  "min-h-11 rounded-[var(--radius-control)] px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-accent disabled:opacity-50";
 
 /**

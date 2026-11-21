@@ -12,8 +12,8 @@ export default async function AccountPage() {
   return (
     <>
       <AppHeader email={user.email} app="Account" isAdmin={user.isAdmin === true} />
-      <main className="mx-auto flex max-w-xl flex-col gap-10 px-4 py-8">
-        <h1 className="text-2xl font-semibold">Account</h1>
+      <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
+        <h1 className="title">Account</h1>
         <NameForm name={user.name ?? ""} />
         <Section title="Email">
           <p className="break-words">{user.email}</p>

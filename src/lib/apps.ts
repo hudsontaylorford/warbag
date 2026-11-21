@@ -21,6 +21,8 @@ export type App = {
   kind: "native" | "external";
   href: string;
   status: "live" | "soon";
+  /** The one-letter mark for warbag's own apps. External apps have none. */
+  letter?: string;
 };
 
 export const APPS: readonly App[] = [
@@ -31,6 +33,7 @@ export const APPS: readonly App[] = [
     kind: "native",
     href: "/gyfte",
     status: "live",
+    letter: "G",
   },
   {
     id: "chirk",

@@ -7,7 +7,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 
 const small =
-  "min-h-11 rounded-lg border border-ink px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50";
+  "min-h-11 rounded-[var(--radius-control)] border border-ink px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50";
 
 /** "Start list" on a kid's row, for their parents. */
 export function StartKidList({ groupId, kidIds, year, label = "Start list" }: { groupId: string; kidIds: string[]; year: string; label?: string }) {
@@ -105,7 +105,7 @@ function AddParent({ kidId, options }: { kidId: string; options: { id: string; n
       <label className="sr-only" htmlFor={`parent-${kidId}`}>
         Add a parent
       </label>
-      <select id={`parent-${kidId}`} name="userId" required defaultValue="" className="min-h-11 rounded-lg border border-line bg-page px-3 text-sm">
+      <select id={`parent-${kidId}`} name="userId" required defaultValue="" className="min-h-11 rounded-[var(--radius-control)] border border-line bg-field px-3 text-sm">
         <option value="" disabled>
           Add a parent…
         </option>

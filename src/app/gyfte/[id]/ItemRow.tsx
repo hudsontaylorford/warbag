@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 
 const iconButton =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-xl " +
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-xl " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50";
 
 /** One gift: name (opens its link), details line, star, and More for editing. */
@@ -117,7 +117,7 @@ function EditItem({
   const links = [...item.links, ""].slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg bg-wash p-4">
+    <div className="flex flex-col gap-4 rounded-[var(--radius-control)] bg-wash p-4">
       <form action={saveAction} className="flex flex-col gap-3">
         <input type="hidden" name="id" value={item.id} />
             {history && <input type="hidden" name="history" value="1" />}
@@ -148,7 +148,7 @@ function EditItem({
             defaultValue={item.notes}
             maxLength={1000}
             rows={3}
-            className="rounded-lg border border-line bg-page px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+            className="rounded-[var(--radius-control)] border border-line bg-field px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
           />
         </div>
         {saveState.error && <Alert>{saveState.error}</Alert>}

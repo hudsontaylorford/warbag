@@ -20,7 +20,7 @@ export default async function AdminPage() {
   return (
     <>
       <AppHeader email={user.email} app="People" isAdmin />
-      <main className="mx-auto flex max-w-xl flex-col gap-10 px-4 py-8">
+      <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <Section title="Invite someone" hint="They can sign in right away, but see no apps until you give them some.">
           <InviteForm />
         </Section>

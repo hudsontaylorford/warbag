@@ -20,7 +20,7 @@ export function Field({ label, hint, id, className = "", ...rest }: Props) {
         id={inputId}
         aria-describedby={hintId}
         className={
-          "min-h-13 rounded-lg border border-line bg-page px-4 text-base " +
+          "min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-4 text-base " +
           "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent " +
           className
         }

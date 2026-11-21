@@ -19,7 +19,7 @@ export type TabDefault =
 type Who = TabDefault["who"];
 type TabState = { who: Who; userId: string; parentId: string; kidName: string; kids: string };
 
-const select = "min-h-11 rounded-lg border border-line bg-page px-3 text-base";
+const select = "min-h-11 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base";
 
 /** Every row from the sheet, grouped by person and year, with who each person is. */
 export function ReviewForm({
@@ -157,7 +157,7 @@ export function ReviewForm({
                   </span>
                 </summary>
 
-                <div className="flex flex-col gap-3 rounded-lg bg-wash p-3">
+                <div className="flex flex-col gap-3 rounded-[var(--radius-control)] bg-wash p-3">
                   <label className="flex flex-col gap-1">
                     <span className="text-sm font-semibold">Who is this?</span>
                     <select value={t.who} onChange={(e) => update(person, { who: e.target.value as Who })} className={select}>
@@ -249,7 +249,7 @@ export function ReviewForm({
                                         aria-label={`Who ${item.name} is for`}
                                         value={rows[item.key] ?? "both"}
                                         onChange={(e) => setRows({ ...rows, [item.key]: e.target.value })}
-                                        className="min-h-11 rounded-lg border border-line bg-page px-2 text-sm"
+                                        className="min-h-11 rounded-[var(--radius-control)] border border-line bg-field px-2 text-sm"
                                       >
                                         <option value="both">Both / all (joint list)</option>
                                         {kids.map((k) => (
