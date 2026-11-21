@@ -34,21 +34,21 @@ describeDb("people and groups (admin)", () => {
 
   it("refuses every admin function to non-admins", async () => {
     const g = await createGroup(hudson, "Family");
-    const calls: Promise<unknown>[] = [
-      listPeople(molly),
-      getPerson(molly, hudson.id),
-      invitePerson(molly, { email: "x@example.test", sendEmail: false }),
-      renamePerson(molly, hudson.id, "x"),
-      removePerson(molly, hudson.id),
-      setPersonApps(molly, molly.id, ["gyfte"]),
-      setPersonGroups(molly, molly.id, [g]),
-      listGroups(molly),
-      getGroup(molly, g),
-      renameGroup(molly, g, "x"),
-      setGroupMembers(molly, g, [molly.id]),
-      setGroupApps(molly, g, ["gyfte"]),
+    const calls: (() => Promise<unknown>)[] = [
+      () => listPeople(molly),
+      () => getPerson(molly, hudson.id),
+      () => invitePerson(molly, { email: "x@example.test", sendEmail: false }),
+      () => renamePerson(molly, hudson.id, "x"),
+      () => removePerson(molly, hudson.id),
+      () => setPersonApps(molly, molly.id, ["gyfte"]),
+      () => setPersonGroups(molly, molly.id, [g]),
+      () => listGroups(molly),
+      () => getGroup(molly, g),
+      () => renameGroup(molly, g, "x"),
+      () => setGroupMembers(molly, g, [molly.id]),
+      () => setGroupApps(molly, g, ["gyfte"]),
     ];
-    for (const call of calls) await expect(call).rejects.toBeInstanceOf(AccessDenied);
+    for (const call of calls) await expect(call()).rejects.toBeInstanceOf(AccessDenied);
   });
 
   it("invites by email once, normalizing the address", async () => {

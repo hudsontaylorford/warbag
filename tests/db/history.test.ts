@@ -46,17 +46,18 @@ describeDb("history is read-only, copy to this year", () => {
 
   it("refuses every change to a past list unless Edit history is on", async () => {
     const { id, keep } = await pastList();
-    const refused = [
-      addItem(molly, id, "New"),
-      addItems(molly, id, "A\nB"),
-      updateItem(molly, keep, details),
-      setStarred(molly, keep, true),
-      setReceived(molly, keep, true),
-      deleteItem(molly, keep),
-      updateList(molly, id, { recipientName: "M" }),
-      deleteList(molly, id),
+    // Each write starts only when checked, so no rejection goes unobserved.
+    const refused: (() => Promise<unknown>)[] = [
+      () => addItem(molly, id, "New"),
+      () => addItems(molly, id, "A\nB"),
+      () => updateItem(molly, keep, details),
+      () => setStarred(molly, keep, true),
+      () => setReceived(molly, keep, true),
+      () => deleteItem(molly, keep),
+      () => updateList(molly, id, { recipientName: "M" }),
+      () => deleteList(molly, id),
     ];
-    for (const call of refused) await expect(call).rejects.toBeInstanceOf(InputError);
+    for (const call of refused) await expect(call()).rejects.toBeInstanceOf(InputError);
     expect((await getList(molly, id)).items.map((i) => i.name)).toEqual(["Wool scarf", "Candle"]);
 
     await setStarred(molly, keep, true, H);
