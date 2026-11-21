@@ -41,7 +41,7 @@ function checkRef(item: Omit<ItemRef, "ownerId">) {
   }
 }
 
-async function audit(
+export async function audit(
   db: Pick<PoolClient, "query">,
   actorId: string | null,
   action: string,
@@ -58,7 +58,7 @@ const itemTarget = (item: Omit<ItemRef, "ownerId">) => `${item.app}/${item.type}
 
 // ---------------------------------------------------------------- groups
 
-function requireAdmin(actor: Actor) {
+export function requireAdmin(actor: Actor) {
   if (!actor.isAdmin) throw new AccessDenied("Only admins can do this");
 }
 

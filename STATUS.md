@@ -1,8 +1,8 @@
 # Status
 
-**2026-11-20.** Live at https://warbag.rodeo: invite-only sign-in, access rules (groups, app access, item grants, share links) and the signed-in launcher listing Gyfte (coming soon), Chirk and Crewmaxxing.
+**2026-11-21.** Live at https://warbag.rodeo: invite-only sign-in, access rules, the signed-in launcher (Gyfte coming soon, Chirk, Crewmaxxing) and the People screens for inviting people and managing groups and app access.
 
-Next: admin screens (invite people, groups, app access), then Gyfte.
+Next: Gyfte.
 
 Waiting on:
 - Design direction (Hudson).

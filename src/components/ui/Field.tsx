@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes } from "react";
 
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -7,7 +7,9 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 
 /** A labeled text input. The label is always visible; hints sit under it. */
 export function Field({ label, hint, id, className = "", ...rest }: Props) {
-  const inputId = id ?? rest.name;
+  // A unique id per field, so two forms on one page never share one.
+  const autoId = useId();
+  const inputId = id ?? autoId;
   const hintId = hint ? `${inputId}-hint` : undefined;
   return (
     <div className="flex flex-col gap-1.5">
