@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { SignOutButton } from "./SignOutButton";
 
 /**
  * The top bar on every signed-in page: the warbag name (back to the
- * launcher), an optional app name, and the account controls.
+ * launcher), an optional app name, People (admins) and Account.
  */
 export function AppHeader({ email, app, isAdmin }: { email: string; app?: string; isAdmin?: boolean }) {
   return (
@@ -26,13 +25,18 @@ export function AppHeader({ email, app, isAdmin }: { email: string; app?: string
           )}
         </nav>
         <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-soft sm:inline">{email}</span>
           {isAdmin && (
             <Link href="/admin" className="min-h-11 content-center px-1 text-sm text-accent underline-offset-4 hover:underline">
               People
             </Link>
           )}
-          <SignOutButton />
+          <Link
+            href="/account"
+            title={email}
+            className="min-h-11 content-center px-1 text-sm text-accent underline-offset-4 hover:underline"
+          >
+            Account
+          </Link>
         </div>
       </div>
     </header>

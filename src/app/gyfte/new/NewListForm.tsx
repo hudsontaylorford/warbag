@@ -29,6 +29,7 @@ export function NewListForm({ myName, myBirthday }: { myName: string; myBirthday
         label={forWhom === "me" ? "Your name" : "Their name"}
         name="recipientName"
         defaultValue={forWhom === "me" ? myName : ""}
+        hint={forWhom === "me" && !myName ? "Saved as your account name too." : undefined}
         required
         maxLength={80}
         autoComplete="off"
