@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireGyfte } from "@/lib/gyfte/page";
-import { AccessDenied, getList, previousItems } from "@/lib/gyfte/data";
+import { AccessDenied, getList, previousItems, yearsOf } from "@/lib/gyfte/data";
 import { storeName } from "@/lib/gyfte/links";
 import { atLeast } from "@/lib/access/roles";
 import { AppHeader } from "@/components/shell/AppHeader";
@@ -39,6 +39,10 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
   const received = list.items.filter((i) => i.receivedAt);
   const previous = canEdit && list.items.length === 0 ? await previousItems(actor, list.id) : null;
   const sharing = canEdit ? await sharingFor(actor, list.id) : null;
+  const years = await yearsOf(actor, list.id);
+  const at = years.findIndex((y) => y.current);
+  const prev = at > 0 ? years[at - 1] : null;
+  const next = at >= 0 && at < years.length - 1 ? years[at + 1] : null;
 
   return (
     <>
@@ -50,6 +54,22 @@ export default async function ListPage({ params }: { params: Promise<{ id: strin
           </Link>
           <h1 className="mt-2 text-2xl font-semibold break-words">{list.title}</h1>
           <p className="text-soft">{formatDay(list.occasionDate)}</p>
+          {(prev || next) && (
+            <nav aria-label="Other years" className="mt-2 flex items-center gap-4 text-sm">
+              {prev ? (
+                <Link href={`/gyfte/${prev.id}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+                  ‹ {prev.year}
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next && (
+                <Link href={`/gyfte/${next.id}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+                  {next.year} ›
+                </Link>
+              )}
+            </nav>
+          )}
         </div>
 
         {canEdit && <AddBox listId={list.id} />}

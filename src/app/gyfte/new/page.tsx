@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "New list · Gyfte" };
 
 export default async function NewListPage() {
   const { user, actor } = await requireGyfte("/gyfte/new", { needCreate: true });
-  const myName = user.name || user.email.split("@")[0].replace(/^./, (c) => c.toUpperCase());
+  // Your account name; never guessed from your email. Blank until you set one.
+  const myName = user.name?.trim() ?? "";
   const myBirthday = await suggestedDate(actor, "birthday", { me: true, name: myName });
 
   return (

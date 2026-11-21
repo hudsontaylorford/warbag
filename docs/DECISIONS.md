@@ -2,6 +2,12 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Account name and year links
+
+- **Account page** (`/account`, header link "Account"): your display name, your email, Sign out. The header no longer shows the email or Sign out directly.
+- **Gyfte uses your account name**, never a guess from your email. Your first list "for me" sets the account name if you hadn't.
+- **Year links on a list** ("‹ 2024 · 2026 ›"): the same person's lists for the same occasion, only those you can open.
+
 ## 2026-11-21 · Gyfte safety fixes and next steps (Hudson, after ChatGPT notes WRB-20261121-02 and -03)
 
 - **Removing a person moves the Gyfte lists they manage to the admin removing them** (theirs and their kids'), instead of deleting them. Lists that were for them keep the name but lose the account link. Gifts they claimed become unclaimed. The confirmation spells out both counts first.

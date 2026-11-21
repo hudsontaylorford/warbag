@@ -215,6 +215,10 @@ export async function createList(
      values ($1, $2, $3, $4, $5) returning id`,
     [actor.id, input.forMe ? actor.id : null, name, input.occasion, date],
   );
+  // Your first list "for me" names your account if it has no name yet.
+  if (input.forMe) {
+    await pool.query(`update "user" set name = $2, "updatedAt" = now() where id = $1 and btrim(name) = ''`, [actor.id, name]);
+  }
   return rows[0].id;
 }
 
@@ -298,6 +302,30 @@ export async function deleteList(actor: Actor, listId: string): Promise<void> {
   const { list } = await listWithRole(actor, listId, "manage");
   await forgetItem(actor, ref(list));
   await pool.query("delete from gyfte_lists where id = $1", [list.id]);
+}
+
+// ---------------------------------------------------------------- years
+
+export type YearLink = { id: string; year: string; current: boolean };
+
+/**
+ * The same person's lists for the same occasion, one per year, that this
+ * viewer can open (their own or shared with them). For the "‹ 2024 · 2026 ›"
+ * links on a list.
+ */
+export async function yearsOf(actor: Actor, listId: string): Promise<YearLink[]> {
+  const { list } = await listWithRole(actor, listId, "view");
+  const shared = (await itemsSharedWith(actor, APP, "list")).map((s) => s.id);
+  const { rows } = await pool.query<{ id: string; d: string }>(
+    `select id, to_char(occasion_date, 'YYYY-MM-DD') as d from gyfte_lists
+     where occasion = $1
+       and (case when $2::text is not null then recipient_user_id = $2
+                 else recipient_user_id is null and owner_id = $3 and lower(recipient_name) = lower($4) end)
+       and (owner_id = $5 or id = any($6::uuid[]))
+     order by occasion_date`,
+    [list.occasion, list.recipient_user_id, list.owner_id, list.recipient_name, actor.id, shared],
+  );
+  return rows.map((r) => ({ id: r.id, year: r.d.slice(0, 4), current: r.id === list.id }));
 }
 
 // ---------------------------------------------------------------- bring forward
