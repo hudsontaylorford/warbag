@@ -30,6 +30,7 @@ test("a family member without Gyfte opens a list shared with them, but can't mak
   await page.getByLabel("Add a gift").fill("Wool scarf");
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("Wool scarf")).toBeVisible();
+  await page.locator("summary", { hasText: "Sharing" }).click();
   if (await page.getByRole("button", { name: "Change" }).count()) await page.getByRole("button", { name: "Change" }).click();
   else await page.getByRole("button", { name: "Share", exact: true }).click();
   await page.getByRole("checkbox", { name: `Kin ${tag}` }).check();

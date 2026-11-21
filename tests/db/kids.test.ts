@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, expect, it } from "vitest";
 import { admin, describeDb, makeUser } from "../support/db";
 import { AccessDenied, addToGroup, type Actor } from "@/lib/access";
-import { addItem, copyForward, getList, InputError, setStarred, yearsOf } from "@/lib/gyfte/data";
+import { addItem, copyForward, getList, InputError, listsFor, setStarred, yearsOf } from "@/lib/gyfte/data";
 import { claimItem } from "@/lib/gyfte/claims";
 import { createGyfteGroup, createSampleFamily, deleteSampleFamily, groupPage } from "@/lib/gyfte/groups";
 import { addKid, addKidParent, kidsOfList, myKids, renameKid, startKidList } from "@/lib/gyfte/kids";
@@ -121,6 +121,17 @@ describeDb("kids", () => {
     expect((await getList(mom, copied.listId)).items.map((i) => i.name)).toEqual(["Blocks"]);
     expect((await yearsOf(mom, copied.listId)).map((y) => y.year)).toEqual(["2024", year]);
     expect((await getList(aunt, copied.listId)).role).toBe("contribute"); // still in the group
+  });
+
+  it("puts a kid's list under My list for both parents, and under Family for everyone else", async () => {
+    const kid = await addKid(mom, groupId, "Lennox");
+    await addKidParent(mom, kid, dad.id);
+    const listId = await startKidList(mom, groupId, [kid], year);
+    const seen = async (a: Actor) => (await listsFor(a)).current.find((l) => l.id === listId);
+    expect(await seen(mom)).toMatchObject({ canManage: true, inMyGroup: true });
+    expect(await seen(dad)).toMatchObject({ canManage: true, inMyGroup: true });
+    expect(await seen(aunt)).toMatchObject({ canManage: false, inMyGroup: true });
+    expect(await seen(outsider)).toBeUndefined();
   });
 
   it("hands a removed parent's kid lists to the other parent", async () => {

@@ -18,6 +18,15 @@
 | Contribute | Can add to it (e.g. add items, claim a gift). |
 | Manage | Can change settings and sharing. |
 
+## Gyfte places
+
+| Label | Means |
+|---|---|
+| My list | Lists you look after: yours and your kids'. |
+| Family | Your group's people and their lists. |
+| I'm getting | Gifts you said you'd get (your claims). |
+| Manage | A closed section for organizer tools (groups, import, kids, family link). |
+
 ## Style
 
 - Short by default. Sentence case for labels and headings.

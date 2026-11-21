@@ -74,7 +74,7 @@ export default async function ListPage({
             href={list.groupId ? `/gyfte/groups/${list.groupId}${asQ}` : "/gyfte"}
             className="text-accent underline-offset-4 hover:underline"
           >
-            {list.groupId ? "‹ Group" : "‹ Lists"}
+            {list.groupId ? "‹ Family" : "‹ My list"}
           </Link>
           <h1 className="mt-2 title break-words">{list.title}</h1>
           <p className="text-soft">{formatDay(list.occasionDate)}</p>

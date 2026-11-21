@@ -61,8 +61,7 @@ export default async function FamilyLinkPage({
         </p>
         <h1 className="mt-1 title break-words">{page.name}</h1>
         <p className="mt-2 text-soft">
-          Tap <span className="font-semibold text-ink">This is me</span> by your name. We&apos;ll email you a link that
-          signs you in, so you can claim gifts and make your own list.
+          Find your name and tap <span className="font-semibold text-ink">This is me</span>. We&apos;ll email you a sign-in link.
         </p>
       </div>
 

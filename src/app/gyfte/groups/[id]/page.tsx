@@ -12,6 +12,7 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { ConfirmForm } from "@/components/ui/forms";
 import { deleteSampleAction } from "../../actions";
 import { StartMyList } from "./StartMyList";
+import { GyfteNav } from "../../GyfteNav";
 import { ViewAsBanner, ViewAsPicker } from "./ViewAs";
 
 export const metadata: Metadata = { title: "Group · Gyfte" };
@@ -83,11 +84,9 @@ export default async function GroupPage({
       <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/groups/${page.id}${keep({ year: page.year }).replace(/as=[^&]*&?/, "")}`} />}
+        {!previewName && <GyfteNav current="family" />}
         <div>
-          <Link href={`/gyfte${keep({})}`} className="text-accent underline-offset-4 hover:underline">
-            ‹ Gyfte
-          </Link>
-          <h1 className="mt-2 title break-words">{page.name}</h1>
+          <h1 className="title break-words">{page.name}</h1>
           {page.isSample && <p className="text-sm text-soft">Made-up people and lists, only visible to you. Delete it any time.</p>}
         </div>
 
@@ -97,6 +96,7 @@ export default async function GroupPage({
           </p>
         )}
 
+        {page.years.length > 1 && (
         <nav aria-label="Years" className="flex flex-wrap gap-x-4 gap-y-1">
           {page.years.map((y) =>
             y === page.year ? (
@@ -110,6 +110,7 @@ export default async function GroupPage({
             ),
           )}
         </nav>
+        )}
 
         <section className="flex flex-col gap-2">
           <h2 className="heading">Christmas</h2>
@@ -131,7 +132,11 @@ export default async function GroupPage({
           </section>
         )}
 
-        {!previewName && thisYearIsCurrent && (
+        {!previewName && (thisYearIsCurrent || actor.isAdmin) && (
+          <details>
+            <summary className="min-h-11 cursor-pointer content-center font-semibold">Manage</summary>
+            <div className="mt-4 flex flex-col gap-8">
+        {thisYearIsCurrent && (
           <YourKids
             groupId={page.id}
             year={page.year}
@@ -141,8 +146,8 @@ export default async function GroupPage({
           />
         )}
 
-        {actor.isAdmin && !previewName && (
-          <div className="flex flex-col gap-6 border-t border-line pt-6">
+        {actor.isAdmin && (
+          <div className="flex flex-col gap-6">
             {!page.isSample && <FamilyLink groupId={page.id} url={linkToken ? `${siteUrl()}/j/${linkToken}` : null} />}
             <Link href={`/admin/groups/${page.accessGroupId}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
               Manage who&apos;s in this group ›
@@ -159,6 +164,9 @@ export default async function GroupPage({
               </>
             )}
           </div>
+        )}
+            </div>
+          </details>
         )}
       </main>
     </>

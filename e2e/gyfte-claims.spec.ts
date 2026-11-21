@@ -33,7 +33,8 @@ test("share a list with a group; a shopper claims; the recipient never sees it",
   await page.getByLabel("Add a gift").fill("Leather tote");
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("Leather tote")).toBeVisible();
-  await expect(page.getByText("Only you can see this list.")).toBeVisible();
+  await expect(page.getByText("Only you can see this list")).toBeVisible();
+  await page.locator("summary", { hasText: "Sharing" }).click();
   await page.getByRole("button", { name: "Share", exact: true }).click();
   await page.getByRole("checkbox", { name: `Fam ${tag}` }).check();
   await page.getByRole("button", { name: "Save" }).click();
