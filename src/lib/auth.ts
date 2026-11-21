@@ -1,9 +1,9 @@
 import "server-only";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { emailOTP } from "better-auth/plugins";
+import { emailOTP, magicLink } from "better-auth/plugins";
 import { pool } from "./db";
-import { sendEmail, signInCodeEmail } from "./email";
+import { sendEmail, signInCodeEmail, signInLinkEmail } from "./email";
 
 function baseURL(): string | undefined {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
@@ -43,6 +43,18 @@ export const auth = betterAuth({
         // Made-up sample people can't sign in.
         if (email.toLowerCase().endsWith("@sample.invalid")) return;
         await sendEmail({ to: email, ...signInCodeEmail(otp) });
+      },
+    }),
+    magicLink({
+      // One-tap sign-in links, sent only by "This is me" on a family link.
+      // Existing accounts only; each link works once, for an hour.
+      disableSignUp: true,
+      expiresIn: 60 * 60,
+      storeToken: "hashed",
+      async sendMagicLink({ email, url, metadata }) {
+        if (email.toLowerCase().endsWith("@sample.invalid")) return;
+        const group = typeof metadata?.group === "string" ? metadata.group : "";
+        await sendEmail({ to: email, ...signInLinkEmail(url, group) });
       },
     }),
     nextCookies(), // must stay last
