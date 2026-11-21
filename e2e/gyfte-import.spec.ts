@@ -27,6 +27,9 @@ test("import a spreadsheet into a group, splitting a kids' tab", async ({ page }
   await expect(page.getByRole("heading", { name: "Review import" })).toBeVisible();
 
   await page.getByLabel("Put the lists in").selectOption({ label: `Import ${tag}` });
+  // Picking a group reloads the review; wait for it so later choices aren't reset.
+  await expect(page).toHaveURL(/[?&]group=[0-9a-f-]{36}/);
+  await page.waitForLoadState("networkidle");
   await expect(page.getByLabel("Put the lists in")).toHaveValue(/.+/);
 
   // The two-kid tab starts as "Kids together"; give it a parent and send the scooter to Kit.
