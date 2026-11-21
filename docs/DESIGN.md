@@ -48,5 +48,5 @@ External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, a
 
 ## Per-app stance
 
-- **Launcher and public home:** the bold surface. Navy field, cream serif headline, ember monograms. One signature: a very large serif W at 6% cream in the empty corner (`FieldMark`), decorative only. On desktop the launcher is two columns (headline left, apps right) with the header widened to match.
+- **Launcher and public home:** the bold surface. Navy field, cream serif headline, ember monograms. The launcher's heading is a plain greeting ("Hi, Hudson"): warbag is a personal app, not a product with a tagline. No decorative marks. On desktop the launcher is two columns (headline left, apps right) with the header widened to match.
 - **Gyfte:** calm. Paper background, serif page titles, everything else plain sans. Lists are rows divided by hairlines, not cards. A list page leads with the person's name in the serif, the occasion as a small line above (`ListTitle`); screen readers hear the full title once. Family link pages carry a "G · Gyfte · warbag" eyebrow so people know where they've landed.

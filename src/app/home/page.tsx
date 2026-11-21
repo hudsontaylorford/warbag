@@ -3,7 +3,6 @@ import { requireUser } from "@/lib/session";
 import { appsFor } from "@/lib/apps";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { AppList } from "@/components/shell/AppList";
-import { FieldMark } from "@/components/shell/FieldMark";
 
 export const metadata: Metadata = { title: "Home · warbag" };
 
@@ -14,14 +13,10 @@ export default async function HomePage() {
   const first = user.name?.trim().split(/\s+/)[0];
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-ink text-page">
-      <FieldMark />
+    <div className="min-h-dvh bg-ink text-page">
       <AppHeader email={user.email} isAdmin={user.isAdmin === true} tone="dark" />
-      <main className="relative mx-auto grid max-w-2xl gap-8 px-4 pt-10 pb-16 md:max-w-5xl md:grid-cols-[5fr_7fr] md:gap-16 md:pt-20">
-        <div>
-          {first && <p className="text-sm text-mist">Hi, {first}</p>}
-          <h1 className="title mt-1 text-cream md:text-7xl md:leading-[0.95]">What&apos;s in your warbag</h1>
-        </div>
+      <main className="mx-auto grid max-w-2xl gap-8 px-4 pt-10 pb-16 md:max-w-5xl md:grid-cols-[5fr_7fr] md:gap-16 md:pt-20">
+        <h1 className="title text-cream">{first ? `Hi, ${first}` : "Home"}</h1>
         {apps.length > 0 ? (
           <AppList apps={apps} />
         ) : (

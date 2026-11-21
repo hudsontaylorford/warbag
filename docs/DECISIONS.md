@@ -4,7 +4,7 @@ Durable decisions, newest first. Each one says what was decided and why. When a 
 
 ## 2026-11-21 · Second editorial pass (from WRB-20261121-07)
 
-- **One launcher signature, not several:** a faint oversized serif W in the navy field's empty corner. No texture, diagonals or motion. Colors and fonts unchanged.
+- **No launcher signature or tagline** (Hudson: warbag is a personal app, not a public product). The faint oversized W was tried and dropped; "What's in your warbag" is replaced by a plain "Hi, Hudson". Colors and fonts unchanged.
 - **Desktop launcher uses the width:** headline and apps side by side instead of a stretched phone column.
 - **Gyfte, modest:** list pages lead with the person's name; "Christmas 2026" sits above it and the date line no longer repeats the year. Nothing theatrical above forms.
 
