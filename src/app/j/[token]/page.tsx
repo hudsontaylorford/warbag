@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { currentActor } from "@/lib/session";
 import { memberGroupIdForLink, publicGroupPage, returnPath, type GroupRowView } from "@/lib/gyfte/groups";
 import { ThisIsMe } from "../ThisIsMe";
+import { AskToJoin } from "../AskToJoin";
 
 export const metadata: Metadata = { title: "Gift lists · warbag", robots: { index: false, follow: false } };
 
@@ -99,7 +100,7 @@ export default async function FamilyLinkPage({
         </section>
       )}
 
-      <p className="text-sm text-soft">Not on here? Ask whoever sent you this link to add you.</p>
+      <AskToJoin token={token} />
     </main>
   );
 }
