@@ -1,5 +1,6 @@
 import "server-only";
 import { canUseApp, hasItemGrants, type Actor } from "./access";
+import { inAnyGyfteGroup } from "./gyfte/data";
 
 /**
  * Every app warbag knows about, in launcher order. This is the only list:
@@ -56,7 +57,12 @@ export function getApp(id: string): App | undefined {
 /** The apps this person may see, in launcher order. */
 export async function appsFor(actor: Actor): Promise<App[]> {
   const allowed = await Promise.all(
-    APPS.map(async (app) => (await canUseApp(actor, app.id)) || (await hasItemGrants(actor, app.id))),
+    APPS.map(
+      async (app) =>
+        (await canUseApp(actor, app.id)) ||
+        (await hasItemGrants(actor, app.id)) ||
+        (app.id === "gyfte" && (await inAnyGyfteGroup(actor))),
+    ),
   );
   return APPS.filter((_, i) => allowed[i]);
 }

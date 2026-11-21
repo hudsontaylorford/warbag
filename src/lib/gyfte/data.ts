@@ -50,6 +50,7 @@ type ListRow = {
   occasion: Occasion;
   occasion_date: string;
   claims_mode: ClaimMode;
+  group_id: string | null;
 };
 
 export type ListSummary = {
@@ -91,6 +92,7 @@ export type ListDetail = {
   role: Role;
   past: boolean;
   isOwner: boolean;
+  groupId: string | null;
   /** Whether this viewer sees claims, and may claim. False for the recipient. */
   claims: { visible: boolean; canClaim: boolean };
   items: Item[];
@@ -109,7 +111,7 @@ async function loadList(listId: string): Promise<ListRow | null> {
   if (!UUID.test(listId)) return null;
   const { rows } = await pool.query<ListRow>(
     `select id, owner_id, recipient_user_id, recipient_name, occasion,
-       to_char(occasion_date, 'YYYY-MM-DD') as occasion_date, claims_mode
+       to_char(occasion_date, 'YYYY-MM-DD') as occasion_date, claims_mode, group_id
      from gyfte_lists where id = $1`,
     [listId],
   );
@@ -160,9 +162,18 @@ export async function canUseGyfte(actor: Actor): Promise<boolean> {
   return canUseApp(actor, APP);
 }
 
-/** May open Gyfte at all: app access, or a list shared with them. */
+/** In any Gyfte group (members can always open Gyfte and start their own list there). */
+export async function inAnyGyfteGroup(actor: Actor): Promise<boolean> {
+  const { rowCount } = await pool.query(
+    `select 1 from gyfte_groups g join group_members m on m.group_id = g.access_group_id where m.user_id = $1 limit 1`,
+    [actor.id],
+  );
+  return (rowCount ?? 0) > 0;
+}
+
+/** May open Gyfte at all: app access, a list shared with them, or a Gyfte group. */
 export async function canOpenGyfte(actor: Actor): Promise<boolean> {
-  return (await canUseApp(actor, APP)) || (await hasItemGrants(actor, APP));
+  return (await canUseApp(actor, APP)) || (await hasItemGrants(actor, APP)) || (await inAnyGyfteGroup(actor));
 }
 
 /** Lists this person owns or that are shared with them, current and past. */
@@ -173,7 +184,9 @@ export async function listsFor(actor: Actor): Promise<{ current: ListSummary[]; 
        to_char(l.occasion_date, 'YYYY-MM-DD') as occasion_date,
        (select count(*)::int from gyfte_items i where i.list_id = l.id and i.received_at is null) as item_count
      from gyfte_lists l
-     where l.owner_id = $1 or l.id = any($2::uuid[])
+     where (l.owner_id = $1 or l.id = any($2::uuid[]))
+       -- Sample-group lists stay on the sample group's page.
+       and not exists (select 1 from gyfte_groups g where g.id = l.group_id and g.is_sample)
      order by l.occasion_date asc, lower(l.recipient_name)`,
     [actor.id, shared],
   );
@@ -292,6 +305,7 @@ export async function getList(actor: Actor, listId: string): Promise<ListDetail>
     role,
     past,
     isOwner: list.owner_id === actor.id,
+    groupId: list.group_id,
     claims: { visible, canClaim: visible && !past && atLeast(role, "contribute") },
     items: rows,
   };

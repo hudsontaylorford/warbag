@@ -40,6 +40,8 @@ export const auth = betterAuth({
       storeOTP: "hashed",
       async sendVerificationOTP({ email, otp, type }) {
         if (type !== "sign-in") return;
+        // Made-up sample people can't sign in.
+        if (email.toLowerCase().endsWith("@sample.invalid")) return;
         await sendEmail({ to: email, ...signInCodeEmail(otp) });
       },
     }),

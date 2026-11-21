@@ -20,6 +20,7 @@ import {
 import { claimItem, dismissClaim, unclaimItem } from "@/lib/gyfte/claims";
 import { createListLink, revokeListLink, setSharing, shareLikeLast } from "@/lib/gyfte/sharing";
 import { applyImportDraft, createImportDraft, discardImportDraft } from "@/lib/gyfte/imports";
+import { createGyfteGroup, createSampleFamily, deleteSampleFamily, startMyGroupList } from "@/lib/gyfte/groups";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 /** Set only by forms shown in Edit history mode. */
@@ -192,5 +193,38 @@ export async function copyForwardAction(_: FormState, form: FormData): Promise<F
     target = r.listId;
   });
   if (state.ok) redirect(`/gyfte/${target}`);
+  return state;
+}
+
+export async function createGroupAction(_: FormState, form: FormData): Promise<FormState> {
+  let id = "";
+  const state = await runAction(async (actor) => {
+    id = await createGyfteGroup(actor, text(form, "name"));
+  }, "Only admins can create groups for now.");
+  if (state.ok) redirect(`/gyfte/groups/${id}`);
+  return state;
+}
+
+export async function createSampleAction(): Promise<FormState> {
+  let id = "";
+  const state = await runAction(async (actor) => {
+    id = await createSampleFamily(actor);
+  }, "Only admins can make the sample family.");
+  if (state.ok) redirect(`/gyfte/groups/${id}`);
+  return state;
+}
+
+export async function deleteSampleAction(_: FormState, form: FormData): Promise<FormState> {
+  const state = await runAction((actor) => deleteSampleFamily(actor, text(form, "id")));
+  if (state.ok) redirect("/gyfte");
+  return state;
+}
+
+export async function startMyGroupListAction(_: FormState, form: FormData): Promise<FormState> {
+  let id = "";
+  const state = await runAction(async (actor) => {
+    id = await startMyGroupList(actor, text(form, "id"), text(form, "year"));
+  });
+  if (state.ok) redirect(`/gyfte/${id}`);
   return state;
 }

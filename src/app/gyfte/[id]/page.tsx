@@ -7,6 +7,8 @@ import { occasionLabel } from "@/lib/gyfte/occasions";
 import { storeName } from "@/lib/gyfte/links";
 import { atLeast } from "@/lib/access/roles";
 import { AppHeader } from "@/components/shell/AppHeader";
+import { viewerFor } from "@/lib/gyfte/groups";
+import { ViewAsBanner } from "../groups/[id]/ViewAs";
 import { CheckboxListForm, ConfirmForm, Section } from "@/components/ui/forms";
 import { AddBox } from "./AddBox";
 import { ItemRow } from "./ItemRow";
@@ -33,21 +35,25 @@ export default async function ListPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; as?: string }>;
 }) {
   const { id } = await params;
-  const wantsHistoryEdit = (await searchParams).edit === "history";
-  const { user, actor } = await requireGyfte(`/gyfte/${id}`);
+  const sp = await searchParams;
+  const wantsHistoryEdit = sp.edit === "history";
+  const { user, actor: me } = await requireGyfte(`/gyfte/${id}`);
+  // "View as" (admins, made-up sample people only) renders read-only as them.
+  const { viewer: actor, previewName } = await viewerFor(me, sp.as);
+  const asQ = previewName ? `?as=${sp.as}` : "";
   const list = await getList(actor, id).catch((err) => {
     if (err instanceof AccessDenied) notFound();
     throw err;
   });
-  const canManage = atLeast(list.role, "manage");
+  const canManage = !previewName && atLeast(list.role, "manage");
   // Past lists are read-only until the manager turns on Edit history.
   const editHistory = list.past && canManage && wantsHistoryEdit;
   const canEdit = canManage && (!list.past || editHistory);
   const hidden: Record<string, string> = editHistory ? { history: "1" } : {};
-  const copyYear = list.past && list.isOwner ? copyTargetYear(list.occasion, list.occasionDate) : null;
+  const copyYear = !previewName && list.past && list.isOwner ? copyTargetYear(list.occasion, list.occasionDate) : null;
   const wanted = list.items.filter((i) => !i.receivedAt);
   const received = list.items.filter((i) => i.receivedAt);
   const previous = canEdit && !list.past && list.items.length === 0 ? await previousItems(actor, list.id) : null;
@@ -60,25 +66,29 @@ export default async function ListPage({
 
   return (
     <>
-      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Gyfte" isAdmin={me.isAdmin} />
       <main className="mx-auto flex max-w-xl flex-col gap-8 px-4 py-8">
+        {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/${list.id}`} />}
         <div>
-          <Link href="/gyfte" className="text-accent underline-offset-4 hover:underline">
-            ‹ Lists
+          <Link
+            href={list.groupId ? `/gyfte/groups/${list.groupId}${asQ}` : "/gyfte"}
+            className="text-accent underline-offset-4 hover:underline"
+          >
+            {list.groupId ? "‹ Group" : "‹ Lists"}
           </Link>
           <h1 className="mt-2 text-2xl font-semibold break-words">{list.title}</h1>
           <p className="text-soft">{formatDay(list.occasionDate)}</p>
           {(prev || next) && (
             <nav aria-label="Other years" className="mt-2 flex items-center gap-4 text-sm">
               {prev ? (
-                <Link href={`/gyfte/${prev.id}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+                <Link href={`/gyfte/${prev.id}${asQ}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
                   ‹ {prev.year}
                 </Link>
               ) : (
                 <span />
               )}
               {next && (
-                <Link href={`/gyfte/${next.id}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+                <Link href={`/gyfte/${next.id}${asQ}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
                   {next.year} ›
                 </Link>
               )}
@@ -119,7 +129,7 @@ export default async function ListPage({
           <ul className="divide-y divide-line border-y border-line">
             {wanted.map((item) => (
               <li key={item.id}>
-                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} />
+                <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} readOnly={Boolean(previewName)} />
               </li>
             ))}
           </ul>
@@ -133,7 +143,7 @@ export default async function ListPage({
             <ul className="mt-2 divide-y divide-line border-y border-line">
               {received.map((item) => (
                 <li key={item.id}>
-                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} />
+                  <ItemRow item={item} store={item.links[0] ? storeName(item.links[0]) : ""} canEdit={canEdit} canClaim={list.claims.canClaim} history={editHistory} readOnly={Boolean(previewName)} />
                 </li>
               ))}
             </ul>

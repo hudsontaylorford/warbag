@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-21 · Gyfte groups and the sample family (Hudson)
+
+- **A Gyfte group is a page:** group > year > each person's list (Christmas that year, then that year's birthdays). People with no list yet show "No list yet"; you get "Start my list". Year links show only years with lists you can open.
+- **Membership is a regular warbag group** (managed on the People screens); every list in a Gyfte group is shared with it ("See and claim"). Group members can open Gyfte and start their own list in the group without separate app access.
+- **Only admins create groups.** Others will get a "request a group" step later; Hudson decides (personal app, he manages who can do what).
+- **One account everywhere:** anyone who joins through Gyfte gets a normal warbag account, so other apps can be given to them later from the People screens.
+- **Sample family** (admins): made-up people (`@sample.invalid`, can never get a sign-in code), a kid managed by "Sample Mom", this year's and last year's lists, a few claims. Kept off your own Lists page. **View as** shows any made-up person's view, read-only; it never works for real people or for non-admins. **Delete sample family** removes the group, its people, lists, claims, grants and links.
+- Next: the group link for the family chat with "This is me" (one-tap email to confirm, once per device), then kids under parents, then the real import into a group.
+
 ## 2026-11-21 · Gyfte history: read-only by default, copy to this year (ChatGPT note WRB-20261121-04, part B)
 
 - **Past lists are read-only** (History = two weeks after the date). Adding, editing, starring, Got it, bulk add, bring-forward into it, settings and delete are refused on the server unless the manager turns on **Edit history** (a banner with Edit history / Done; forms in that mode send an explicit flag). Imported 2020-2025 lists are therefore locked by default.

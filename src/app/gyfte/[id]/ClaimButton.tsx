@@ -14,13 +14,31 @@ const small =
  * rendered for the person the list is for: the server sends them no
  * claim data at all.
  */
-export function ClaimButton({ itemId, claim, canClaim }: { itemId: string; claim: ItemClaim; canClaim: boolean }) {
+export function ClaimButton({
+  itemId,
+  claim,
+  canClaim,
+  readOnly = false,
+}: {
+  itemId: string;
+  claim: ItemClaim;
+  canClaim: boolean;
+  /** "View as" preview: show the state, no buttons. */
+  readOnly?: boolean;
+}) {
   const [claimState, claimFormAction, claiming] = useActionState(claimAction, {});
   const [undoState, undoFormAction, undoing] = useActionState(unclaimAction, {});
   const error = claimState.error ?? undoState.error;
 
   let body: React.ReactNode;
-  if (claim?.mine) {
+  if (readOnly) {
+    if (!claim && !canClaim) return null;
+    body = (
+      <span className="text-sm text-soft">
+        {claim?.mine ? "You're getting this ✓" : claim ? (claim.by ? `Claimed by ${claim.by}` : "Claimed") : "Not claimed yet"}
+      </span>
+    );
+  } else if (claim?.mine) {
     body = (
       <form action={undoFormAction} className="flex items-center gap-3">
         <input type="hidden" name="id" value={itemId} />
