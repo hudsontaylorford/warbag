@@ -43,6 +43,7 @@ One serif letter in a square (`src/components/ui/Monogram.tsx`). Letters are ass
 |---|---|---|
 | W | warbag (header, sign-in, favicon) | ink, cream letter |
 | G | Gyfte | ember |
+| M | Mosey | ember |
 
 External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag.
 

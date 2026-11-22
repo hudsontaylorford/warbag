@@ -1,5 +1,9 @@
 # Status
 
+**Mosey (2026-11-22):** PR 1 built (visible only to Hudson once merged): trips, day-card Plan, Ideas with organizer "Add to plan", members, view link (/m/…) that hides members-only details. Next: PR 2 money math (checked against Maine and North Shore sheets, downloaded privately, never committed), PR 3 expenses and settle-up, PR 4 receipts with AI drafts (needs Hudson's Blob store and AI key). Target: private family trial December 1.
+
+## Gyfte
+
 **2026-11-22. Gyfte is paused, feature-complete for Christmas 2026 and not yet opened to the family.** Everything below is live at https://warbag.rodeo (last change: PR 24). Screenshots of every page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Warbag · All pages · current (after PR 24, 2026-11-21)".
 
 ## What's live
