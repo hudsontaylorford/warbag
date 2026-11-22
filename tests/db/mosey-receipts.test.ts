@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, expect, it, vi } from "vitest";
-import { mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { admin, describeDb, makeUser } from "../support/db";
@@ -12,12 +12,12 @@ import { pool } from "@/lib/db";
 process.env.RECEIPT_STORE_DIR = mkdtempSync(path.join(tmpdir(), "warbag-receipts-"));
 
 // Never call the real AI in tests: a stand-in that "reads" a made-up receipt.
-const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", confidence: "high" as const, note: "" };
+const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "" };
 vi.mock("@/lib/mosey/receipt-ai", () => ({
   receiptAiConfigured: () => true,
   readReceipt: vi.fn(async () => ({ draft: fakeDraft, error: null })),
 }));
-const { openReceipt, receiptsByExpense, sniffImage, uploadReceipt, MAX_RECEIPT_BYTES } = await import("@/lib/mosey/receipts");
+const { discardReceipt, openReceipt, receiptsByExpense, unsavedReceipts, sniffImage, uploadReceipt, MAX_RECEIPT_BYTES } = await import("@/lib/mosey/receipts");
 
 const png = (n = 0) => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from(`made-up image ${n}`)]);
 const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from("made-up jpeg")]);
@@ -102,5 +102,39 @@ describeDb("Mosey receipts", () => {
     await expect(addExpense(mem, tripId, { ...exp, receiptId: r.receiptId })).rejects.toThrow(/already saved/);
     expect(await count()).toBe(1);
     await expect(receiptsByExpense(viewer, tripId)).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("lists photos not saved yet, and lets the uploader or an organizer discard them", async () => {
+    const other = await makeUser();
+    await setTripMembers(org, tripId, { groupIds: [], userIds: [mem.id, other.id] });
+    const a = await uploadReceipt(mem, tripId, png(10));
+    const b = await uploadReceipt(mem, tripId, png(11));
+    const saved = await uploadReceipt(mem, tripId, png(12));
+    await addExpense(mem, tripId, { description: "Saved", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: saved.receiptId });
+
+    const list = await unsavedReceipts(other, tripId);
+    expect(list.map((u) => u.receiptId).sort()).toEqual([a.receiptId, b.receiptId].sort());
+    expect(list.every((u) => !u.canDiscard)).toBe(true); // not theirs, not an organizer
+    expect((await unsavedReceipts(org, tripId)).every((u) => u.canDiscard)).toBe(true);
+    await expect(unsavedReceipts(viewer, tripId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(unsavedReceipts(outsider, tripId)).rejects.toBeInstanceOf(AccessDenied);
+
+    await expect(discardReceipt(other, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(viewer, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(outsider, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(mem, crypto.randomUUID())).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(org, saved.receiptId)).rejects.toThrow(/saved with an expense/);
+
+    const dir = path.join(process.env.RECEIPT_STORE_DIR!, "mosey", tripId);
+    const files = () => readdirSync(dir).length;
+    expect(files()).toBe(3);
+    await discardReceipt(mem, a.receiptId); // the uploader
+    await discardReceipt(org, b.receiptId); // an organizer
+    expect(await unsavedReceipts(org, tripId)).toEqual([]);
+    expect(files()).toBe(1); // the images are gone too
+    expect(existsSync(dir)).toBe(true);
+    // A discarded photo can't be saved as an expense afterwards.
+    await expect(addExpense(mem, tripId, { description: "Late", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: a.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(openReceipt(mem, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
   });
 });

@@ -13,7 +13,7 @@ import { ExpenseForm } from "../../ExpenseForm";
 import { ExpenseRow, PaymentForm, PaymentRow } from "../../MoneyRows";
 import { PeopleManager } from "../../PeopleManager";
 import { ReceiptAdd } from "../../ReceiptAdd";
-import { receiptsByExpense, receiptsConfigured } from "@/lib/mosey/receipts";
+import { receiptsByExpense, receiptsConfigured, unsavedReceipts } from "@/lib/mosey/receipts";
 
 export const metadata: Metadata = { title: "Money · Mosey", robots: { index: false, follow: false } };
 // Reading a receipt photo can take a while.
@@ -33,10 +33,11 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
     throw err;
   });
   const [trip, l] = loaded;
-  const [accounts, log, receipts] = await Promise.all([
+  const [accounts, log, receipts, unsaved] = await Promise.all([
     l.organizer ? linkableAccounts(actor, id) : Promise.resolve([]),
     moneyLog(actor, id, 30),
     receiptsByExpense(actor, id),
+    receiptsConfigured() ? unsavedReceipts(actor, id) : Promise.resolve([]),
   ]);
   const day = defaultDay(trip.startDate, trip.endDate);
   const people = l.people.map((p) => ({ id: p.id, name: p.name }));
@@ -78,7 +79,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
         ) : (
           <section className="flex flex-col gap-3">
             <h2 className="heading">Add an expense</h2>
-            {receiptsConfigured() && <ReceiptAdd tripId={trip.id} people={people} me={l.me} defaultDay={day} />}
+            {receiptsConfigured() && <ReceiptAdd tripId={trip.id} people={people} me={l.me} defaultDay={day} unsaved={unsaved} />}
             <ExpenseForm tripId={trip.id} people={people} me={l.me} defaultDay={day} />
           </section>
         )}
