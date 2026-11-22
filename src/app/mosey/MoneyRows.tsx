@@ -13,7 +13,7 @@ type P = { id: string; name: string };
 type E = { id: string; description: string; totalCents: number; spentOn: string; paidBy: string; participants: string[]; notes: string; mine: boolean };
 
 /** One expense: what, how much, who paid, how many it's split with. More to edit. */
-export function ExpenseRow({ e, people, me, canEdit, defaultDay }: { e: E; people: P[]; me: string | null; canEdit: boolean; defaultDay: string }) {
+export function ExpenseRow({ e, people, me, canEdit, defaultDay, receiptId }: { e: E; people: P[]; me: string | null; canEdit: boolean; defaultDay: string; receiptId?: string }) {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [delState, delAction, deleting] = useActionState(deleteExpenseAction, {});
@@ -28,6 +28,11 @@ export function ExpenseRow({ e, people, me, canEdit, defaultDay }: { e: E; peopl
             {name.get(e.paidBy)} paid · {everyone ? "everyone" : e.participants.map((p) => name.get(p)).join(", ")} · {dayLabel(e.spentOn)}
           </span>
           {e.notes && <span className="text-sm break-words">{e.notes}</span>}
+          {receiptId && (
+            <a href={`/mosey/receipts/${receiptId}`} target="_blank" rel="noopener" className="text-sm text-accent underline-offset-4 hover:underline">
+              Receipt ›
+            </a>
+          )}
         </div>
         <span className="shrink-0 font-semibold tabular-nums">{dollars(e.totalCents)}</span>
         {canEdit && (

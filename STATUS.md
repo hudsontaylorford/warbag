@@ -1,6 +1,6 @@
 # Status
 
-**Mosey (2026-11-22):** PR 1 live (visible only to Hudson and trip members): trips, day-card Plan, Ideas with organizer "Add to plan", members, view link (/m/…) that hides members-only details. PR 2: the money math library (no screens), checked against the Maine and North Shore sheets privately (Maine to the penny; North Shore within the sheet's own 1¢ rounding). PR 3: expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. Next: PR 4 receipts with AI drafts (needs Hudson's Blob store and AI key). Target: private family trial December 1.
+**Mosey (2026-11-22):** PR 1 live (visible only to Hudson and trip members): trips, day-card Plan, Ideas with organizer "Add to plan", members, view link (/m/…) that hides members-only details. PR 2: the money math library (no screens), checked against the Maine and North Shore sheets privately (Maine to the penny; North Shore within the sheet's own 1¢ rounding). PR 3: expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. PR 4: receipt photos with AI drafts, built; needs Hudson's private Blob store and Anthropic API key (SETUP.md Part G) before it's switched on. Target: private family trial December 1.
 
 ## Gyfte
 

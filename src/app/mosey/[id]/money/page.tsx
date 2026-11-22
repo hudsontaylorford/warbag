@@ -12,8 +12,12 @@ import { TripHeader } from "../../TripParts";
 import { ExpenseForm } from "../../ExpenseForm";
 import { ExpenseRow, PaymentForm, PaymentRow } from "../../MoneyRows";
 import { PeopleManager } from "../../PeopleManager";
+import { ReceiptAdd } from "../../ReceiptAdd";
+import { receiptsByExpense, receiptsConfigured } from "@/lib/mosey/receipts";
 
 export const metadata: Metadata = { title: "Money · Mosey", robots: { index: false, follow: false } };
+// Reading a receipt photo can take a while.
+export const maxDuration = 60;
 
 /** Today if it's on the trip, else the trip's first day. */
 function defaultDay(start: string, end: string) {
@@ -29,7 +33,11 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
     throw err;
   });
   const [trip, l] = loaded;
-  const [accounts, log] = await Promise.all([l.organizer ? linkableAccounts(actor, id) : Promise.resolve([]), moneyLog(actor, id, 30)]);
+  const [accounts, log, receipts] = await Promise.all([
+    l.organizer ? linkableAccounts(actor, id) : Promise.resolve([]),
+    moneyLog(actor, id, 30),
+    receiptsByExpense(actor, id),
+  ]);
   const day = defaultDay(trip.startDate, trip.endDate);
   const people = l.people.map((p) => ({ id: p.id, name: p.name }));
   const myUnit = l.me ? l.units.find((u) => u.members.includes(l.me!)) : null;
@@ -70,6 +78,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
         ) : (
           <section className="flex flex-col gap-3">
             <h2 className="heading">Add an expense</h2>
+            {receiptsConfigured() && <ReceiptAdd tripId={trip.id} people={people} me={l.me} defaultDay={day} />}
             <ExpenseForm tripId={trip.id} people={people} me={l.me} defaultDay={day} />
           </section>
         )}
@@ -80,7 +89,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
             <ul className="divide-y divide-line border-y border-line">
               {l.expenses.map((e) => (
                 <li key={e.id}>
-                  <ExpenseRow e={e} people={people} me={l.me} canEdit={l.organizer || e.mine} defaultDay={day} />
+                  <ExpenseRow e={e} people={people} me={l.me} canEdit={l.organizer || e.mine} defaultDay={day} receiptId={receipts.get(e.id)} />
                 </li>
               ))}
             </ul>

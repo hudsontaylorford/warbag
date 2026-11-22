@@ -27,6 +27,10 @@ import {
   updateExpense,
   updatePerson,
 } from "@/lib/mosey/ledger";
+import { attachReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
+import { currentActor } from "@/lib/session";
+import { AccessDenied } from "@/lib/access";
+import { InputError } from "@/lib/errors";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 const stopFields = (form: FormData) => ({
@@ -115,9 +119,28 @@ const expenseFields = (form: FormData) => ({
 
 export async function addExpenseAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    await addExpense(actor, text(form, "id"), expenseFields(form));
+    const expenseId = await addExpense(actor, text(form, "id"), expenseFields(form));
+    if (text(form, "receiptId")) await attachReceipt(actor, text(form, "receiptId"), expenseId);
     return "Added";
   });
+}
+
+export type ReceiptState = (UploadResult & { error?: undefined }) | { error: string };
+
+/** Stores a receipt photo and returns the AI's suggestion for a person to review. Saves no expense. */
+export async function uploadReceiptAction(form: FormData): Promise<ReceiptState> {
+  const actor = await currentActor();
+  if (!actor) return { error: "You're signed out. Sign in again, then retry." };
+  const file = form.get("photo");
+  if (!(file instanceof File)) return { error: "Choose a photo of the receipt." };
+  try {
+    return await uploadReceipt(actor, text(form, "id"), Buffer.from(await file.arrayBuffer()));
+  } catch (err) {
+    if (err instanceof InputError) return { error: err.message };
+    if (err instanceof AccessDenied) return { error: "You don't have access to that." };
+    console.error("receipt upload failed", err);
+    return { error: "Couldn't save the photo. Try again, or add the expense by hand." };
+  }
 }
 
 export async function updateExpenseAction(_: FormState, form: FormData): Promise<FormState> {
