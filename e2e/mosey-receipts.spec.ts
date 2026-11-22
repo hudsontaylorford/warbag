@@ -51,6 +51,10 @@ test("Mosey receipts: a photo is kept privately with the expense; manual entry w
   await expect(page.getByText("Reading receipts isn't set up yet. Fill it in by hand.")).toBeVisible();
   await review.getByLabel("What was it").fill("Corner store");
   await review.getByLabel("Amount ($)").fill("18.25");
+  // From a photo the date is never guessed: it starts empty and must be chosen.
+  await expect(review.getByLabel("Date")).toHaveValue("");
+  await expect(review.getByText("Choose the date on the receipt.")).toBeVisible();
+  await review.getByLabel("Date").fill("2027-06-05");
   await review.getByLabel("Paid by").selectOption({ label: "Ann" });
   await review.getByRole("button", { name: "Add expense" }).click();
   const row = page.getByRole("listitem").filter({ hasText: "Corner store" });
@@ -65,4 +69,18 @@ test("Mosey receipts: a photo is kept privately with the expense; manual entry w
   expect(mine.headers()["cache-control"]).toContain("no-store");
   const stranger = await (await browser.newContext()).request.get(new URL(href, page.url()).toString());
   expect(stranger.status()).toBe(404);
+
+  // A photo that isn't wanted can be discarded right away, or later from the list.
+  await page.getByLabel("Add from a receipt photo").setInputFiles({ name: "receipt.png", mimeType: "image/png", buffer: grayPng(41) });
+  await page.getByRole("button", { name: "Discard photo" }).click();
+  await expect(page.getByText("Photo discarded.")).toBeVisible();
+  await page.getByLabel("Add from a receipt photo").setInputFiles({ name: "receipt.png", mimeType: "image/png", buffer: grayPng(42) });
+  await expect(page.getByRole("button", { name: "Discard photo" })).toBeVisible();
+  await page.reload();
+  await page.getByText("1 photo not saved as an expense").click();
+  await page.getByRole("button", { name: "Use it" }).click();
+  await expect(page.getByLabel("Date").first()).toHaveValue("");
+  await page.getByRole("button", { name: "Discard photo" }).click();
+  await expect(page.getByText("Photo discarded.")).toBeVisible();
+  await expect(page.getByText("photo not saved as an expense")).toHaveCount(0);
 });

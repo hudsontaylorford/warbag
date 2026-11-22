@@ -1,8 +1,8 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { del, get, put } from "@vercel/blob";
 import { pool } from "../db";
 import { InputError } from "../errors";
 import { AccessDenied, type Actor } from "../access";
@@ -63,6 +63,19 @@ async function load(pathname: string): Promise<ReadableStream<Uint8Array> | Buff
   return res?.stream ?? null;
 }
 
+async function remove(pathname: string) {
+  const dir = localDir();
+  if (dir && !process.env.BLOB_READ_WRITE_TOKEN) return rm(path.join(dir, pathname), { force: true });
+  await del(pathname);
+}
+
+/** Older stored drafts predate `candidates`. */
+function readDraft(raw: unknown): ReceiptDraft | null {
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as ReceiptDraft;
+  return { ...d, candidates: Array.isArray(d.candidates) ? d.candidates : [] };
+}
+
 // ------------------------------------------------------------ upload and read
 
 export type UploadResult = {
@@ -115,6 +128,58 @@ export async function receiptsByExpense(actor: Actor, tripId: string): Promise<M
     [trip.id],
   );
   return new Map(rows.map((r) => [r.expense_id, r.id]));
+}
+
+export type UnsavedReceipt = {
+  receiptId: string;
+  draft: ReceiptDraft | null;
+  draftError: string | null;
+  uploadedBy: string | null;
+  uploadedAt: string;
+  /** The person who uploaded it, or an organizer. */
+  canDiscard: boolean;
+};
+
+/** Photos uploaded to the trip but not saved as an expense yet, newest first. Members only. */
+export async function unsavedReceipts(actor: Actor, tripId: string): Promise<UnsavedReceipt[]> {
+  const { trip, role } = await tripWithRole(actor, tripId, "contribute");
+  const { rows } = await pool.query<{ id: string; draft: unknown; draft_error: string | null; uploaded_by: string | null; name: string | null; created_at: Date }>(
+    `select r.id, r.draft, r.draft_error, r.uploaded_by, u.name, r.created_at
+       from mosey_receipts r left join "user" u on u.id = r.uploaded_by
+      where r.trip_id = $1 and r.expense_id is null
+      order by r.created_at desc`,
+    [trip.id],
+  );
+  return rows.map((r) => ({
+    receiptId: r.id,
+    draft: readDraft(r.draft),
+    draftError: r.draft_error,
+    uploadedBy: r.name,
+    uploadedAt: r.created_at.toISOString(),
+    canDiscard: role === "manage" || r.uploaded_by === actor.id,
+  }));
+}
+
+/**
+ * Deletes a photo that was never saved as an expense: the image and its row.
+ * The person who uploaded it or an organizer. A photo already on an expense
+ * stays with it.
+ */
+export async function discardReceipt(actor: Actor, receiptId: string): Promise<void> {
+  if (!UUID.test(receiptId)) throw new AccessDenied();
+  const { rows } = await pool.query<{ trip_id: string; blob_path: string; uploaded_by: string | null; expense_id: string | null }>(
+    "select trip_id, blob_path, uploaded_by, expense_id from mosey_receipts where id = $1",
+    [receiptId],
+  );
+  const r = rows[0];
+  if (!r) throw new AccessDenied();
+  const { role } = await tripWithRole(actor, r.trip_id, "contribute");
+  if (role !== "manage" && r.uploaded_by !== actor.id) throw new AccessDenied();
+  if (r.expense_id) throw new InputError("This photo is saved with an expense, so it stays.");
+  // Row first, guarded so a save that just happened wins; then the image.
+  const gone = await pool.query("delete from mosey_receipts where id = $1 and expense_id is null", [receiptId]);
+  if (!gone.rowCount) throw new InputError("This photo is saved with an expense, so it stays.");
+  await remove(r.blob_path).catch((err) => console.error("receipt image delete failed", receiptId, err));
 }
 
 /** The image, for the receipt route. Members of the trip only. */

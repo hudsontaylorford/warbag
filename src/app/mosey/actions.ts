@@ -27,7 +27,7 @@ import {
   updateExpense,
   updatePerson,
 } from "@/lib/mosey/ledger";
-import { uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
+import { discardReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
 import { currentActor } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
 import { InputError } from "@/lib/errors";
@@ -140,6 +140,14 @@ export async function uploadReceiptAction(form: FormData): Promise<ReceiptState>
     console.error("receipt upload failed", err);
     return { error: "Couldn't save the photo. Try again, or add the expense by hand." };
   }
+}
+
+/** Deletes a receipt photo that was never saved as an expense. */
+export async function discardReceiptAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await discardReceipt(actor, text(form, "receiptId"));
+    return "Photo discarded";
+  });
 }
 
 export async function updateExpenseAction(_: FormState, form: FormData): Promise<FormState> {

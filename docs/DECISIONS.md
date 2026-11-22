@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey: paper receipts
+
+Hudson's first real tests were paper restaurant receipts, not app receipts. One of three got the wrong total (it read a printed 20% tip line instead of the 22% written on the card slip), and an obscured date silently became the trip's first day.
+
+- **The reader follows paper rules:** handwriting overrides print; a suggested-tip table is options, not a charge; a printed gratuity line is already in the total; the signed card slip beats the itemized check; with no tip written, the printed total stands. Effort raised from low to medium for handwriting and faded thermal paper (still a few cents a receipt).
+- **Unsure means ask.** When more than one amount could be the charge, the form fills in none and asks "Which total was charged?" with each amount and where it came from, plus "Something else".
+- **Dates are never guessed.** From a photo, an unreadable date stays empty and must be chosen ("Choose the date on the receipt."). Past dates are fine.
+- **Unsaved photos can go.** "Discard photo" under the form, and a "photos not saved as expenses" list on Money with Use it and Discard. The uploader or an organizer can discard; a photo saved with an expense stays. Discarding deletes the image from the Blob store too.
+- **Checking against real receipts:** `npm run eval:receipts` runs the real reader over a private folder of photos and an expected.json (RECEIPT_EVAL_DIR, ANTHROPIC_API_KEY). Real receipts never go in the repo or the normal tests.
+
 ## 2026-11-22 · Mosey safety: account removal and receipt saves
 
 - **Removing an account never deletes trips.** The trips that person organizes move to the admin doing the removal, with every expense, payment, statement and receipt; the confirmation says how many. Their name stays on the trip's money, unlinked from the account. The database refuses to delete an account row that still organizes a trip (`on delete restrict`), so nothing outside the app's removal can cascade either.
