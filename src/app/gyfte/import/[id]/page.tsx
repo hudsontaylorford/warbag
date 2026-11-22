@@ -31,9 +31,15 @@ export default async function ReviewImportPage({
 
   const groups = (await myGroups(actor)).filter((g) => !g.isSample);
   const groupId = groups.find((g) => g.id === wantGroup)?.id ?? groups[0]?.id ?? "";
-  const members = groupId
-    ? (await groupPage(actor, groupId)).christmas.filter((r) => r.userId).map((r) => ({ id: r.userId!, name: r.name }))
-    : [];
+  // Every group's people up front, so switching groups on the review never
+  // reloads the page (which used to reset the choices already made).
+  const membersByGroup: Record<string, { id: string; name: string }[]> = {};
+  for (const g of groups) {
+    membersByGroup[g.id] = (await groupPage(actor, g.id)).christmas
+      .filter((r) => r.userId)
+      .map((r) => ({ id: r.userId!, name: r.name }));
+  }
+  const members = membersByGroup[groupId] ?? [];
 
   const items = draft.sheet.lists.flatMap((l) => l.items);
   const people = [...new Set(draft.sheet.lists.map((l) => l.person))];
@@ -95,8 +101,8 @@ export default async function ReviewImportPage({
           existing={draft.existing}
           people={people}
           groups={groups.map((g) => ({ id: g.id, name: g.name }))}
-          groupId={groupId}
-          members={members}
+          initialGroupId={groupId}
+          membersByGroup={membersByGroup}
           meId={actor.id}
           defaults={defaults}
         />

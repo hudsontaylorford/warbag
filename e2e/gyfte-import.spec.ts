@@ -26,12 +26,7 @@ test("import a spreadsheet into a group, splitting a kids' tab", async ({ page }
   await page.getByRole("button", { name: "Read spreadsheet" }).click();
   await expect(page.getByRole("heading", { name: "Review import" })).toBeVisible();
 
-  await page.getByLabel("Put the lists in").selectOption({ label: `Import ${tag}` });
-  // Picking a group reloads the review; wait for it so later choices aren't reset.
-  await expect(page).toHaveURL(/[?&]group=[0-9a-f-]{36}/);
-  await page.waitForLoadState("networkidle");
-  await expect(page.getByLabel("Put the lists in")).toHaveValue(/.+/);
-
+  // Choices first, group last: picking the group must not reset them.
   // The two-kid tab starts as "Kids together"; give it a parent and send the scooter to Kit.
   await page.locator("summary").filter({ hasText: "Kit and Lou" }).click();
   const kidsTab = page.locator("details").filter({ hasText: "Kit and Lou" });
@@ -41,7 +36,15 @@ test("import a spreadsheet into a group, splitting a kids' tab", async ({ page }
 
   // Avery stays "just a name"; Sam is skipped.
   await page.locator("summary").filter({ hasText: /^Sam/ }).click();
-  await page.locator("details").filter({ hasText: /^Sam/ }).getByLabel("Who is this?").selectOption("skip");
+  const samTab = page.locator("details").filter({ hasText: /^Sam/ });
+  await samTab.getByLabel("Who is this?").selectOption("skip");
+
+  await page.getByLabel("Put the lists in").selectOption({ label: `Import ${tag}` });
+  await page.waitForTimeout(1500);
+  expect(page.url()).not.toContain("group="); // picking a group no longer reloads the page
+  await expect(samTab.getByLabel("Who is this?")).toHaveValue("skip");
+  await expect(kidsTab.getByLabel("Kit and Lou's parent").locator("option:checked")).toHaveText("Me");
+  await expect(kidsTab.getByLabel("Who Scooter is for")).toHaveValue("Kit");
 
   await page.getByRole("button", { name: /^Import \d+ gifts$/ }).click();
   await expect(page.getByRole("heading", { name: `Import ${tag}` })).toBeVisible();

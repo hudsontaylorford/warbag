@@ -15,16 +15,15 @@
 ## Left to do before the family uses it (Hudson)
 
 1. **Check it on your phone in Safari.** Automated tests use Chromium emulating an iPhone.
-2. **Run the real import** of "2025 Ford Family Christmas Gifting". On the review screen, **pick the family group first**, then go tab by tab (known issue 1). Then use Connect for any name-only lists that belong to someone with an account.
+2. **Run the real import** of "2025 Ford Family Christmas Gifting": pick the family group and go tab by tab, in any order. Then use Connect for any name-only lists that belong to someone with an account.
 3. **Go / no-go before inviting anyone:** who sees what, claim surprises protected, a walkthrough as a family member. Nothing goes to family until Hudson says so.
 4. Then share the family link in the group chat.
 
 ## Known issues
 
-1. **Import review resets choices** if the group is picked after filling in who's who (the page reloads). Small fix, worth doing before the real import.
-2. **No email to Hudson for join requests:** only the count beside Manage on the family page.
-3. **Admin group page** lists everyone on warbag with a checkbox; needs search once the family is all in.
-4. The Connect button has no browser test (its rules are covered by database tests).
+1. **No email to Hudson for join requests:** only the count beside Manage on the family page.
+2. **Admin group page** lists everyone on warbag with a checkbox; needs search once the family is all in.
+3. The Connect button has no browser test (its rules are covered by database tests).
 
 ## Later (parked)
 
@@ -34,7 +33,7 @@
 
 ## Where to pick up
 
-Start with known issue 1, then step 1 above. Decisions behind all of this are in docs/DECISIONS.md (newest first); words in docs/LANGUAGE.md.
+Start with step 1 above (the import review reset was fixed in PR 26). Decisions behind all of this are in docs/DECISIONS.md (newest first); words in docs/LANGUAGE.md.
 
 ## Waiting on
 

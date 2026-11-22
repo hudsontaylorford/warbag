@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { ImportedList } from "@/lib/gyfte/sheet-import";
 import { storeName } from "@/lib/gyfte/links";
 import { applyImportAction, discardImportAction } from "../../actions";
@@ -28,8 +27,8 @@ export function ReviewForm({
   existing,
   people,
   groups,
-  groupId,
-  members,
+  initialGroupId,
+  membersByGroup,
   meId,
   defaults,
 }: {
@@ -38,12 +37,13 @@ export function ReviewForm({
   existing: string[];
   people: string[];
   groups: { id: string; name: string }[];
-  groupId: string;
-  members: { id: string; name: string }[];
+  initialGroupId: string;
+  membersByGroup: Record<string, { id: string; name: string }[]>;
   meId: string;
   defaults: Record<string, TabDefault>;
 }) {
-  const router = useRouter();
+  const [groupId, setGroupId] = useState(initialGroupId);
+  const members = membersByGroup[groupId] ?? [];
   const [applyState, applyAction, applying] = useActionState(applyImportAction, {});
   const [discardState, discardAction, discarding] = useActionState(discardImportAction, {});
   const [keep, setKeep] = useState<Set<string>>(
@@ -106,6 +106,25 @@ export function ReviewForm({
   });
 
   const update = (p: string, patch: Partial<TabState>) => setTabs({ ...tabs, [p]: { ...tabs[p], ...patch } });
+  // Switching groups keeps every choice, except people who aren't in the new
+  // group: those picks are cleared (and "someone in the group" needs a group).
+  const changeGroup = (next: string) => {
+    const inNext = new Set([meId, ...(membersByGroup[next] ?? []).map((m) => m.id)]);
+    setGroupId(next);
+    setTabs(
+      Object.fromEntries(
+        Object.entries(tabs).map(([p, t]) => {
+          const fixed = { ...t };
+          if (fixed.who === "member" && (!next || !inNext.has(fixed.userId))) {
+            if (!next) fixed.who = "name";
+            fixed.userId = "";
+          }
+          if (fixed.parentId && !inNext.has(fixed.parentId)) fixed.parentId = "";
+          return [p, fixed];
+        }),
+      ),
+    );
+  };
   const toggle = (key: string, on: boolean) => {
     const next = new Set(keep);
     if (on) next.add(key);
@@ -121,7 +140,7 @@ export function ReviewForm({
         <span className="text-sm font-semibold">Put the lists in</span>
         <select
           value={groupId}
-          onChange={(e) => router.push(`/gyfte/import/${draftId}?group=${e.target.value}`)}
+          onChange={(e) => changeGroup(e.target.value)}
           className={select}
         >
           {groups.map((g) => (
