@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey money rules (PR 2)
+
+- **Whole cents everywhere.** Each person's share is kept exact across the whole trip and rounded once at the end (largest remainder first), so everyone is within a cent of their true share and the shares add up to what was spent exactly. People with identical shares can differ by one cent only when the cents force it.
+- **Net = paid + sent - share - received.** "You owe" / "You are owed" in the interface, never negative numbers.
+- **Already paid is a payment, not a change to the split** (fixes the old sheet's "P"). Example: three split $120 and one already paid the payer $40: the payer is still owed $40, one person owes $40, the third owes nothing, and all three keep a $40 share. A cost settled outside Mosey (Maine's cabins) can be entered as the split plus the payments, or left out; both give the same result.
+- **Households are summed after.** Couples settle as one; people on their own never combine. Nobody pays someone in their own household.
+- **Two settle-up styles over the same balances:** Direct (largest debtor pays largest creditor; few payments, not promised to be the fewest) and Through one person (everyone settles with one hub). Choosing one never changes a balance.
+- **Checked against the real sheets privately** (downloaded to the session's temporary folder, never committed; automated tests use made-up people only). Maine matches to the penny ($1,211.41 to Hudson + Molly). North Shore matches except one cent: the sheet collected $3,665.88 for $3,665.87 owed; Mosey collects exactly $3,665.87 (Sarah $483.70, Andrew $483.69, identical exact shares).
+
 ## 2026-11-22 · Mosey PR 1: trips, Plan and Ideas
 
 - **A trip is a name, a place and a date range;** its days fill in. The Plan is one card per day; Ideas are stops with no day. A stop is a title plus optional time (wall-clock, no time zones), place (with Open in Maps, no Google key), link, notes.
