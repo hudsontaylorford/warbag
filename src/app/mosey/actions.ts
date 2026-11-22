@@ -15,6 +15,18 @@ import {
   updateStop,
   updateTrip,
 } from "@/lib/mosey/trips";
+import {
+  addExpense,
+  addPayment,
+  addPerson,
+  deleteExpense,
+  deletePayment,
+  freezeStatement,
+  removePerson,
+  setSettle,
+  updateExpense,
+  updatePerson,
+} from "@/lib/mosey/ledger";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 const stopFields = (form: FormData) => ({
@@ -87,4 +99,76 @@ export async function createLinkAction(_: FormState, form: FormData): Promise<Fo
 
 export async function revokeLinkAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction((actor) => revokeTripLink(actor, text(form, "id"), text(form, "linkId")));
+}
+
+// ------------------------------------------------------------ money
+
+
+const expenseFields = (form: FormData) => ({
+  description: text(form, "description"),
+  amount: text(form, "amount"),
+  spentOn: text(form, "spentOn"),
+  paidBy: text(form, "paidBy"),
+  participants: form.getAll("participants").map(String),
+  notes: text(form, "notes"),
+});
+
+export async function addExpenseAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await addExpense(actor, text(form, "id"), expenseFields(form));
+    return "Added";
+  });
+}
+
+export async function updateExpenseAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => updateExpense(actor, text(form, "id"), expenseFields(form)));
+}
+
+export async function deleteExpenseAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => deleteExpense(actor, text(form, "id")));
+}
+
+export async function addPaymentAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await addPayment(actor, text(form, "id"), {
+      from: text(form, "from"),
+      to: text(form, "to"),
+      amount: text(form, "amount"),
+      paidOn: text(form, "paidOn"),
+      note: text(form, "note"),
+    });
+    return "Recorded";
+  });
+}
+
+export async function deletePaymentAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => deletePayment(actor, text(form, "id")));
+}
+
+export async function addPersonAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await addPerson(actor, text(form, "id"), { name: text(form, "name"), userId: text(form, "userId"), household: text(form, "household") });
+    return "Added";
+  });
+}
+
+export async function updatePersonAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) =>
+    updatePerson(actor, text(form, "id"), text(form, "personId"), { name: text(form, "name"), userId: text(form, "userId"), household: text(form, "household") }),
+  );
+}
+
+export async function removePersonAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => removePerson(actor, text(form, "id"), text(form, "personId")));
+}
+
+export async function setSettleAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => setSettle(actor, text(form, "id"), text(form, "mode"), text(form, "hub") || null));
+}
+
+export async function freezeAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const v = await freezeStatement(actor, text(form, "id"));
+    return `Saved as version ${v}`;
+  });
 }

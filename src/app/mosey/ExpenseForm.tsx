@@ -1,0 +1,116 @@
+"use client";
+
+import { useActionState, useRef, useState } from "react";
+import { addExpenseAction, updateExpenseAction } from "./actions";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Alert } from "@/components/ui/Alert";
+import { dollars, parseDollars } from "@/lib/mosey/money";
+
+type P = { id: string; name: string };
+type Existing = { id: string; description: string; totalCents: number; spentOn: string; paidBy: string; participants: string[]; notes: string };
+
+/**
+ * Add or change an expense: what, how much, when, who paid, who it's split
+ * with (everyone by default). Shows the split before saving.
+ */
+export function ExpenseForm({
+  tripId,
+  people,
+  me,
+  defaultDay,
+  expense,
+  onDone,
+}: {
+  tripId: string;
+  people: P[];
+  me: string | null;
+  defaultDay: string;
+  expense?: Existing;
+  onDone?: () => void;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const all = people.map((p) => p.id);
+  // Track who's left out, so anyone added to the trip later is in by default.
+  const [out, setOut] = useState<string[]>(expense ? all.filter((id) => !expense.participants.includes(id)) : []);
+  const split = all.filter((id) => !out.includes(id));
+  const [amount, setAmount] = useState(expense ? (expense.totalCents / 100).toFixed(2) : "");
+  const [state, formAction, pending] = useActionState(async (prev: Parameters<typeof addExpenseAction>[0], form: FormData) => {
+    const next = await (expense ? updateExpenseAction : addExpenseAction)(prev, form);
+    if (next.ok && !expense) {
+      formRef.current?.reset();
+      setOut([]);
+      setAmount("");
+    }
+    if (next.ok && expense) onDone?.();
+    return next;
+  }, {});
+  const cents = parseDollars(amount);
+  const each = cents && split.length ? Math.floor(cents / split.length) : null;
+  const toggle = (id: string, on: boolean) => setOut(on ? out.filter((x) => x !== id) : [...out, id]);
+
+  return (
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="id" value={expense?.id ?? tripId} />
+      <Field label="What was it" name="description" required maxLength={200} defaultValue={expense?.description} placeholder="Groceries, dinner, the cabin…" />
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Amount ($)" name="amount" inputMode="decimal" required value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
+        <Field label="Date" name="spentOn" type="date" required defaultValue={expense?.spentOn ?? defaultDay} />
+      </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold">Paid by</span>
+        <select name="paidBy" required defaultValue={expense?.paidBy ?? me ?? ""} className="min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base">
+          <option value="" disabled>
+            Pick who paid…
+          </option>
+          {people.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-semibold">Split with</legend>
+        <div className="flex gap-4 text-sm">
+          <button type="button" onClick={() => setOut([])} className="min-h-11 text-accent underline-offset-4 hover:underline">
+            Everyone
+          </button>
+          <button type="button" onClick={() => setOut(all)} className="min-h-11 text-accent underline-offset-4 hover:underline">
+            Nobody
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-x-4">
+          {people.map((p) => (
+            <label key={p.id} className="flex min-h-11 cursor-pointer items-center gap-3">
+              <input type="checkbox" name="participants" value={p.id} checked={split.includes(p.id)} onChange={(e) => toggle(p.id, e.target.checked)} className="size-5 accent-ink" />
+              <span className="break-words">{p.name}</span>
+            </label>
+          ))}
+        </div>
+        <p className="text-sm text-soft" aria-live="polite">
+          {split.length === 0
+            ? "Pick at least one person."
+            : `Split ${split.length} ${split.length === 1 ? "way" : "ways"}${each !== null ? `, about ${dollars(each)} each` : ""}.`}
+        </p>
+      </fieldset>
+      <Field label="Notes" name="notes" maxLength={1000} defaultValue={expense?.notes} hint="Optional" />
+      {state.error && <Alert>{state.error}</Alert>}
+      {state.ok && !pending && !expense && (
+        <p role="status" className="text-sm text-soft">
+          Added ✓
+        </p>
+      )}
+      <div className="flex gap-3">
+        <Button type="submit" disabled={pending || split.length === 0}>
+          {pending ? "Saving…" : expense ? "Save" : "Add expense"}
+        </Button>
+        {onDone && (
+          <Button variant="quiet" onClick={onDone}>
+            Close
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
