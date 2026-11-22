@@ -173,11 +173,15 @@ export async function removePerson(actor: Actor, userId: string): Promise<void> 
       userId,
       actor.id,
     ]);
+    // Mosey trips they organize move to the admin too, with their plans,
+    // expenses, payments and statements; nothing about the trip is lost.
+    const trips = await client.query("update mosey_trips set owner_id = $2, updated_at = now() where owner_id = $1", [userId, actor.id]);
     const { rows } = await client.query<{ email: string }>(`delete from "user" where id = $1 returning email`, [userId]);
     if (rows[0]) {
       await audit(client, actor.id, "person.remove", `user/${userId}`, {
         email: rows[0].email,
         gyfteListsMovedToActor: moved.rowCount ?? 0,
+        moseyTripsMovedToActor: trips.rowCount ?? 0,
       });
     }
     await client.query("commit");
@@ -190,11 +194,12 @@ export async function removePerson(actor: Actor, userId: string): Promise<void> 
 }
 
 /** What removing someone would change, for the confirmation text. */
-export async function removalImpact(actor: Actor, userId: string): Promise<{ lists: number; claims: number }> {
+export async function removalImpact(actor: Actor, userId: string): Promise<{ lists: number; claims: number; trips: number }> {
   requireAdmin(actor);
-  const { rows } = await pool.query<{ lists: number; claims: number }>(
+  const { rows } = await pool.query<{ lists: number; claims: number; trips: number }>(
     `select (select count(*)::int from gyfte_lists where owner_id = $1) as lists,
-            (select count(*)::int from gyfte_claims where claimer_id = $1 and item_id is not null) as claims`,
+            (select count(*)::int from gyfte_claims where claimer_id = $1 and item_id is not null) as claims,
+            (select count(*)::int from mosey_trips where owner_id = $1) as trips`,
     [userId],
   );
   return rows[0];

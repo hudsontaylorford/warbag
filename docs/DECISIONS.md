@@ -2,6 +2,11 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey safety: account removal and receipt saves
+
+- **Removing an account never deletes trips.** The trips that person organizes move to the admin doing the removal, with every expense, payment, statement and receipt; the confirmation says how many. Their name stays on the trip's money, unlinked from the account. The database refuses to delete an account row that still organizes a trip (`on delete restrict`), so nothing outside the app's removal can cascade either.
+- **An expense and its receipt save together.** Saving from a photo is one transaction: both happen or neither does. A receipt already saved as an expense is refused ("This receipt is already saved as an expense."), so a double tap or a retry can't create a duplicate. Found in ChatGPT's review WRB-20261122-02.
+
 ## 2026-11-22 · Mosey PR 4: receipt photos with AI drafts
 
 - **The AI suggests, a person saves.** A photo produces a suggested merchant, date, total and short description, shown in the expense form marked "Filled in from the photo. Check it before saving." It never picks who paid or who shares; nothing reaches the ledger until someone taps Add expense. Manual entry always works, and the form says so when reading fails or isn't set up.
