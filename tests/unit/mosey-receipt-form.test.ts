@@ -11,6 +11,7 @@ const draft = (over: Partial<ReceiptDraft>): ReceiptDraft => ({
   candidates: [],
   confidence: "high",
   note: "",
+  personalDocument: false,
   ...over,
 });
 

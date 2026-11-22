@@ -10,6 +10,7 @@ Hudson's first real tests were paper restaurant receipts, not app receipts. One 
 - **Unsure means ask.** When more than one amount could be the charge, the form fills in none and asks "Which total was charged?" with each amount and where it came from, plus "Something else".
 - **Dates are never guessed.** From a photo, an unreadable date stays empty and must be chosen ("Choose the date on the receipt."). Past dates are fine.
 - **Unsaved photos can go.** "Discard photo" under the form, and a "photos not saved as expenses" list on Money with Use it and Discard. The uploader or an organizer can discard; a photo saved with an expense stays. Discarding deletes the image from the Blob store too.
+- **IDs and cards in the photo:** the reader flags a photo that also shows an ID, payment card or other personal document, and the form says so: "Only trip members can see it, but you can discard it and retake the photo without it." No automatic blurring (unreliable); the photo stays members-only.
 - **Checking against real receipts:** `npm run eval:receipts` runs the real reader over a private folder of photos and an expected.json (RECEIPT_EVAL_DIR, ANTHROPIC_API_KEY). Real receipts never go in the repo or the normal tests.
 
 ## 2026-11-22 · Mosey safety: account removal and receipt saves

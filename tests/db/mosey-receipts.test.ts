@@ -12,7 +12,7 @@ import { pool } from "@/lib/db";
 process.env.RECEIPT_STORE_DIR = mkdtempSync(path.join(tmpdir(), "warbag-receipts-"));
 
 // Never call the real AI in tests: a stand-in that "reads" a made-up receipt.
-const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "" };
+const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "", personalDocument: false };
 vi.mock("@/lib/mosey/receipt-ai", () => ({
   receiptAiConfigured: () => true,
   readReceipt: vi.fn(async () => ({ draft: fakeDraft, error: null })),
@@ -136,5 +136,12 @@ describeDb("Mosey receipts", () => {
     // A discarded photo can't be saved as an expense afterwards.
     await expect(addExpense(mem, tripId, { description: "Late", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: a.receiptId })).rejects.toBeInstanceOf(AccessDenied);
     await expect(openReceipt(mem, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("warns when the photo also shows an ID or a card", async () => {
+    const { readReceipt } = await import("@/lib/mosey/receipt-ai");
+    vi.mocked(readReceipt).mockResolvedValueOnce({ draft: { ...fakeDraft, personalDocument: true }, error: null });
+    expect((await uploadReceipt(mem, tripId, png(20))).warnings).toEqual([expect.stringMatching(/shows an ID or a card/)]);
+    expect((await unsavedReceipts(mem, tripId))[0].draft?.personalDocument).toBe(true);
   });
 });

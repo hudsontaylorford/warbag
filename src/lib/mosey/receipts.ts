@@ -8,6 +8,7 @@ import { InputError } from "../errors";
 import { AccessDenied, type Actor } from "../access";
 import { tripWithRole } from "./trips";
 import { parseDollars } from "./money";
+import { PERSONAL_DOCUMENT_WARNING } from "./receipt-form";
 import { readReceipt, receiptAiConfigured, type ReceiptDraft } from "./receipt-ai";
 
 /**
@@ -73,7 +74,7 @@ async function remove(pathname: string) {
 function readDraft(raw: unknown): ReceiptDraft | null {
   if (!raw || typeof raw !== "object") return null;
   const d = raw as ReceiptDraft;
-  return { ...d, candidates: Array.isArray(d.candidates) ? d.candidates : [] };
+  return { ...d, candidates: Array.isArray(d.candidates) ? d.candidates : [], personalDocument: d.personalDocument === true };
 }
 
 // ------------------------------------------------------------ upload and read
@@ -108,6 +109,7 @@ export async function uploadReceipt(actor: Actor, tripId: string, image: Buffer)
 
   const warnings: string[] = [];
   const same = await pool.query("select 1 from mosey_receipts where trip_id = $1 and sha256 = $2 and id <> $3 limit 1", [trip.id, sha256, id]);
+  if (draft?.personalDocument) warnings.push(PERSONAL_DOCUMENT_WARNING);
   if (same.rowCount) warnings.push("This exact photo was uploaded before. Check it isn't already an expense.");
   const cents = draft ? parseDollars(draft.total) : null;
   if (cents && draft?.date) {
