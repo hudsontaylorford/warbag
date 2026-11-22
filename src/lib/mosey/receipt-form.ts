@@ -3,6 +3,8 @@ import type { ReceiptDraft } from "./receipt-ai";
 
 /** Turning the reader's suggestion into what the expense form shows. No server code. */
 
+export const PERSONAL_DOCUMENT_WARNING = "This photo also shows an ID or a card. Only trip members can see it, but you can discard it and retake the photo without it.";
+
 /**
  * Amounts that could be the charge, as "12.34", no repeats. The reader's
  * total comes first, with its label from the candidates when it has one.

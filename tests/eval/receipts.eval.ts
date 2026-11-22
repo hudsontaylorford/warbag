@@ -13,11 +13,13 @@ import { sniffImage } from "@/lib/mosey/receipts";
  * expected.json: { "photo.jpg": { "total": "12.34", "date": "2024-05-13" } }
  *   total: what was charged. "date": "" means the date can't be read.
  *   "pick": ["381.90", "312.45"] instead of total means the right result is
- *   to ask: the form must offer those amounts and fill in none.
+ *   to ask: the form must offer those amounts and fill in none. Asking is
+ *   also right when the correct total is among the amounts offered.
+ *   "personalDocument": true when an ID or card is in the photo too.
  *
  *   RECEIPT_EVAL_DIR=/path/to/folder npm run eval:receipts
  */
-type Expect = { total?: string; pick?: string[]; date: string };
+type Expect = { total?: string; pick?: string[]; date: string; personalDocument?: boolean };
 
 const dir = process.env.RECEIPT_EVAL_DIR;
 const ready = Boolean(dir && process.env.ANTHROPIC_API_KEY);
@@ -33,8 +35,8 @@ it.skipIf(!ready)("reads real receipts the way a person would", async () => {
     const offered = totals.map((t) => t.amount);
     const totalOk = want.pick
       ? prefill?.amount === "" && want.pick.every((p) => offered.includes(p))
-      : prefill?.amount === want.total; // filled in, no picking needed
-    const dateOk = (prefill?.spentOn ?? "") === want.date;
+      : prefill?.amount === want.total || (prefill?.amount === "" && offered.includes(want.total!));
+    const dateOk = (prefill?.spentOn ?? "") === want.date && (want.personalDocument === undefined || draft?.personalDocument === want.personalDocument);
     if (!totalOk || !dateOk) wrong++;
     rows.push(
       [

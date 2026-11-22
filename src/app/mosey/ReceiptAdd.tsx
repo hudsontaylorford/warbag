@@ -5,7 +5,7 @@ import { discardReceiptAction, uploadReceiptAction, type ReceiptState } from "./
 import { ExpenseForm } from "./ExpenseForm";
 import { Alert } from "@/components/ui/Alert";
 import type { ReceiptDraft } from "@/lib/mosey/receipt-ai";
-import { formFrom, totalsFrom } from "@/lib/mosey/receipt-form";
+import { formFrom, PERSONAL_DOCUMENT_WARNING, totalsFrom } from "@/lib/mosey/receipt-form";
 import type { UnsavedReceipt } from "@/lib/mosey/receipts";
 
 type P = { id: string; name: string };
@@ -172,7 +172,7 @@ export function ReceiptAdd({
                       type="button"
                       onClick={() => {
                         setStatus(null);
-                        show({ receiptId: u.receiptId, draft: u.draft, draftError: u.draftError, warnings: [], canDiscard: u.canDiscard });
+                        show({ receiptId: u.receiptId, draft: u.draft, draftError: u.draftError, warnings: u.draft?.personalDocument ? [PERSONAL_DOCUMENT_WARNING] : [], canDiscard: u.canDiscard });
                       }}
                       className="min-h-11 text-accent underline-offset-4 hover:underline"
                     >
