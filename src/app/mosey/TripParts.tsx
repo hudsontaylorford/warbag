@@ -5,9 +5,9 @@ import { QuickAdd } from "./QuickAdd";
 import { dayLabel, rangeLabel } from "./format";
 
 /** Trip name, dates and place, with Plan / Ideas. */
-export function TripHeader({ trip, base, current, back }: { trip: TripDetail; base: string; current: "plan" | "ideas"; back?: boolean }) {
+export function TripHeader({ trip, base, current, back, money }: { trip: TripDetail; base: string; current: "plan" | "ideas" | "money"; back?: boolean; money?: boolean }) {
   const ideas = trip.stops.filter((s) => !s.day).length;
-  const tab = (id: "plan" | "ideas", label: string, href: string) => (
+  const tab = (id: "plan" | "ideas" | "money", label: string, href: string) => (
     <Link
       href={href}
       aria-current={current === id ? "page" : undefined}
@@ -33,6 +33,7 @@ export function TripHeader({ trip, base, current, back }: { trip: TripDetail; ba
       <nav aria-label="Trip" className="-mx-1 flex gap-1 border-b border-line">
         {tab("plan", "Plan", base)}
         {tab("ideas", ideas ? `Ideas (${ideas})` : "Ideas", `${base}/ideas`)}
+        {money && tab("money", "Money", `${base}/money`)}
       </nav>
     </div>
   );

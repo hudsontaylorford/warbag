@@ -130,7 +130,7 @@ async function tripRow(id: string): Promise<TripRow | null> {
 }
 
 /** The trip and the person's level, or AccessDenied (shown as "not found"). */
-async function tripWithRole(actor: Actor | null, id: string, need: Role, linkToken?: string) {
+export async function tripWithRole(actor: Actor | null, id: string, need: Role, linkToken?: string) {
   const trip = await tripRow(id);
   if (!trip) throw new AccessDenied();
   const role = await itemRole(actor, ref(trip), { linkToken });

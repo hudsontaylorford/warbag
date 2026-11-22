@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey PR 3: expenses and settle-up
+
+- **People on a trip's money are their own list**: a name, an optional household, and an optional link to a warbag account on the trip (so they see "You owe" on their screen). Organizers manage it; someone already in an expense or payment can't be removed.
+- **Members add expenses and payments and change only their own; organizers change anything.** Deleted expenses and payments are kept, marked deleted, and never counted. Every change goes in the change log with before and after.
+- **Split defaults to everyone**, with "Everyone" and "Nobody" shortcuts; the form shows "Split N ways, about $X each" before saving and won't save with nobody in the split. People added later are included by default.
+- **Settle up shows final payments first**, then each household's share, what they paid or already sent, and a plain sentence on credits ("$412.37 they already put in is taken off their $1,482.06, so only $1,069.69 is left to send"), then a balance check and a copy-ready message. No Venmo requests are sent.
+- **Freeze** saves the settle-up as a numbered version that never changes; later edits make a new version.
+- **Money is members-only**: no Money tab, data or page for view links or view grants (checked on the server).
+
 ## 2026-11-22 · Mosey money rules (PR 2)
 
 - **Whole cents everywhere.** Each person's share is kept exact across the whole trip and rounded once at the end (largest remainder first), so everyone is within a cent of their true share and the shares add up to what was spent exactly. People with identical shares can differ by one cent only when the cents force it.
