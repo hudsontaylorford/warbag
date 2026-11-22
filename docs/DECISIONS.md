@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey PR 4: receipt photos with AI drafts
+
+- **The AI suggests, a person saves.** A photo produces a suggested merchant, date, total and short description, shown in the expense form marked "Filled in from the photo. Check it before saving." It never picks who paid or who shares; nothing reaches the ledger until someone taps Add expense. Manual entry always works, and the form says so when reading fails or isn't set up.
+- **Model:** Claude Opus 5.5 (`claude-opus-5-5`, the current default), structured output against a fixed schema, effort `low`, server-side refusal fallback on. About a cent per receipt. Text on a receipt is treated as data, never instructions; card and account numbers are never put in any field.
+- **Privacy:** the browser redraws each photo as a JPEG of at most 2000px before upload, which drops hidden photo data such as GPS. Photos go to a private Vercel Blob store and are only served through `/mosey/receipts/<id>` after a trip-membership check (`no-store`, `nosniff`, noindex). No blob URL reaches a browser; view links and view grants never see receipts. Files are checked by their bytes (JPEG, PNG, WebP), 4 MB max (Vercel caps requests at 4.5 MB).
+- **Duplicates:** a warning when the same photo was uploaded before, or an expense on the same day for the same amount already exists.
+- **Setup:** a private Blob store (`BLOB_READ_WRITE_TOKEN`) and `ANTHROPIC_API_KEY`, Production only (SETUP.md Part G). Without them the receipt button is hidden. Tests never call the real AI.
+- **Not yet:** photos of a deleted trip stay in the Blob store (the database rows go); line items, several receipts at once, and auto-posting are out of scope.
+
 ## 2026-11-22 · Mosey PR 3: expenses and settle-up
 
 - **People on a trip's money are their own list**: a name, an optional household, and an optional link to a warbag account on the trip (so they see "You owe" on their screen). Organizers manage it; someone already in an expense or payment can't be removed.

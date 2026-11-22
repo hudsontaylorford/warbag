@@ -83,6 +83,36 @@ Keep `BETTER_AUTH_SECRET` forever. Changing it signs everyone out.
 
 If no email arrives: **Vercel → project `warbag` → Logs**, filter for "Email", and send Claude a screenshot.
 
+## Part G · Mosey receipt photos (10 minutes)
+
+Receipt photos need two things: a private file store on Vercel, and an Anthropic API key so Claude can read them. Without them, Mosey works the same but hides **Add from a receipt photo**. Previews never get either.
+
+Claude couldn't open vercel.com or console.anthropic.com from its session to confirm the exact screen names below. If a label differs, look for the closest match, and the check at the end proves it worked.
+
+**Private file store**
+
+1. 🟢 PRODUCTION · **Vercel → project `warbag` → Storage → Create** (it may say **Create Database**) → **Blob**.
+2. Name: `warbag-receipts`. If it asks for access, choose **Private**. Click **Create**.
+3. When it asks which environments to connect: tick **Production** only. Click **Connect**.
+4. **Vercel → project `warbag` → Settings → Environment Variables.** You should see `BLOB_READ_WRITE_TOKEN` (Production).
+
+**Anthropic API key**
+
+5. 🟢 PRODUCTION · **https://console.anthropic.com → Settings → API Keys → Create Key.** Name: `warbag receipts`. Copy the key (starts `sk-ant-`); it's shown once.
+6. Optional but wise: **Console → Settings → Limits** and set a monthly spend limit (reading a receipt costs about a cent).
+7. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Environment Variables → Add.**
+
+| Key | Value | Environments | Sensitive |
+|---|---|---|---|
+| `ANTHROPIC_API_KEY` | the `sk-ant-...` key from step 5 | Production only | On |
+
+**Turn it on**
+
+8. 🟢 PRODUCTION · **Vercel → project `warbag` → Deployments →** the top one labeled **Production** → **⋯ → Redeploy.** Wait for **Ready**.
+9. Check: on your phone open a Mosey trip → **Money**. You should see **Add from a receipt photo**. Take a photo of any receipt: within about 15 seconds you should see "Filled in from the photo. Check it before saving." Save it, then tap **Receipt ›** on the expense: the photo opens.
+
+If the photo saves but says it couldn't be read, the API key is missing or wrong. If it says "Couldn't save the photo", the Blob store isn't connected (or was created as public). Send Claude a screenshot of **Vercel → project `warbag` → Logs** filtered for "receipt".
+
 ## Later
 
 Changing setup? Update this file in the same PR.

@@ -21,6 +21,8 @@ export function ExpenseForm({
   defaultDay,
   expense,
   onDone,
+  prefill,
+  receiptId,
 }: {
   tripId: string;
   people: P[];
@@ -28,13 +30,16 @@ export function ExpenseForm({
   defaultDay: string;
   expense?: Existing;
   onDone?: () => void;
+  /** From a receipt photo: suggestions for a person to check before saving. */
+  prefill?: { description: string; amount: string; spentOn: string; notes: string };
+  receiptId?: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const all = people.map((p) => p.id);
   // Track who's left out, so anyone added to the trip later is in by default.
   const [out, setOut] = useState<string[]>(expense ? all.filter((id) => !expense.participants.includes(id)) : []);
   const split = all.filter((id) => !out.includes(id));
-  const [amount, setAmount] = useState(expense ? (expense.totalCents / 100).toFixed(2) : "");
+  const [amount, setAmount] = useState(expense ? (expense.totalCents / 100).toFixed(2) : (prefill?.amount ?? ""));
   const [state, formAction, pending] = useActionState(async (prev: Parameters<typeof addExpenseAction>[0], form: FormData) => {
     const next = await (expense ? updateExpenseAction : addExpenseAction)(prev, form);
     if (next.ok && !expense) {
@@ -52,10 +57,11 @@ export function ExpenseForm({
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="id" value={expense?.id ?? tripId} />
-      <Field label="What was it" name="description" required maxLength={200} defaultValue={expense?.description} placeholder="Groceries, dinner, the cabin…" />
+      {receiptId && <input type="hidden" name="receiptId" value={receiptId} />}
+      <Field label="What was it" name="description" required maxLength={200} defaultValue={expense?.description ?? prefill?.description} placeholder="Groceries, dinner, the cabin…" />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Amount ($)" name="amount" inputMode="decimal" required value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
-        <Field label="Date" name="spentOn" type="date" required defaultValue={expense?.spentOn ?? defaultDay} />
+        <Field label="Date" name="spentOn" type="date" required defaultValue={expense?.spentOn ?? (prefill?.spentOn || defaultDay)} />
       </div>
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold">Paid by</span>
@@ -94,7 +100,7 @@ export function ExpenseForm({
             : `Split ${split.length} ${split.length === 1 ? "way" : "ways"}${each !== null ? `, about ${dollars(each)} each` : ""}.`}
         </p>
       </fieldset>
-      <Field label="Notes" name="notes" maxLength={1000} defaultValue={expense?.notes} hint="Optional" />
+      <Field label="Notes" name="notes" maxLength={1000} defaultValue={expense?.notes ?? prefill?.notes} hint="Optional" />
       {state.error && <Alert>{state.error}</Alert>}
       {state.ok && !pending && !expense && (
         <p role="status" className="text-sm text-soft">
