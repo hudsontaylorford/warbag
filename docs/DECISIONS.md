@@ -2,6 +2,11 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Next apps (Hudson)
+
+- **Mosey** is the trip planner's name and the next priority after Gyfte. It should reuse what Gyfte, Chirk and CMX already solved; details to come.
+- **Room tuner**, a custom Sonarworks-style tool Hudson already built, will be migrated into warbag. Source and timing to confirm.
+
 ## 2026-11-22 · Import review keeps choices when the group changes
 
 - Picking the group on the import review no longer reloads the page (every group's people load up front), so who's who, parents, split rows and skips stay as set, in any order.
