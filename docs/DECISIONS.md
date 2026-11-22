@@ -4,7 +4,7 @@ Durable decisions, newest first. Each one says what was decided and why. When a 
 
 ## 2026-11-22 · Mosey: paper receipts
 
-Hudson's first real tests were paper restaurant receipts, not app receipts. One of three got the wrong total (it read a printed 20% tip line instead of the 22% written on the card slip), and an obscured date silently became the trip's first day.
+Hudson's first real tests were paper restaurant receipts, not app receipts. One of three got the wrong total (Bar Oliver: it suggested $338.97 from the 22% row of the tip table, but the row marked on the slip was 25%, for $346.74; corrected Nov 22 after a closer look), and an obscured date silently became the trip's first day.
 
 - **The reader follows paper rules:** handwriting overrides print; a suggested-tip table is options, not a charge; a printed gratuity line is already in the total; the signed card slip beats the itemized check; with no tip written, the printed total stands. Effort raised from low to medium for handwriting and faded thermal paper (still a few cents a receipt).
 - **Unsure means ask.** When more than one amount could be the charge, the form fills in none and asks "Which total was charged?" with each amount and where it came from, plus "Something else".
