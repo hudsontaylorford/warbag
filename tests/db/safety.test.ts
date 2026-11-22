@@ -15,6 +15,8 @@ import {
 import { claimItem, dismissClaim, myClaims } from "@/lib/gyfte/claims";
 import { setSharing } from "@/lib/gyfte/sharing";
 import { removalImpact, removePerson } from "@/lib/people";
+import { createTrip } from "@/lib/mosey/trips";
+import { addExpense, addPerson, ledger } from "@/lib/mosey/ledger";
 import { pool } from "@/lib/db";
 
 let hudson: Actor, molly: Actor, aunt: Actor;
@@ -67,7 +69,7 @@ describeDb("safety fixes", () => {
     await addItem(molly, mine, "Scarf");
     const kid = await createList(molly, { forMe: false, recipientName: "Kid", occasion: "christmas", date: "" });
     await addItem(molly, kid, "Blocks");
-    expect(await removalImpact(hudson, molly.id)).toEqual({ lists: 2, claims: 0 });
+    expect(await removalImpact(hudson, molly.id)).toEqual({ lists: 2, claims: 0, trips: 0 });
 
     await removePerson(hudson, molly.id);
     const { rows } = await admin.query(
@@ -84,9 +86,29 @@ describeDb("safety fixes", () => {
   it("frees the gifts a removed person claimed, and says so first", async () => {
     const { id, item } = await mollysSharedList();
     await claimItem(aunt, item);
-    expect(await removalImpact(hudson, aunt.id)).toEqual({ lists: 0, claims: 1 });
+    expect(await removalImpact(hudson, aunt.id)).toEqual({ lists: 0, claims: 1, trips: 0 });
     await removePerson(hudson, aunt.id);
     expect((await getList(hudson, id)).items[0].claim).toBeNull();
+  });
+
+  it("moves a removed person's Mosey trips to the admin, money and all, instead of deleting them", async () => {
+    await grantApp(hudson, "mosey", { userId: molly.id });
+    const trip = await createTrip(molly, { name: "Lake week", start: "2027-06-05", end: "2027-06-07" });
+    const ann = await addPerson(molly, trip, { name: "Ann", userId: molly.id });
+    await addExpense(molly, trip, { description: "Groceries", amount: "60", spentOn: "2027-06-05", paidBy: ann, participants: [ann] });
+    expect(await removalImpact(hudson, molly.id)).toEqual({ lists: 0, claims: 0, trips: 1 });
+
+    await removePerson(hudson, molly.id);
+    expect((await admin.query("select owner_id from mosey_trips where id = $1", [trip])).rows[0].owner_id).toBe(hudson.id);
+    const l = await ledger(hudson, trip);
+    expect(l.expenses.map((e) => [e.description, e.totalCents])).toEqual([["Groceries", 6000]]);
+    expect(l.people.map((p) => p.name)).toEqual(["Ann"]); // the name stays; the account link is gone
+  });
+
+  it("refuses to delete an account row that still organizes a trip", async () => {
+    await grantApp(hudson, "mosey", { userId: molly.id });
+    await createTrip(molly, { name: "Lake week", start: "2027-06-05", end: "2027-06-07" });
+    await expect(admin.query('delete from "user" where id = $1', [molly.id])).rejects.toMatchObject({ code: "23503" });
   });
 
   // ---------------------------------------------------------------- my claims after losing access

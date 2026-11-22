@@ -17,7 +17,7 @@ vi.mock("@/lib/mosey/receipt-ai", () => ({
   receiptAiConfigured: () => true,
   readReceipt: vi.fn(async () => ({ draft: fakeDraft, error: null })),
 }));
-const { attachReceipt, openReceipt, receiptsByExpense, sniffImage, uploadReceipt, MAX_RECEIPT_BYTES } = await import("@/lib/mosey/receipts");
+const { openReceipt, receiptsByExpense, sniffImage, uploadReceipt, MAX_RECEIPT_BYTES } = await import("@/lib/mosey/receipts");
 
 const png = (n = 0) => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from(`made-up image ${n}`)]);
 const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from("made-up jpeg")]);
@@ -83,17 +83,24 @@ describeDb("Mosey receipts", () => {
     expect((await uploadReceipt(mem, tripId, png(2))).warnings).toEqual([expect.stringMatching(/"Market run" on the same day/)]);
   });
 
-  it("attaches a receipt to the expense saved from it, within one trip only", async () => {
+  it("saves the expense and its receipt together, within one trip only, and never twice", async () => {
     const r = await uploadReceipt(mem, tripId, png(3));
-    const e = await addExpense(mem, tripId, { description: "Groceries", amount: "42.50", spentOn: "2027-06-05", paidBy: ann, participants: [ann] });
+    const exp = { description: "Groceries", amount: "42.50", spentOn: "2027-06-05", paidBy: ann, participants: [ann] };
+    const count = async () => (await admin.query("select count(*)::int as n from mosey_expenses where trip_id = $1", [tripId])).rows[0].n;
+    // A receipt from another trip, or a made-up id, is refused and nothing is saved.
     const other = await createTrip(org, { name: "Other", start: "2027-07-01", end: "2027-07-01" });
-    const zed = await addPerson(org, other, { name: "Zed" });
-    const otherExpense = await addExpense(org, other, { description: "X", amount: "1", spentOn: "2027-07-01", paidBy: zed, participants: [zed] });
-    await expect(attachReceipt(org, r.receiptId, otherExpense)).rejects.toBeInstanceOf(AccessDenied);
-    await expect(attachReceipt(viewer, r.receiptId, e)).rejects.toBeInstanceOf(AccessDenied);
-    await attachReceipt(mem, r.receiptId, e);
+    const elsewhere = await uploadReceipt(org, other, png(4));
+    await expect(addExpense(org, tripId, { ...exp, receiptId: elsewhere.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(addExpense(org, tripId, { ...exp, receiptId: crypto.randomUUID() })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(addExpense(viewer, tripId, { ...exp, receiptId: r.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    // A bad expense leaves the receipt unattached, so the save can be retried.
+    await expect(addExpense(mem, tripId, { ...exp, amount: "abc", receiptId: r.receiptId })).rejects.toBeInstanceOf(InputError);
+    expect(await count()).toBe(0);
+    const e = await addExpense(mem, tripId, { ...exp, receiptId: r.receiptId });
     expect((await receiptsByExpense(mem, tripId)).get(e)).toBe(r.receiptId);
-    await expect(attachReceipt(mem, r.receiptId, e)).rejects.toBeInstanceOf(AccessDenied); // already attached
+    // Saving the same receipt again (a double tap or a retry) can't make a second expense.
+    await expect(addExpense(mem, tripId, { ...exp, receiptId: r.receiptId })).rejects.toThrow(/already saved/);
+    expect(await count()).toBe(1);
     await expect(receiptsByExpense(viewer, tripId)).rejects.toBeInstanceOf(AccessDenied);
   });
 });

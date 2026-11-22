@@ -27,7 +27,7 @@ import {
   updateExpense,
   updatePerson,
 } from "@/lib/mosey/ledger";
-import { attachReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
+import { uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
 import { currentActor } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
 import { InputError } from "@/lib/errors";
@@ -119,8 +119,7 @@ const expenseFields = (form: FormData) => ({
 
 export async function addExpenseAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    const expenseId = await addExpense(actor, text(form, "id"), expenseFields(form));
-    if (text(form, "receiptId")) await attachReceipt(actor, text(form, "receiptId"), expenseId);
+    await addExpense(actor, text(form, "id"), { ...expenseFields(form), receiptId: text(form, "receiptId") || undefined });
     return "Added";
   });
 }

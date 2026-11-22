@@ -107,19 +107,6 @@ export async function uploadReceipt(actor: Actor, tripId: string, image: Buffer)
   return { receiptId: id, draft, draftError: error, warnings };
 }
 
-/** Ties a receipt to the expense saved from it. The receipt and expense must share a trip. */
-export async function attachReceipt(actor: Actor, receiptId: string, expenseId: string): Promise<void> {
-  if (!UUID.test(receiptId) || !UUID.test(expenseId)) throw new AccessDenied();
-  const { rows } = await pool.query<{ trip_id: string }>(
-    `select r.trip_id from mosey_receipts r join mosey_expenses e on e.id = $2 and e.trip_id = r.trip_id
-     where r.id = $1 and r.expense_id is null`,
-    [receiptId, expenseId],
-  );
-  if (!rows[0]) throw new AccessDenied();
-  await tripWithRole(actor, rows[0].trip_id, "contribute");
-  await pool.query("update mosey_receipts set expense_id = $2 where id = $1", [receiptId, expenseId]);
-}
-
 /** Expense id -> its receipt id, for the trip's expense list. Members only. */
 export async function receiptsByExpense(actor: Actor, tripId: string): Promise<Map<string, string>> {
   const { trip } = await tripWithRole(actor, tripId, "contribute");

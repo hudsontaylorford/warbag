@@ -338,9 +338,23 @@ async function readExpense(c: Pick<PoolClient, "query">, tripId: string, input: 
   return { description, totalCents, spentOn, notes, paidBy: input.paidBy, participants };
 }
 
-export async function addExpense(actor: Actor, tripId: string, input: ExpenseInput): Promise<string> {
+/**
+ * Adds an expense. With `receiptId`, the receipt is attached in the same
+ * transaction: both happen or neither does, and a receipt already saved as
+ * an expense is refused, so retrying a save can't create a duplicate.
+ */
+export async function addExpense(actor: Actor, tripId: string, input: ExpenseInput & { receiptId?: string }): Promise<string> {
   const { trip } = await member(actor, tripId);
   return inTx(async (c) => {
+    if (input.receiptId) {
+      if (!UUID.test(input.receiptId)) throw new AccessDenied();
+      const r = await c.query<{ expense_id: string | null }>(
+        "select expense_id from mosey_receipts where id = $1 and trip_id = $2 for update",
+        [input.receiptId, trip.id],
+      );
+      if (!r.rows[0]) throw new AccessDenied();
+      if (r.rows[0].expense_id) throw new InputError("This receipt is already saved as an expense.");
+    }
     const e = await readExpense(c, trip.id, input);
     const { rows } = await c.query<{ id: string }>(
       `insert into mosey_expenses (trip_id, description, spent_on, total_cents, paid_by, notes, created_by)
@@ -348,7 +362,8 @@ export async function addExpense(actor: Actor, tripId: string, input: ExpenseInp
       [trip.id, e.description, e.spentOn, e.totalCents, e.paidBy, e.notes, actor.id],
     );
     for (const p of e.participants) await c.query("insert into mosey_expense_people (expense_id, person_id) values ($1, $2)", [rows[0].id, p]);
-    await log(c, trip.id, actor, "expense.add", rows[0].id, null, e);
+    if (input.receiptId) await c.query("update mosey_receipts set expense_id = $2 where id = $1", [input.receiptId, rows[0].id]);
+    await log(c, trip.id, actor, "expense.add", rows[0].id, null, { ...e, receiptId: input.receiptId ?? null });
     return rows[0].id;
   });
 }

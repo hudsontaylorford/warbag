@@ -28,6 +28,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     impact && impact.lists > 0
       ? `The ${impact.lists} Gyfte ${impact.lists === 1 ? "list" : "lists"} they manage will move to you.`
       : "",
+    impact && impact.trips > 0
+      ? `The ${impact.trips} Mosey ${impact.trips === 1 ? "trip" : "trips"} they organize will move to you, with everything on them.`
+      : "",
     impact && impact.claims > 0
       ? `The ${impact.claims} ${impact.claims === 1 ? "gift" : "gifts"} they said they'd get will become unclaimed.`
       : "",
