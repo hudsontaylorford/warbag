@@ -2,6 +2,11 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Import review keeps choices when the group changes
+
+- Picking the group on the import review no longer reloads the page (every group's people load up front), so who's who, parents, split rows and skips stay as set, in any order.
+- Picks that don't fit the new group are cleared rather than kept: a person or parent who isn't in it, and "Someone in the group" when switching to no group. The server still re-checks everything on import.
+
 ## 2026-11-21 · Second editorial pass (from WRB-20261121-07)
 
 - **No launcher signature or tagline** (Hudson: warbag is a personal app, not a public product). The faint oversized W was tried and dropped; "What's in your warbag" is replaced by a plain "Hi, Hudson". Colors and fonts unchanged.
