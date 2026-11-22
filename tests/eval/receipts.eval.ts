@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, it } from "vitest";
 import { readReceipt } from "@/lib/mosey/receipt-ai";
@@ -17,6 +17,10 @@ import { sniffImage } from "@/lib/mosey/receipts";
  *   also right when the correct total is among the amounts offered.
  *   "personalDocument": true when an ID or card is in the photo too.
  *
+ * Each run appends what the reader returned for every photo to drafts.jsonl
+ * in the same folder (the reading only: no image, no key), so a miss can be
+ * explained afterwards instead of guessed at.
+ *
  *   RECEIPT_EVAL_DIR=/path/to/folder npm run eval:receipts
  */
 type Expect = { total?: string; pick?: string[]; date: string; personalDocument?: boolean };
@@ -31,6 +35,7 @@ it.skipIf(!ready)("reads real receipts the way a person would", async () => {
   for (const [file, want] of Object.entries(expected)) {
     const image = readFileSync(path.join(dir!, file));
     const { draft, error } = await readReceipt(image, sniffImage(image)!);
+    appendFileSync(path.join(dir!, "drafts.jsonl"), JSON.stringify({ at: new Date().toISOString(), file, draft, error }) + "\n");
     const { prefill, totals } = formFrom(draft);
     const offered = totals.map((t) => t.amount);
     const totalOk = want.pick
