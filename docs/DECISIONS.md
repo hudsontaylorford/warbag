@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-22 · Mosey PR 1: trips, Plan and Ideas
+
+- **A trip is a name, a place and a date range;** its days fill in. The Plan is one card per day; Ideas are stops with no day. A stop is a title plus optional time (wall-clock, no time zones), place (with Open in Maps, no Google key), link, notes.
+- **Roles reuse the shared access tables** (app "mosey", type "trip"): organizer = manage (owner, plans, shares), member = contribute (adds ideas; a day they pick is a suggestion for an organizer to confirm; edits and deletes only their own ideas), viewer = view.
+- **The view link** (/m/…) shows Plan and Ideas without sign-in. Stops marked "Members only" show just their title there: no place, link or notes. Viewers with a view grant see the same.
+- **Shortening a trip moves stops on dropped days back to Ideas** instead of deleting them.
+- **Who sees Mosey:** people given the app (only Hudson at first) and anyone added to a trip. Money (expenses, settle-up) comes in PRs 2 and 3; receipts with AI drafts in PR 4. Address search (OpenStreetMap) after the trial.
+
 ## 2026-11-22 · Next apps (Hudson)
 
 - **Mosey** is the trip planner's name and the next priority after Gyfte. It should reuse what Gyfte, Chirk and CMX already solved; details to come.
