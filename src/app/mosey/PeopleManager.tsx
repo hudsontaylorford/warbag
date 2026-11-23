@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 
-type Person = { id: string; name: string; userId: string | null; householdId: string | null };
+type Person = { id: string; name: string; userId: string | null; householdId: string | null; kid: boolean };
 type Household = { id: string; name: string };
 type Account = { id: string; name: string };
 
@@ -28,6 +28,13 @@ function Fields({ person, households, accounts }: { person?: Person; households:
           <option key={h.id} value={h.name} />
         ))}
       </datalist>
+      <label className="flex min-h-11 cursor-pointer items-start gap-3">
+        <input type="checkbox" name="kid" defaultChecked={person?.kid} className="mt-0.5 size-5 shrink-0 accent-ink" />
+        <span className="flex flex-col">
+          <span className="font-semibold">Kid</span>
+          <span className="text-sm text-soft">On the plan and who&apos;s going. Left out of splits unless ticked in, and never pays. Give them their family&apos;s household.</span>
+        </span>
+      </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold">Their warbag account</span>
         <select name="userId" defaultValue={person?.userId ?? ""} className="min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base">
@@ -54,7 +61,7 @@ function PersonRow({ tripId, p, households, accounts }: { tripId: string; p: Per
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="font-semibold break-words">{p.name}</span>
-          <span className="text-sm text-soft">{[household ? `Household: ${household}` : "On their own", p.userId ? "Has an account" : null].filter(Boolean).join(" · ")}</span>
+          <span className="text-sm text-soft">{[p.kid ? "Kid" : null, household ? `Household: ${household}` : "On their own", p.userId ? "Has an account" : null].filter(Boolean).join(" · ")}</span>
         </div>
         <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 w-12 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline">
           {open ? "Close" : "Edit"}

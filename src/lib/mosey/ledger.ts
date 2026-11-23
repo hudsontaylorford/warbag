@@ -30,7 +30,7 @@ import {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_CENTS = 100_000_000;
 
-export type TripPerson = { id: string; name: string; userId: string | null; householdId: string | null; you: boolean };
+export type TripPerson = { id: string; name: string; userId: string | null; householdId: string | null; you: boolean; kid: boolean };
 export type Household = { id: string; name: string };
 export type ExpenseRow = {
   id: string;
@@ -102,11 +102,11 @@ async function inTx<T>(work: (c: PoolClient) => Promise<T>): Promise<T> {
 export async function ledger(actor: Actor, tripId: string): Promise<Ledger> {
   const { trip, organizer: isOrg } = await member(actor, tripId);
   const people = (
-    await pool.query<{ id: string; name: string; user_id: string | null; household_id: string | null }>(
-      "select id, name, user_id, household_id from mosey_people where trip_id = $1 order by position, created_at",
+    await pool.query<{ id: string; name: string; user_id: string | null; household_id: string | null; kid: boolean }>(
+      "select id, name, user_id, household_id, kid from mosey_people where trip_id = $1 order by position, created_at",
       [trip.id],
     )
-  ).rows.map((r) => ({ id: r.id, name: r.name, userId: r.user_id, householdId: r.household_id, you: r.user_id === actor.id }));
+  ).rows.map((r) => ({ id: r.id, name: r.name, userId: r.user_id, householdId: r.household_id, you: r.user_id === actor.id, kid: r.kid }));
   const households = (
     await pool.query<Household>("select id, name from mosey_households where trip_id = $1 order by lower(name)", [trip.id])
   ).rows;
@@ -167,6 +167,12 @@ export async function ledger(actor: Actor, tripId: string): Promise<Ledger> {
     }
     plan = mode === "through" ? settleThrough(us, hub!) : settleDirect(us);
     if (!settles(us, plan)) throw new Error("Settle-up doesn't balance.");
+    // A kid on their own who isn't in any split has nothing to settle: don't list them.
+    const idle = new Set(
+      bal.filter((b) => people.find((p) => p.id === b.id)?.kid && b.paid === 0 && b.share === 0 && b.sent === 0 && b.received === 0).map((b) => b.id),
+    );
+    us = us.filter((u) => !idle.has(u.id));
+    bal = bal.filter((b) => !idle.has(b.id));
   } catch (err) {
     problem = err instanceof MoneyError ? err.message : "These numbers don't add up. Nothing is lost; tell Hudson.";
     if (!(err instanceof MoneyError)) console.error("mosey ledger", err);
@@ -215,7 +221,7 @@ export async function linkableAccounts(actor: Actor, tripId: string): Promise<{ 
 }
 
 /** Adds someone to the trip's money, by name, optionally linked to an account on the trip. */
-export async function addPerson(actor: Actor, tripId: string, input: { name: string; userId?: string; household?: string }): Promise<string> {
+export async function addPerson(actor: Actor, tripId: string, input: { name: string; userId?: string; household?: string; kid?: boolean }): Promise<string> {
   const trip = await organizer(actor, tripId);
   const name = cleanName(input.name);
   if (input.userId && !(await linkableAccounts(actor, tripId)).some((a) => a.id === input.userId)) {
@@ -224,14 +230,14 @@ export async function addPerson(actor: Actor, tripId: string, input: { name: str
   return inTx(async (c) => {
     const householdId = input.household?.trim() ? await householdId_(c, trip.id, input.household) : null;
     const { rows } = await c.query<{ id: string }>(
-      `insert into mosey_people (trip_id, name, user_id, household_id, position)
-       values ($1, $2, $3, $4, coalesce((select max(position) + 1 from mosey_people where trip_id = $1), 0)) returning id`,
-      [trip.id, name, input.userId || null, householdId],
+      `insert into mosey_people (trip_id, name, user_id, household_id, position, kid)
+       values ($1, $2, $3, $4, coalesce((select max(position) + 1 from mosey_people where trip_id = $1), 0), $5) returning id`,
+      [trip.id, name, input.userId || null, householdId, input.kid === true],
     ).catch((err) => {
       if (err?.code === "23505") throw new InputError("That account is already on this trip's money.");
       throw err;
     });
-    await log(c, trip.id, actor, "person.add", rows[0].id, null, { name, userId: input.userId || null, householdId });
+    await log(c, trip.id, actor, "person.add", rows[0].id, null, { name, userId: input.userId || null, householdId, kid: input.kid === true });
     return rows[0].id;
   });
 }
@@ -246,8 +252,8 @@ async function householdId_(c: PoolClient, tripId: string, raw: string): Promise
 
 async function personIn(c: Pick<PoolClient, "query">, tripId: string, personId: string) {
   if (!UUID.test(personId)) throw new AccessDenied();
-  const { rows } = await c.query<{ id: string; name: string; user_id: string | null; household_id: string | null }>(
-    "select id, name, user_id, household_id from mosey_people where id = $1 and trip_id = $2",
+  const { rows } = await c.query<{ id: string; name: string; user_id: string | null; household_id: string | null; kid: boolean }>(
+    "select id, name, user_id, household_id, kid from mosey_people where id = $1 and trip_id = $2",
     [personId, tripId],
   );
   if (!rows[0]) throw new AccessDenied();
@@ -263,7 +269,7 @@ export async function updatePerson(
   actor: Actor,
   tripId: string,
   personId: string,
-  input: { name: string; userId?: string; household?: string },
+  input: { name: string; userId?: string; household?: string; kid?: boolean },
 ): Promise<void> {
   const trip = await organizer(actor, tripId);
   const name = cleanName(input.name);
@@ -273,7 +279,18 @@ export async function updatePerson(
   await inTx(async (c) => {
     const before = await personIn(c, trip.id, personId);
     const householdId = input.household?.trim() ? await householdId_(c, trip.id, input.household) : null;
-    await c.query("update mosey_people set name = $2, user_id = $3, household_id = $4 where id = $1", [personId, name, input.userId || null, householdId]).catch(
+    const kid = input.kid === true;
+    if (kid) {
+      // Kids never pay or get paid, and their share always goes to a household.
+      const paid = await c.query(
+        `select 1 from mosey_expenses where paid_by = $1 and deleted_at is null
+         union all select 1 from mosey_payments where (from_person = $1 or to_person = $1) and deleted_at is null limit 1`,
+        [personId],
+      );
+      if (paid.rowCount) throw new InputError(`${before.name} paid for something or is in a payment. Kids don't pay in Mosey; change those first.`);
+      if (!householdId && (await inSplits(c, personId))) throw new InputError(`${name} is in some splits. Put them in their family's household so their share goes there.`);
+    }
+    await c.query("update mosey_people set name = $2, user_id = $3, household_id = $4, kid = $5 where id = $1", [personId, name, input.userId || null, householdId, kid]).catch(
       (err) => {
         if (err?.code === "23505") throw new InputError("That account is already linked to someone else on this trip.");
         throw err;
@@ -281,8 +298,16 @@ export async function updatePerson(
     );
     // Households nobody is in anymore go away.
     await c.query("delete from mosey_households h where trip_id = $1 and not exists (select 1 from mosey_people p where p.household_id = h.id)", [trip.id]);
-    await log(c, trip.id, actor, "person.update", personId, before, { name, userId: input.userId || null, householdId });
+    await log(c, trip.id, actor, "person.update", personId, before, { name, userId: input.userId || null, householdId, kid });
   });
+}
+
+async function inSplits(c: Pick<PoolClient, "query">, personId: string): Promise<boolean> {
+  const r = await c.query(
+    "select 1 from mosey_expense_people ep join mosey_expenses e on e.id = ep.expense_id where ep.person_id = $1 and e.deleted_at is null limit 1",
+    [personId],
+  );
+  return Boolean(r.rowCount);
 }
 
 /** Removes someone who isn't in any expense or payment. */
@@ -325,15 +350,17 @@ async function readExpense(c: Pick<PoolClient, "query">, tripId: string, input: 
   const notes = String(input.notes ?? "").trim();
   if (notes.length > 1000) throw new InputError("Notes are at most 1000 characters.");
   if (!input.paidBy) throw new InputError("Pick who paid.");
-  await personIn(c, tripId, input.paidBy).catch(() => {
+  const payer = await personIn(c, tripId, input.paidBy).catch(() => {
     throw new InputError("Pick who paid.");
   });
+  if (payer.kid) throw new InputError("Kids don't pay in Mosey. Pick the adult who paid.");
   const participants = [...new Set(input.participants)];
   if (participants.length === 0) throw new InputError("Pick who it's split with (at least one person).");
   for (const p of participants) {
-    await personIn(c, tripId, p).catch(() => {
+    const who = await personIn(c, tripId, p).catch(() => {
       throw new InputError("Someone in the split isn't on this trip.");
     });
+    if (who.kid && !who.household_id) throw new InputError(`Put ${who.name} in their family's household first, so their share goes there.`);
   }
   return { description, totalCents, spentOn, notes, paidBy: input.paidBy, participants };
 }
@@ -418,12 +445,13 @@ export async function addPayment(actor: Actor, tripId: string, input: { from: st
   if (!input.from || !input.to) throw new InputError("Pick who paid whom.");
   if (input.from === input.to) throw new InputError("Pick two different people.");
   return inTx(async (c) => {
-    await personIn(c, trip.id, input.from).catch(() => {
+    const from = await personIn(c, trip.id, input.from).catch(() => {
       throw new InputError("Pick who paid.");
     });
-    await personIn(c, trip.id, input.to).catch(() => {
+    const to = await personIn(c, trip.id, input.to).catch(() => {
       throw new InputError("Pick who they paid.");
     });
+    if (from.kid || to.kid) throw new InputError("Kids don't pay or get paid in Mosey. Pick adults.");
     const { rows } = await c.query<{ id: string }>(
       `insert into mosey_payments (trip_id, from_person, to_person, amount_cents, paid_on, note, created_by) values ($1, $2, $3, $4, $5, $6, $7) returning id`,
       [trip.id, input.from, input.to, amountCents, paidOn, note, actor.id],
@@ -458,7 +486,7 @@ export async function setSettle(actor: Actor, tripId: string, mode: string, hub:
     if (!hub) throw new InputError("Pick who collects and pays out.");
     const ok = await pool.query(
       `select 1 from mosey_households where id::text = $2 and trip_id = $1
-       union all select 1 from mosey_people where id::text = $2 and trip_id = $1 and household_id is null`,
+       union all select 1 from mosey_people where id::text = $2 and trip_id = $1 and household_id is null and not kid`,
       [trip.id, hub],
     );
     if (!ok.rowCount) throw new InputError("Pick someone on this trip.");

@@ -8,7 +8,7 @@ import type { ReceiptDraft } from "@/lib/mosey/receipt-ai";
 import { formFrom, PERSONAL_DOCUMENT_WARNING, totalsFrom } from "@/lib/mosey/receipt-form";
 import type { UnsavedReceipt } from "@/lib/mosey/receipts";
 
-type P = { id: string; name: string };
+type P = { id: string; name: string; kid?: boolean; householdId?: string | null };
 type Current = { receiptId: string; draft: ReceiptDraft | null; draftError: string | null; warnings: string[]; canDiscard: boolean };
 
 /**

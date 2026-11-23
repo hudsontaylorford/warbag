@@ -40,7 +40,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
     receiptsConfigured() ? unsavedReceipts(actor, id) : Promise.resolve([]),
   ]);
   const day = defaultDay(trip.startDate, trip.endDate);
-  const people = l.people.map((p) => ({ id: p.id, name: p.name }));
+  const people = l.people.map((p) => ({ id: p.id, name: p.name, kid: p.kid, householdId: p.householdId }));
   const myUnit = l.me ? l.units.find((u) => u.members.includes(l.me!)) : null;
 
   return (

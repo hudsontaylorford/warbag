@@ -197,14 +197,19 @@ export async function deletePaymentAction(_: FormState, form: FormData): Promise
 
 export async function addPersonAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    await addPerson(actor, text(form, "id"), { name: text(form, "name"), userId: text(form, "userId"), household: text(form, "household") });
+    await addPerson(actor, text(form, "id"), { name: text(form, "name"), userId: text(form, "userId"), household: text(form, "household"), kid: form.get("kid") === "on" });
     return "Added";
   });
 }
 
 export async function updatePersonAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction((actor) =>
-    updatePerson(actor, text(form, "id"), text(form, "personId"), { name: text(form, "name"), userId: text(form, "userId"), household: text(form, "household") }),
+    updatePerson(actor, text(form, "id"), text(form, "personId"), {
+      name: text(form, "name"),
+      userId: text(form, "userId"),
+      household: text(form, "household"),
+      kid: form.get("kid") === "on",
+    }),
   );
 }
 
