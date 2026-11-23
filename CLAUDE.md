@@ -37,7 +37,7 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 - Each app's data is separate even in one database (its own tables and ownership checks).
 - Never put private app names, health data or personal content in public HTML, the sitemap or indexed pages. Everything except the public homepage is `noindex`.
 - Admin (invites, people, groups, grants, revoking links) is done in the app, not by editing database rows.
-- Future assistant access (e.g. Instinct) gets its own revocable identity, starts read-only and is audited. It never inherits admin. Details later.
+- Assistant access (an AI agent, Instinct): its own revocable, non-admin account, never Hudson's session or a shared password. Hudson decides how much it can do (2026-11-23: full control of the trips he makes it co-organizer of is fine). It never gets admin. A dedicated read-only, audited assistant identity is on the roadmap.
 
 ## Design and copy
 

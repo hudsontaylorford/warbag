@@ -41,6 +41,8 @@
 | Pick this / Your pick | Choosing one option for yourself; tap your pick again to clear it. |
 | Who picked what | Everyone's pick for a set of options. |
 | Ungroup | Turns options back into ordinary stops, keeping picks. |
+| Member (trip) | Sees the trip and its money, adds ideas and expenses, suggests a day. |
+| Co-organizer | Does everything the owner can on a trip except share it or delete it. |
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |
 | All adults | The split shortcut when a trip has kids (otherwise "Everyone"). |
 | Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |

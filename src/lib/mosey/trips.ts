@@ -25,7 +25,8 @@ import {
 
 /**
  * Mosey trips. Access uses the shared tables with app "mosey", type "trip":
- *   manage      organizer: edits the trip, puts ideas on the plan, shares it
+ *   manage      organizer: edits the trip, puts ideas on the plan; the owner
+ *               (or an admin) also shares it and deletes it, co-organizers don't
  *   contribute  member: adds ideas (and suggests a day), edits their own
  *   view        viewer, including view-only links: Plan and Ideas, never
  *               members-only details
@@ -85,6 +86,8 @@ export type DayInfo = { area: string; tag: string };
 
 export type TripDetail = TripSummary & {
   role: Role;
+  /** The trip's owner (or an admin): only they share it or delete it. Co-organizers do the rest. */
+  owner: boolean;
   days: string[];
   /** Area and tag by day, only for days that have one. */
   dayInfo: Record<string, DayInfo>;
@@ -156,6 +159,13 @@ async function tripRow(id: string): Promise<TripRow | null> {
     [id],
   );
   return rows[0] ?? null;
+}
+
+/** Sharing a trip and deleting it: its owner (or an admin), never a co-organizer. */
+async function ownerOnly(actor: Actor, id: string) {
+  const r = await tripWithRole(actor, id, "manage");
+  if (r.trip.owner_id !== actor.id && !actor.isAdmin) throw new AccessDenied();
+  return r;
 }
 
 /** The trip and the person's level, or AccessDenied (shown as "not found"). */
@@ -238,7 +248,7 @@ export async function updateTrip(
 }
 
 export async function deleteTrip(actor: Actor, id: string): Promise<void> {
-  const { trip } = await tripWithRole(actor, id, "manage");
+  const { trip } = await ownerOnly(actor, id);
   await forgetItem(actor, ref(trip));
   await pool.query("delete from mosey_trips where id = $1", [trip.id]);
 }
@@ -442,6 +452,7 @@ export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
     startDate: trip.start_date,
     endDate: trip.end_date,
     organizer: role === "manage",
+    owner: trip.owner_id === actor.id || actor.isAdmin,
     role,
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
@@ -483,6 +494,7 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
     startDate: trip.start_date,
     endDate: trip.end_date,
     organizer: false,
+    owner: false,
     role: "view",
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
@@ -722,7 +734,10 @@ export async function deleteStop(actor: Actor, stopId: string): Promise<void> {
 // ------------------------------------------------------------ people and links
 
 export type TripSharing = {
+  /** Members (contribute). Co-organizers are listed separately. */
   members: { kind: "group" | "person"; id: string; name: string }[];
+  /** People who can organize the trip with the owner (manage). */
+  organizers: { id: string; name: string }[];
   groups: { id: string; name: string }[];
   people: { id: string; name: string }[];
   links: { id: string; token: string }[];
@@ -743,12 +758,14 @@ async function addablePeople(actor: Actor, ownerId: string) {
 }
 
 export async function tripSharing(actor: Actor, tripId: string): Promise<TripSharing> {
-  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const { trip } = await ownerOnly(actor, tripId);
   const r = ref(trip);
   const people = await addablePeople(actor, trip.owner_id);
   const names = new Map(people.map((p) => [p.id, p.name]));
-  const grants = await listItemGrants(actor, r);
+  const all = await listItemGrants(actor, r);
+  const grants = all.filter((g) => g.role !== "manage");
   return {
+    organizers: all.filter((g) => g.role === "manage" && g.userId).map((g) => ({ id: g.userId!, name: names.get(g.userId!) ?? (g.email ?? "").split("@")[0] })),
     members: grants.map((g) =>
       g.groupId
         ? { kind: "group" as const, id: g.groupId, name: g.groupName ?? "Group" }
@@ -762,7 +779,7 @@ export async function tripSharing(actor: Actor, tripId: string): Promise<TripSha
 
 /** Sets exactly who's on the trip as a member (groups and people). */
 export async function setTripMembers(actor: Actor, tripId: string, input: { groupIds: string[]; userIds: string[] }): Promise<void> {
-  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const { trip } = await ownerOnly(actor, tripId);
   const allowedGroups = new Set((await groupsFor(actor)).map((g) => g.id));
   const allowedPeople = new Set((await addablePeople(actor, trip.owner_id)).map((p) => p.id));
   const groupIds = [...new Set(input.groupIds)];
@@ -771,19 +788,38 @@ export async function setTripMembers(actor: Actor, tripId: string, input: { grou
   for (const id of userIds) if (!allowedPeople.has(id)) throw new InputError("You can only add people in your groups.");
   const r = ref(trip);
   for (const g of await listItemGrants(actor, r)) {
+    if (g.role === "manage") continue; // co-organizers are set on their own
     const keep = g.groupId ? groupIds.includes(g.groupId) : userIds.includes(g.userId!);
     if (!keep) await revokeItem(actor, r, g.groupId ? { groupId: g.groupId } : { userId: g.userId! });
   }
   for (const id of groupIds) await grantItem(actor, r, { groupId: id }, "contribute");
-  for (const id of userIds) await grantItem(actor, r, { userId: id }, "contribute");
+  const organizers = new Set((await listItemGrants(actor, r)).filter((g) => g.role === "manage" && g.userId).map((g) => g.userId!));
+  for (const id of userIds) if (!organizers.has(id)) await grantItem(actor, r, { userId: id }, "contribute");
+}
+/**
+ * Co-organizers: people who can do everything on the trip that its owner can
+ * (plan, ideas, options, people, money, settle-up, details), except share it
+ * or delete it. The owner (or an admin) sets them. Never groups.
+ */
+export async function setTripOrganizers(actor: Actor, tripId: string, userIds: string[]): Promise<void> {
+  const { trip } = await ownerOnly(actor, tripId);
+  const allowed = new Set((await addablePeople(actor, trip.owner_id)).map((p) => p.id));
+  const ids = [...new Set(userIds)];
+  for (const id of ids) if (!allowed.has(id)) throw new InputError("You can only add people in your groups.");
+  const r = ref(trip);
+  for (const g of await listItemGrants(actor, r)) {
+    if (g.role === "manage" && g.userId && !ids.includes(g.userId)) await revokeItem(actor, r, { userId: g.userId });
+  }
+  for (const id of ids) await grantItem(actor, r, { userId: id }, "manage");
 }
 
+
 export async function createTripLink(actor: Actor, tripId: string): Promise<void> {
-  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const { trip } = await ownerOnly(actor, tripId);
   await createShareLink(actor, ref(trip), { role: "view" });
 }
 
 export async function revokeTripLink(actor: Actor, tripId: string, linkId: string): Promise<void> {
-  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const { trip } = await ownerOnly(actor, tripId);
   await revokeShareLink(actor, ref(trip), linkId);
 }

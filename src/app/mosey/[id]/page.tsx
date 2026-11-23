@@ -18,7 +18,7 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
     throw err;
   });
   const canAdd = trip.role === "manage" || trip.role === "contribute";
-  const sharing = trip.organizer ? await tripSharing(actor, id) : null;
+  const sharing = trip.owner ? await tripSharing(actor, id) : null;
 
   return (
     <>
@@ -26,7 +26,7 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="plan" back money={canAdd} />
         <DayCards trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} />
-        {sharing && <TripManage trip={trip} sharing={sharing} siteUrl={siteUrl()} />}
+        {trip.organizer && <TripManage trip={trip} sharing={sharing} siteUrl={siteUrl()} />}
       </main>
     </>
   );

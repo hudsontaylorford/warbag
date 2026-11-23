@@ -22,6 +22,6 @@ External links in the launcher from day one: **Chirk** (chirk.fyi) and **Crewmax
 **Sign-in and accounts** (Hudson, 2026-11-23; each needs Hudson's go):
 - **Signed-in devices** on Account: every active sign-in (browser or app, started, last used) with Sign out for each. Shows where sign-ins come from and ends ones you don't recognize.
 - **Passkeys:** Face ID / Touch ID sign-in alongside email codes; no passwords (Better Auth passkey plugin).
-- **Assistant access** (Instinct, agent browsers): an assistant gets its own revocable identity, starts read-only and is audited; it never acts as Hudson or inherits admin (CLAUDE.md). Context: an agent's browser starts from a fresh profile each run, so it's always signed out; until this exists, give it a read-only Mosey view link (`/m/…`), which needs no sign-in and can be turned off.
+- **Assistant access** (Instinct, agent browsers): today an agent can have its own non-admin account and be a trip's co-organizer (Hudson, 2026-11-23). Later: a dedicated assistant identity with revocable tokens and an audit trail, so it needn't sign in by email code on every run (an agent's browser starts from a fresh profile each run). For read-only review, a Mosey view link (`/m/…`) needs no sign-in.
 
 Later: email on warbag.rodeo (hosted provider, not self-hosted), Chirk integration.

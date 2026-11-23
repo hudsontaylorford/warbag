@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: co-organizers (and an agent with full control)
+
+Hudson: an agent with basically full control is fine, without admin.
+
+- **Co-organizers** on a trip (Manage → Co-organizers, people only): a `manage` grant. They do everything the owner can on that trip: plan, ideas, options, who's going, people, money, settle-up, trip details.
+- **Owner-only (or an admin):** who the trip is shared with (members, co-organizers, view links) and deleting it. So a co-organizer, including an agent, can't hand the trip to anyone else or delete it.
+- **Never admin:** People, groups and app access stay with admins. The agent signs in to its own account (email code to its inbox each run).
+- Saving the members list never downgrades a co-organizer; removing one takes effect on their next request.
+- CLAUDE.md's assistant rule updated to match (own non-admin account; Hudson decides how much it can do).
+
 ## 2026-11-23 · Sign-in: why the agent keeps getting signed out
 
 - Diagnosis: nothing in warbag ties a session to an IP address. Sessions last 60 days and refresh daily; Better Auth 1.7.18 stores the sign-in IP and browser as a record only, and uses the IP (from `x-forwarded-for`) just for sign-in rate limits. The sign-outs Hudson saw were an agentic operator's browser, which starts from a fresh profile each run and keeps no cookies, so each run is signed out.
