@@ -6,6 +6,7 @@ import { setDayAction } from "./actions";
 import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
 import { AddOptions, OptionsBlock } from "./Options";
+import { Reorder } from "./Reorder";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
@@ -85,6 +86,7 @@ export function DayCard({
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
   const [addingOptions, setAddingOptions] = useState(false);
+  const [reordering, setReordering] = useState(false);
   // Options of one choice show together, where the first of them falls in the day.
   const choicesHere = [...new Set(planned.map((r) => r.stop.choiceId).filter((c): c is string => Boolean(c && choices[c])))].map((id) => ({ id, title: choices[id].title }));
   const items: ({ kind: "stop"; row: Row } | { kind: "options"; id: string; rows: Row[] })[] = [];
@@ -131,7 +133,9 @@ export function DayCard({
       </h2>
       {open && (
         <div id={bodyId} className="flex flex-col gap-3 px-4 pb-4">
-          {count > 0 ? (
+          {reordering ? (
+            <Reorder stops={planned.map((r) => r.stop)} onDone={() => setReordering(false)} />
+          ) : count > 0 ? (
             <ul className="divide-y divide-line border-t border-line">
               {items.map((it) =>
                 it.kind === "stop" ? (
@@ -183,11 +187,16 @@ export function DayCard({
             </div>
           )}
           {addingOptions && <AddOptions tripId={tripId} day={day} onDone={() => setAddingOptions(false)} />}
-          {(canAdd || canPlan) && !adding && !editing && !addingOptions && (
+          {(canAdd || canPlan) && !adding && !editing && !addingOptions && !reordering && (
             <div className="flex flex-wrap gap-x-5">
               {canAdd && (
                 <button type="button" onClick={() => setAdding(true)} className="min-h-11 px-1 font-semibold text-accent underline-offset-4 hover:underline">
                   + {canPlan ? "Add to this day" : "Suggest for this day"}
+                </button>
+              )}
+              {canPlan && count > 1 && (
+                <button type="button" onClick={() => setReordering(true)} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
+                  Reorder
                 </button>
               )}
               {canPlan && (

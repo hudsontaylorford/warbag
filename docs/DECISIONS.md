@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: reordering stops in a day
+
+- **Times set the order;** untimed stops (Any time, Time TBD) can be placed anywhere, and stops at the same time can swap. Moving an untimed stop next to another gives it that stop's time as its place (`mosey_stops.sort_at`), so "Groceries on the way" stays between the 12:00 pickup and the 1:30 drive. Two stops at different times can't swap: "Times set the order. Change its time to move it there."
+- **A Reorder mode** on the day card (organizers, two or more stops): up and down buttons on each row while it's on, Done to leave. No buttons on everyday rows; tap and keyboard, no drag.
+- Change: Time TBD and Any time no longer have a fixed order between them; they keep the order people give them (supersedes that line in "typing when a stop happens").
+- Not here: moving between days (use Move to Ideas or Move to a day), drag and drop.
+
 ## 2026-11-23 · Mosey: competing options
 
 For plans like "Monday afternoon: ski, hike or spa", the pattern group-trip apps use for "who's in" (choices, not per-line RSVPs).
