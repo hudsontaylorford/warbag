@@ -23,7 +23,20 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
     await expect(page.locator(`text="${name}" >> visible=true`).first()).toBeVisible();
   }
 
-  // $120 dinner paid by Cal, split by all three.
+  // A kid: on the trip, but left out of splits unless ticked in, and never the payer.
+  {
+    const add = page.locator("form").filter({ hasText: "Add someone" });
+    await add.getByLabel("Name", { exact: true }).fill("Kit");
+    await add.getByLabel("Household", { exact: true }).fill("Ann + Ben");
+    await add.getByLabel(/^Kid/).check();
+    await add.getByRole("button", { name: "Add person" }).click();
+    await expect(page.getByText("Kid · Household: Ann + Ben")).toBeVisible();
+  }
+  await expect(page.getByRole("checkbox", { name: "Kit" })).not.toBeChecked();
+  await expect(page.getByLabel("Paid by").locator("option", { hasText: "Kit" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "All adults" })).toBeVisible();
+
+  // $120 dinner paid by Cal, split by all three adults.
   await page.getByLabel("What was it").fill("Dinner");
   await page.getByLabel("Amount ($)").first().fill("120");
   await page.getByLabel("Paid by").selectOption({ label: "Cal" });
@@ -35,7 +48,7 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await page.getByLabel("What was it").fill("Ghost");
   await page.getByRole("button", { name: "Nobody" }).click();
   await expect(page.getByRole("button", { name: "Add expense" })).toBeDisabled();
-  await page.getByRole("button", { name: "Everyone" }).click();
+  await page.getByRole("button", { name: "All adults" }).click();
   await page.getByLabel("What was it").fill("");
 
   // Ann already paid Cal $40.

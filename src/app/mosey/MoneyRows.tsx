@@ -9,7 +9,7 @@ import { dollars } from "@/lib/mosey/money";
 import { ExpenseForm } from "./ExpenseForm";
 import { dayLabel } from "./format";
 
-type P = { id: string; name: string };
+type P = { id: string; name: string; kid?: boolean; householdId?: string | null };
 type E = { id: string; description: string; totalCents: number; spentOn: string; paidBy: string; participants: string[]; notes: string; mine: boolean };
 
 /** One expense: what, how much, who paid, how many it's split with. More to edit. */
@@ -18,7 +18,9 @@ export function ExpenseRow({ e, people, me, canEdit, defaultDay, receiptId }: { 
   const [confirm, setConfirm] = useState(false);
   const [delState, delAction, deleting] = useActionState(deleteExpenseAction, {});
   const name = new Map(people.map((p) => [p.id, p.name]));
-  const everyone = e.participants.length === people.length;
+  // "everyone" means every adult and no kids (kids are left out by default).
+  const adults = people.filter((p) => !p.kid);
+  const everyone = e.participants.length === adults.length && adults.every((p) => e.participants.includes(p.id));
   return (
     <div className="flex flex-col gap-3 py-3">
       <div className="flex items-start gap-3">
@@ -115,11 +117,13 @@ export function PaymentForm({ tripId, people, me, defaultDay }: { tripId: string
             <option value="" disabled>
               Pick…
             </option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
+            {people
+              .filter((p) => !p.kid)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
           </select>
         </label>
         <label className="flex flex-col gap-1.5">
@@ -128,11 +132,13 @@ export function PaymentForm({ tripId, people, me, defaultDay }: { tripId: string
             <option value="" disabled>
               Pick…
             </option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
+            {people
+              .filter((p) => !p.kid)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
           </select>
         </label>
       </div>

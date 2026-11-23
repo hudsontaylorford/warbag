@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: kids on the trip, adults in the money
+
+Hudson's choice (asked, Nov 23): **adults only by default.**
+
+- **A "Kid" setting on each person** on Money (organizers). Kids stay on the one people list: the plan, who's going, and Money's People section.
+- **Splits:** a new expense starts with every adult ticked and every kid unticked ("All adults"); a kid added later stays out. Ticking a kid in counts their share toward their household (households already settle as one). A kid with no household can't be ticked in, so a share never lands on a child alone.
+- **Kids never pay or get paid:** not in Paid by or payments, refused on the server too, and never the person everyone settles through.
+- **Nothing old changes.** Expenses keep exactly who they were split with. Marking someone a kid is refused if they paid for something or are in a payment, or if they're in splits with no household (their balance would otherwise sit on them).
+- A kid who's in no split isn't listed in settle-up.
+
 ## 2026-11-23 · Mosey: stop status and who's going
 
 - **Status:** none, Tentative, Inquiry sent, Confirmed or Booked, chosen in the stop's form by anyone who can edit it; a small label beside the name (Confirmed and Booked filled, the others outlined). View links show it. Words in docs/LANGUAGE.md.

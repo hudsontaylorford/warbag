@@ -156,4 +156,42 @@ describeDb("Mosey money", () => {
     expect(await net(ben)).toBe(-2000);
     expect((await ledger(org, tripId)).balances.map((b) => b.share)).toEqual([2000, 2000, 2000]);
   });
+
+  it("kids: on the trip, out of splits unless ticked in, and then through their household; never pay", async () => {
+    await updatePerson(org, tripId, ann, { name: "Ann", userId: org.id, household: "Ann + Ben" });
+    await updatePerson(org, tripId, ben, { name: "Ben", userId: mem.id, household: "Ann + Ben" });
+    const kit = await addPerson(org, tripId, { name: "Kit", household: "Ann + Ben", kid: true });
+    const solo = await addPerson(org, tripId, { name: "Solo", kid: true }); // no household yet
+
+    // A kid who's in nothing isn't listed in settle-up at all.
+    let l = await ledger(org, tripId);
+    expect(l.people.find((p) => p.id === kit)!.kid).toBe(true);
+    expect(l.units.map((u) => u.name)).toEqual(["Ann + Ben", "Cal"]);
+
+    // Ticked in, a kid's share goes to their household.
+    await addExpense(org, tripId, { description: "Groceries", amount: "120", spentOn: "2027-06-05", paidBy: cal, participants: [ann, ben, cal, kit] });
+    l = await ledger(org, tripId);
+    expect(l.units.map((u) => [u.name, u.net])).toEqual([
+      ["Ann + Ben", -9000],
+      ["Cal", 9000],
+    ]);
+
+    // Kids never pay or get paid; a kid with no household can't be in a split.
+    const base = { description: "Ice cream", amount: "10", spentOn: "2027-06-05", participants: [ann] };
+    await expect(addExpense(org, tripId, { ...base, paidBy: kit })).rejects.toThrow(/Kids don't pay/);
+    await expect(addExpense(org, tripId, { ...base, paidBy: ann, participants: [ann, solo] })).rejects.toThrow(/household first/);
+    await expect(addPayment(org, tripId, { from: kit, to: cal, amount: "5", paidOn: "2027-06-06" })).rejects.toThrow(/Kids don't pay/);
+    await expect(addPayment(org, tripId, { from: cal, to: kit, amount: "5", paidOn: "2027-06-06" })).rejects.toThrow(/Kids don't pay/);
+    await expect(setSettle(org, tripId, "through", solo)).rejects.toBeInstanceOf(InputError);
+
+    // Marking someone a kid never changes existing expenses, and is refused
+    // when it can't hold: they paid for something, or they'd owe alone.
+    const before = (await ledger(org, tripId)).units;
+    await expect(updatePerson(org, tripId, cal, { name: "Cal", kid: true })).rejects.toThrow(/paid for something/);
+    await expect(updatePerson(org, tripId, kit, { name: "Kit", kid: true })).rejects.toThrow(/Put them in their family's household/);
+    await updatePerson(org, tripId, ann, { name: "Ann", userId: org.id, household: "Ann + Ben" }); // unrelated edit
+    expect((await ledger(org, tripId)).units).toEqual(before);
+    // Organizers only, like every people change.
+    await expect(updatePerson(mem, tripId, kit, { name: "Kit", household: "Ann + Ben", kid: false })).rejects.toBeInstanceOf(AccessDenied);
+  });
 });

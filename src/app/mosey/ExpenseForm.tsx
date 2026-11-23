@@ -8,7 +8,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Choice } from "@/components/ui/Choice";
 import { dollars, parseDollars } from "@/lib/mosey/money";
 
-type P = { id: string; name: string };
+/** A person on the trip's money. Kids are left out of "Everyone" and never pay. */
+type P = { id: string; name: string; kid?: boolean; householdId?: string | null };
 type Existing = { id: string; description: string; totalCents: number; spentOn: string; paidBy: string; participants: string[]; notes: string };
 
 /**
@@ -43,9 +44,13 @@ export function ExpenseForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const all = people.map((p) => p.id);
-  // Track who's left out, so anyone added to the trip later is in by default.
-  const [out, setOut] = useState<string[]>(expense ? all.filter((id) => !expense.participants.includes(id)) : []);
-  const split = all.filter((id) => !out.includes(id));
+  const kids = people.filter((p) => p.kid).map((p) => p.id);
+  const adults = people.filter((p) => !p.kid);
+  // Adults: track who's left out, so an adult added to the trip later is in by
+  // default. Kids: track who's ticked in, so a kid added later stays out.
+  const [out, setOut] = useState<string[]>(expense ? adults.map((p) => p.id).filter((id) => !expense.participants.includes(id)) : []);
+  const [kidsIn, setKidsIn] = useState<string[]>(expense ? kids.filter((id) => expense.participants.includes(id)) : []);
+  const split = all.filter((id) => (kids.includes(id) ? kidsIn.includes(id) : !out.includes(id)));
   const [pick, setPick] = useState("");
   const choose = Boolean(totals && totals.length > 0 && !expense);
   // From a photo, a date that couldn't be read stays empty: never a silent guess.
@@ -57,6 +62,7 @@ export function ExpenseForm({
     if (next.ok && !expense) {
       formRef.current?.reset();
       setOut([]);
+      setKidsIn([]);
       setAmount("");
       setPick("");
       onAdded?.();
@@ -66,7 +72,8 @@ export function ExpenseForm({
   }, {});
   const cents = parseDollars(amount);
   const each = cents && split.length ? Math.floor(cents / split.length) : null;
-  const toggle = (id: string, on: boolean) => setOut(on ? out.filter((x) => x !== id) : [...out, id]);
+  const toggle = (id: string, on: boolean) =>
+    kids.includes(id) ? setKidsIn(on ? [...kidsIn, id] : kidsIn.filter((x) => x !== id)) : setOut(on ? out.filter((x) => x !== id) : [...out, id]);
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
@@ -105,7 +112,7 @@ export function ExpenseForm({
           <option value="" disabled>
             Pick who paid…
           </option>
-          {people.map((p) => (
+          {adults.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
@@ -115,21 +122,61 @@ export function ExpenseForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-semibold">Split with</legend>
         <div className="flex gap-4 text-sm">
-          <button type="button" onClick={() => setOut([])} className="min-h-11 text-accent underline-offset-4 hover:underline">
-            Everyone
+          <button
+            type="button"
+            onClick={() => {
+              setOut([]);
+              setKidsIn([]);
+            }}
+            className="min-h-11 text-accent underline-offset-4 hover:underline"
+          >
+            {kids.length ? "All adults" : "Everyone"}
           </button>
-          <button type="button" onClick={() => setOut(all)} className="min-h-11 text-accent underline-offset-4 hover:underline">
+          <button
+            type="button"
+            onClick={() => {
+              setOut(adults.map((p) => p.id));
+              setKidsIn([]);
+            }}
+            className="min-h-11 text-accent underline-offset-4 hover:underline"
+          >
             Nobody
           </button>
         </div>
         <div className="grid grid-cols-2 gap-x-4">
-          {people.map((p) => (
+          {adults.map((p) => (
             <label key={p.id} className="flex min-h-11 cursor-pointer items-center gap-3">
               <input type="checkbox" name="participants" value={p.id} checked={split.includes(p.id)} onChange={(e) => toggle(p.id, e.target.checked)} className="size-5 accent-ink" />
               <span className="break-words">{p.name}</span>
             </label>
           ))}
         </div>
+        {kids.length > 0 && (
+          <div className="flex flex-col gap-1 border-t border-line pt-2">
+            <p className="text-sm text-soft">Kids are left out unless you tick them. A kid&apos;s share goes to their household.</p>
+            <div className="grid grid-cols-2 gap-x-4">
+              {people
+                .filter((p) => p.kid)
+                .map((p) => (
+                  <label key={p.id} className={`flex min-h-11 items-center gap-3 ${p.householdId ? "cursor-pointer" : "text-soft"}`}>
+                    <input
+                      type="checkbox"
+                      name="participants"
+                      value={p.id}
+                      checked={split.includes(p.id)}
+                      disabled={!p.householdId && !split.includes(p.id)}
+                      onChange={(e) => toggle(p.id, e.target.checked)}
+                      className="size-5 accent-ink"
+                    />
+                    <span className="break-words">
+                      {p.name}
+                      {!p.householdId && <span className="block text-xs">No household yet</span>}
+                    </span>
+                  </label>
+                ))}
+            </div>
+          </div>
+        )}
         <p className="text-sm text-soft" aria-live="polite">
           {split.length === 0
             ? "Pick at least one person."
