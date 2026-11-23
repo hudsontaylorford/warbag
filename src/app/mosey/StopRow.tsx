@@ -6,6 +6,7 @@ import { deleteStopAction, planStopAction, setStopChoiceAction, updateStopAction
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
+import { SaveStatus, useAutosave } from "@/components/ui/forms";
 import { StopFields } from "./StopFields";
 import { dayLabel, mapsUrl, MEAL_LABEL, STATUS_LABEL } from "./format";
 import { Attendance } from "./Attendance";
@@ -184,8 +185,9 @@ export function StopRow({
 /** Organizers: make a stop one of a day's options, or take it out. */
 function PartOfOptions({ stop, choicesHere }: { stop: Stop; choicesHere: { id: string; title: string }[] }) {
   const [state, action, pending] = useActionState(setStopChoiceAction, {});
+  const { ref: autoRef, saveSoon: autoSaveSoon } = useAutosave(0);
   return (
-    <form action={action} className="flex flex-col gap-2 border-t border-line pt-4">
+    <form ref={autoRef} action={action} onChange={() => autoSaveSoon()} className="flex flex-col gap-2 border-t border-line pt-4">
       <input type="hidden" name="id" value={stop.id} />
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold">Part of options</span>
@@ -203,17 +205,7 @@ function PartOfOptions({ stop, choicesHere }: { stop: Stop; choicesHere: { id: s
         </select>
         <span className="text-sm text-soft">To start new options, use &quot;+ Add options&quot; on the day.</span>
       </label>
-      {state.error && <Alert>{state.error}</Alert>}
-      {state.ok && !pending && (
-        <p role="status" className="text-sm text-soft">
-          Saved ✓
-        </p>
-      )}
-      <div className="max-w-xs">
-        <Button type="submit" variant="quiet" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-      </div>
+      <SaveStatus state={state} pending={pending} />
     </form>
   );
 }

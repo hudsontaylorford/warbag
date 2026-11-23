@@ -7,9 +7,8 @@ import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
 import { AddOptions, OptionsBlock } from "./Options";
 import { Reorder } from "./Reorder";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
-import { Alert } from "@/components/ui/Alert";
+import { SaveStatus, useAutosave } from "@/components/ui/forms";
 import { dayLabel } from "./format";
 import { useToday } from "./useToday";
 
@@ -20,13 +19,16 @@ const TAGS = ["Travel day", "Flexible", "Rest day", "Free day"];
 /** Area and tag for one day: optional, quiet, organizers only. */
 function DayDetails({ tripId, day, info, onDone }: { tripId: string; day: string; info: DayInfo; onDone: () => void }) {
   const list = useId();
-  const [state, action, pending] = useActionState(async (prev: Parameters<typeof setDayAction>[0], form: FormData) => {
-    const next = await setDayAction(prev, form);
-    if (next.ok) onDone();
-    return next;
-  }, {});
+  // Saves itself when you leave a field; Done closes it.
+  const [state, action, pending] = useActionState(setDayAction, {});
+  const { ref: autoRef, saveNow: autoSaveNow } = useAutosave();
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-[var(--radius-control)] bg-wash p-4">
+    <form
+      ref={autoRef}
+      action={action}
+      onBlur={(e) => (e.target instanceof HTMLInputElement ? autoSaveNow() : undefined)}
+      className="flex flex-col gap-3 rounded-[var(--radius-control)] bg-wash p-4"
+    >
       <input type="hidden" name="id" value={tripId} />
       <input type="hidden" name="day" value={day} />
       <Field label="Area" name="area" maxLength={80} defaultValue={info.area} placeholder="Brooklyn → Hillsdale" hint="Optional. Where the day mostly happens." />
@@ -36,15 +38,10 @@ function DayDetails({ tripId, day, info, onDone }: { tripId: string; day: string
           <option key={t} value={t} />
         ))}
       </datalist>
-      {state.error && <Alert>{state.error}</Alert>}
-      <div className="flex gap-3">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-        <Button variant="quiet" onClick={onDone}>
-          Cancel
-        </Button>
-      </div>
+      <SaveStatus state={state} pending={pending} />
+      <button type="button" onClick={onDone} disabled={pending} className="min-h-11 self-start font-semibold text-accent underline-offset-4 hover:underline disabled:opacity-50">
+        Done
+      </button>
     </form>
   );
 }

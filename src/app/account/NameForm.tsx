@@ -1,15 +1,24 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { setMyNameAction } from "./actions";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
-import { Alert } from "@/components/ui/Alert";
+import { SaveStatus, useAutosave } from "@/components/ui/forms";
 
+/** Your name: saves itself when you leave the field or press Return. */
 export function NameForm({ name }: { name: string }) {
   const [state, formAction, pending] = useActionState(setMyNameAction, {});
+  const [saved, setSaved] = useState(name);
+  const { ref: autoRef, saveNow: autoSaveNow } = useAutosave();
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form
+      ref={autoRef}
+      action={(form) => {
+        setSaved(String(form.get("name") ?? ""));
+        return formAction(form);
+      }}
+      className="flex flex-col gap-1"
+    >
       <Field
         label="Your name"
         name="name"
@@ -17,19 +26,13 @@ export function NameForm({ name }: { name: string }) {
         required
         maxLength={80}
         autoComplete="given-name"
+        enterKeyHint="done"
         hint="What family and friends see, like on your gift lists."
+        onBlur={(e) => {
+          if (e.currentTarget.value !== saved) autoSaveNow();
+        }}
       />
-      {state.error && <Alert>{state.error}</Alert>}
-      {state.ok && !pending && (
-        <p role="status" className="text-sm text-soft">
-          Saved ✓
-        </p>
-      )}
-      <div className="max-w-xs">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-      </div>
+      <SaveStatus state={state} pending={pending} />
     </form>
   );
 }

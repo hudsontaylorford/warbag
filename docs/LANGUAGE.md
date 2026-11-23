@@ -61,6 +61,10 @@
 | Good fit | The latest round needs no change worth making: keep what's on the speaker. |
 | View link | Anyone with it sees one setup without signing in; can't change anything. |
 
+## Saving
+
+Settings save themselves (no Save button): status reads "Saving…", then "Saved ✓". Save buttons are only for editors that change many fields at once.
+
 ## Style
 
 - Short by default. Sentence case for labels and headings.

@@ -50,7 +50,9 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await day2.getByRole("button", { name: "Add area or tag" }).click();
   await day2.getByLabel("Area").fill("Bar Harbor → Acadia");
   await day2.getByLabel("Tag").fill("Travel day");
-  await day2.getByRole("button", { name: "Save" }).click();
+  await day2.getByLabel("Area").focus(); // leaving a field saves it
+  await expect(day2.getByText("Saved ✓")).toBeVisible();
+  await day2.getByRole("button", { name: "Done" }).click();
   await expect(day2.getByText("Day 2 · Bar Harbor → Acadia · Travel day")).toBeVisible();
 
   // A day collapses and opens again.
@@ -117,6 +119,14 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(day1.getByText("Afternoon", { exact: true })).toBeVisible();
 
   await page.locator("summary", { hasText: "Manage" }).click();
+  // Settings save themselves: no Save buttons; renaming saves on leaving the field.
+  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
+  await page.getByLabel("Trip name").fill(`Maine ${tag} trip`);
+  await page.getByLabel("Where").focus();
+  await expect(page.getByRole("heading", { name: `Maine ${tag} trip` })).toBeVisible();
+  await page.getByLabel("Trip name").fill(`Maine ${tag}`);
+  await page.getByLabel("Where").focus();
+  await expect(page.getByRole("heading", { name: `Maine ${tag}`, exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Make a view link" }).click();
   const link = await page.getByLabel("View link").inputValue();
   expect(link).toMatch(/\/m\/[A-Za-z0-9_-]{32}$/);

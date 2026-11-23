@@ -26,12 +26,12 @@ test("the owner invites someone, gives them Gyfte through a group, then takes it
   await page.getByLabel("New group").fill(group);
   await page.getByRole("button", { name: "Create group" }).click();
   await expect(page.getByRole("heading", { name: group })).toBeVisible();
+  // Settings save themselves a moment after each change; no Save buttons.
+  await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
   await page.getByRole("checkbox", { name: /Test Person/ }).check();
-  await page.getByRole("button", { name: "Save" }).first().click();
   await expect(page.getByText("Saved ✓").first()).toBeVisible();
   const apps = page.locator("form", { has: page.getByRole("group", { name: "Apps" }) });
   await apps.getByRole("checkbox", { name: /Gyfte/ }).check();
-  await apps.getByRole("button", { name: "Save" }).click();
   await expect(apps.getByText("Saved ✓")).toBeVisible();
 
   // They sign in and see Gyfte, nothing else, and no People page.
@@ -45,7 +45,7 @@ test("the owner invites someone, gives them Gyfte through a group, then takes it
 
   // Taking the app away from the group applies on their next page load.
   await apps.getByRole("checkbox", { name: /Gyfte/ }).uncheck();
-  await apps.getByRole("button", { name: "Save" }).click();
+  await expect(apps.getByText("Saving…")).toHaveCount(0);
   await expect(apps.getByText("Saved ✓")).toBeVisible();
   await theirs.goto("/home");
   await expect(theirs.getByText("Nothing here yet.")).toBeVisible();
