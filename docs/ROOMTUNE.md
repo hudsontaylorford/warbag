@@ -2,7 +2,7 @@
 
 Measure a speaker in its room with two phones, and get slider values for the speaker's own EQ app. Phone A plays pink noise through the speaker; Phone B records 30 seconds at a few spots; the page analyzes the recordings, compares the room to a target curve and fits the speaker's own EQ bands to close the gap. Works with any EQ layout: graphic, shelf, bass/treble, with or without a sub.
 
-Built as a standalone page in November 2026 and moved into warbag on 2026-11-23 (decision in DECISIONS.md).
+Built as a standalone page in November 2026 and moved into warbag on 2026-11-23 (decision in DECISIONS.md). This file is Room Tuner's own README, measurement notes and roadmap in one place; warbag's ROADMAP.md only points here.
 
 ## Where the code is
 
@@ -47,7 +47,7 @@ One row per setup in `roomtune_setups`, the setup itself as one JSON document: b
 - **Phone mics.** iPhone mics roll off deep bass and are processed by iOS. Bass readings below ~150 Hz are
   approximate. A calibrated USB mic with its correction file (roadmap) fixes this.
 - **Band shapes are models.** Each app's EQ is approximated with standard filters. The JBL One app's peak
-  width was measured (see NOTES.md); other apps start at "medium" until measured with *Measure band width*.
+  width was measured (see Measurement notes below); other apps start at "medium" until measured with *Measure band width*.
 - **Room modes.** Narrow bass peaks (like a 50–63 Hz boom) and nulls depend on position. Broad EQ bands can only
   trade them off; speaker placement fixes them.
 - **Volume-dependent EQ.** Many smart speakers change their own EQ with volume. Compare rounds only at the same level.
@@ -109,7 +109,15 @@ Findings from building and using the tool on a JBL Authentics 500 in a living ro
 
 ## Room Tuner's own roadmap
 
-Each item needs Hudson's go. Roughly in order of value.
+Each item needs Hudson's go. Roughly in order of value; each says what it fixes. Carried over from the standalone version's ROADMAP.md, adjusted for warbag.
+
+### Done
+
+- Standalone (Nov 2026): rounds, fixed spots, level standard (75 dB), Lossless decoding in any browser, setup builder
+  with sub support, measured band width, screenshot import, collapsible instructions.
+- In warbag (2026-11-23, PR 57): native app at /roomtune with warbag's sign-in and look; setups saved on the server per
+  person; access per person under People → Apps; a view-only link per setup; import of the standalone export file;
+  "Fill from a screenshot" through warbag's own Claude key.
 
 ### Next
 
@@ -172,7 +180,19 @@ isn't flat. A one-time calibration against a UMIK turns that phone into a usable
   spots that disagree with the rest.
 - **Placement advisor**: estimate room-mode frequencies from room dimensions and distance to walls, and suggest
   moves before reaching for EQ. Your 50–63 Hz boom is the textbook case.
-- **Export and share**: download a setup as JSON, import one, print a one-page summary of a preset.
+- **Export and share**: download a setup as JSON and print a one-page summary of a preset. (Import and view links are done.)
 - **Multiple speakers per room**: stereo pairs or speaker + sub as linked setups, with level matching.
 - **Target library**: save and reuse target curves (room curve, flat, bass-heavy, vocal).
 - **Undo for deletes** of rounds and presets.
+
+## Product decisions to revisit
+
+- Default target tilt (−0.8 dB/octave) and +2 dB bass shelf came from common in-room curves, not from listening tests here.
+- Half-step damping after EQ'd rounds trades speed for stability; with a measured band model it could be relaxed.
+- The phone-mic bass cap (+2 dB) is conservative on purpose. Revisit once calibrated-mic data exists to compare.
+
+## Sources for the recorder notes
+
+- WebKit bug 311451 (capture quality after getUserMedia, iOS 26): https://bugs.webkit.org/show_bug.cgi?id=311451
+- WebKit bug 218012 (processing constraints and routing on iOS): https://bugs.webkit.org/show_bug.cgi?id=218012
+- Studio Six Digital on the iPhone mic's low-frequency filter: https://studiosixdigital.com/audio-hardware/generic-audio-hardware/iphone_3gs_microphone/
