@@ -283,15 +283,10 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
        to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, ask_attendance, choice_id, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
-     -- Parts of the day sort at the start of their window, before exact
-     -- times there; a meal with no time sits at its usual hour; time TBD
-     -- and any time come last.
-     order by day nulls last,
-       coalesce(at_time, case time_of_day when 'morning' then time '05:00' when 'afternoon' then time '12:00'
-         when 'evening' then time '17:00' end,
-         case when time_of_day is null then case meal when 'breakfast' then time '08:00' when 'lunch' then time '12:30'
-           when 'dinner' then time '18:30' end end) nulls last,
-       at_time is not null, time_of_day = 'tbd' desc nulls last, position, created_at`,
+     -- Times set the order: parts of the day sit at the start of their
+     -- window, a meal with no time at its usual hour, an untimed stop where
+     -- it was moved to (sort_at), otherwise last. Ties follow position.
+     order by day nulls last, ${SORT_KEY} nulls last, position, created_at`,
     [tripId],
   );
   return rows.map((r) => {
@@ -317,6 +312,80 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       mine: viewerId !== null && r.created_by === viewerId,
     };
   });
+}
+
+/** Where a stop sits in its day, as a time; null sorts last. Mirrors fixedKey below. */
+const SORT_KEY = `coalesce(at_time,
+  case time_of_day when 'morning' then time '05:00' when 'afternoon' then time '12:00' when 'evening' then time '17:00' end,
+  case when time_of_day is null then case meal when 'breakfast' then time '08:00' when 'lunch' then time '12:30' when 'dinner' then time '18:30' end end,
+  sort_at)`;
+
+type OrderRow = { id: string; at_time: string | null; time_of_day: Part | null; meal: Meal | null; sort_at: string | null };
+
+/** The time a stop's own details pin it to, or null when it floats (any time, time TBD). */
+function fixedKey(r: OrderRow): string | null {
+  if (r.at_time) return r.at_time;
+  if (r.time_of_day === "morning") return "05:00";
+  if (r.time_of_day === "afternoon") return "12:00";
+  if (r.time_of_day === "evening") return "17:00";
+  if (!r.time_of_day && r.meal === "breakfast") return "08:00";
+  if (!r.time_of_day && r.meal === "lunch") return "12:30";
+  if (!r.time_of_day && r.meal === "dinner") return "18:30";
+  return null;
+}
+
+/**
+ * Moves a stop one place up or down in its day. Organizers only. Times still
+ * set the order: an untimed stop can go anywhere (it takes the time of the
+ * stop it moves next to), while two stops at different times can't swap.
+ */
+export async function moveStop(actor: Actor, stopId: string, direction: "up" | "down"): Promise<void> {
+  const { trip, role } = await stopWithTrip(actor, stopId);
+  if (role !== "manage") throw new AccessDenied();
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    const me = await client.query<{ day: string | null }>("select to_char(day, 'YYYY-MM-DD') as day from mosey_stops where id = $1 for update", [stopId]);
+    const day = me.rows[0]?.day;
+    if (!day) throw new InputError("Put it on a day first.");
+    const { rows } = await client.query<OrderRow>(
+      `select id, to_char(at_time, 'HH24:MI') as at_time, time_of_day, meal, to_char(sort_at, 'HH24:MI') as sort_at
+         from mosey_stops where trip_id = $1 and day = $2
+         order by ${SORT_KEY} nulls last, position, created_at for update`,
+      [trip.id, day],
+    );
+    const i = rows.findIndex((r) => r.id === stopId);
+    const j = direction === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= rows.length) {
+      await client.query("rollback");
+      return;
+    }
+    const [first, second] = direction === "up" ? [rows[i], rows[j]] : [rows[j], rows[i]]; // the new order
+    const key = (r: OrderRow) => fixedKey(r) ?? r.sort_at;
+    const firstFixed = fixedKey(first);
+    const secondFixed = fixedKey(second);
+    if (firstFixed !== null && secondFixed !== null && firstFixed !== secondFixed) {
+      throw new InputError("Times set the order. Change its time to move it there.");
+    }
+    // A floating stop takes the time of the one it now sits beside: moving
+    // ahead, it takes that stop's place; a floating stop pushed back stays
+    // at the time of the stop now ahead of it.
+    if (firstFixed === null) first.sort_at = key(second);
+    else if (secondFixed === null) second.sort_at = firstFixed;
+    const order = [...rows];
+    order[Math.min(i, j)] = first;
+    order[Math.max(i, j)] = second;
+    for (const r of [first, second]) {
+      if (fixedKey(r) === null) await client.query("update mosey_stops set sort_at = $2 where id = $1", [r.id, r.sort_at]);
+    }
+    for (const [k, r] of order.entries()) await client.query("update mosey_stops set position = $2 where id = $1", [r.id, k]);
+    await client.query("commit");
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 async function choicesOf(tripId: string): Promise<Record<string, { title: string }>> {

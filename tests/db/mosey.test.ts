@@ -12,6 +12,7 @@ import {
   getTrip,
   planStop,
   revokeTripLink,
+  moveStop,
   createChoice,
   setStopChoice,
   ungroupChoice,
@@ -224,8 +225,9 @@ describeDb("Mosey trips", () => {
       ["Lunch", "12:30", null],
       ["Sunset", null, "evening"],
       ["Dinner", "19:00", null],
-      ["Ferry", null, "tbd"],
+      // Untimed stops (time TBD, any time) keep the order they were given.
       ["Anytime snack", null, null],
+      ["Ferry", null, "tbd"],
     ]);
     await expect(add("Bad", "soonish")).rejects.toThrow(/isn't a time we recognize/);
     // Changing an exact time to a part of the day clears the time, and back.
@@ -373,5 +375,41 @@ describeDb("Mosey trips", () => {
     t = await getTrip(hudson, tripId);
     expect(t.stops.filter((s) => ["Pizza", "Tacos"].includes(s.title)).map((s) => s.choiceId)).toEqual([null, null]);
     expect(t.attendance![pizza.id]).toEqual([{ personId: ann, state: "going" }]);
+  });
+
+  it("reorder: untimed stops go anywhere, times still set the order, organizers only", async () => {
+    const day = "2027-06-06";
+    const add = async (title: string, time = "") => (await addStop(hudson, tripId, { title, day, time })).id;
+    const pickup = await add("Van pickup", "12pm");
+    const drive = await add("Drive north", "1:30p");
+    const groceries = await add("Groceries on the way");
+    const ferry = await add("Ferry", "TBD");
+    const order = async () => (await getTrip(hudson, tripId)).stops.filter((s) => s.day === day).map((s) => s.title);
+    expect(await order()).toEqual(["Van pickup", "Drive north", "Groceries on the way", "Ferry"]);
+
+    await moveStop(hudson, groceries, "up"); // between pickup and the drive
+    expect(await order()).toEqual(["Van pickup", "Groceries on the way", "Drive north", "Ferry"]);
+    await moveStop(hudson, groceries, "up"); // first of the day
+    expect(await order()).toEqual(["Groceries on the way", "Van pickup", "Drive north", "Ferry"]);
+    await moveStop(hudson, groceries, "down");
+    await moveStop(hudson, ferry, "up"); // a TBD stop moves like any untimed one
+    expect(await order()).toEqual(["Van pickup", "Groceries on the way", "Ferry", "Drive north"]);
+
+    // A timed stop can move past an untimed one: the untimed one now sits after it.
+    await moveStop(hudson, drive, "up");
+    expect(await order()).toEqual(["Van pickup", "Groceries on the way", "Drive north", "Ferry"]);
+    // Two stops at different times can't swap.
+    await moveStop(hudson, groceries, "down");
+    expect(await order()).toEqual(["Van pickup", "Drive north", "Groceries on the way", "Ferry"]);
+    await expect(moveStop(hudson, drive, "up")).rejects.toThrow(/Times set the order/);
+    // Stops at the same time swap freely; the first stop can't go higher.
+    const lunch = await add("Lunch", "12pm");
+    expect(await order()).toEqual(["Van pickup", "Lunch", "Drive north", "Groceries on the way", "Ferry"]);
+    await moveStop(hudson, lunch, "up");
+    expect(await order()).toEqual(["Lunch", "Van pickup", "Drive north", "Groceries on the way", "Ferry"]);
+    await moveStop(hudson, lunch, "up");
+    expect((await order())[0]).toBe("Lunch");
+    await expect(moveStop(molly, groceries, "up")).rejects.toBeInstanceOf(AccessDenied);
+    await expect(moveStop(outsider, groceries, "up")).rejects.toBeInstanceOf(AccessDenied);
   });
 });

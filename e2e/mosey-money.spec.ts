@@ -107,6 +107,16 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await day1.getByRole("button", { name: "Done" }).click();
   await expect(day1.getByText("Going: Ann · Maybe: Cal")).toBeVisible();
 
+  // Reorder: untimed stops go where you put them (buttons, not drag).
+  await day1.getByRole("button", { name: "Reorder" }).click();
+  await expect(day1.getByRole("button", { name: "Move Boat tour up" })).toBeDisabled();
+  await day1.getByRole("button", { name: "Move Lunch up" }).click();
+  await expect(day1.getByRole("button", { name: "Move Boat tour up" })).toBeEnabled();
+  await expect(day1.getByRole("button", { name: "Move Lunch up" })).toBeDisabled();
+  await day1.getByRole("button", { name: "Done", exact: true }).click();
+  const dayText = await day1.innerText();
+  expect(dayText.indexOf("Lunch")).toBeLessThan(dayText.indexOf("Boat tour"));
+
   // Competing options on a day: one pick each, shown together.
   const day2 = page.getByRole("region", { name: /Sun, Jun 6/ });
   await day2.getByRole("button", { name: "+ Add options" }).click();

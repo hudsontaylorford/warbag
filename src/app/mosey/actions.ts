@@ -13,6 +13,7 @@ import {
   revokeTripLink,
   setAttendance,
   createChoice,
+  moveStop,
   setStopChoice,
   ungroupChoice,
   setDayInfo,
@@ -56,6 +57,14 @@ const tripFields = (form: FormData) => ({
   start: text(form, "start"),
   end: text(form, "end"),
 });
+
+/** Moves a stop one place up or down in its day. Organizers only. */
+export async function moveStopAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await moveStop(actor, text(form, "id"), text(form, "direction") === "up" ? "up" : "down");
+    return "Moved";
+  });
+}
 
 /** A choice between options on a day. Organizers only. */
 export async function createChoiceAction(_: FormState, form: FormData): Promise<FormState> {
