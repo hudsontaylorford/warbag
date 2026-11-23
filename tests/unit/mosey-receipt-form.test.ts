@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { formFrom, totalsFrom } from "@/lib/mosey/receipt-form";
+import { formFrom, sumMismatch, totalsFrom } from "@/lib/mosey/receipt-form";
 
+const line = (label: string, amount: string) => ({ label, amount });
 const row = (percent: string, tip: string, total: string, marked = false) => ({ percent, tip, total, marked });
 import type { ReceiptDraft } from "@/lib/mosey/receipt-ai";
 
@@ -17,6 +18,7 @@ const draft = (over: Partial<ReceiptDraft>): ReceiptDraft => ({
   totalSource: "printed",
   checkTotal: "",
   tipTable: [],
+  printedLines: [],
   ...over,
 });
 
@@ -90,5 +92,43 @@ describe("receipt suggestion to form", () => {
     expect(formFrom(draft({ total: "461.75", totalSource: "written" })).prefill?.amount).toBe("461.75");
     // A tip table that wasn't used (nothing marked, printed total) doesn't ask.
     expect(formFrom(draft({ total: "216.64", tipTable: [row("20%", "36.00", "252.64")] })).prefill?.amount).toBe("216.64");
+  });
+
+  it("a misread digit shows when the printed lines don't add up: it asks, offering both", () => {
+    // Shaped like a real misread: lines say 167.66, the total was read as 167.86 (made-up receipt).
+    const d = draft({ total: "167.86", checkTotal: "167.86", printedLines: [line("Subtotal", "154.00"), line("Tax", "13.66")] });
+    expect(sumMismatch(d)).toBe(16766);
+    const f = formFrom(d);
+    expect(f.prefill?.amount).toBe("");
+    expect(f.totals).toEqual([
+      { amount: "167.86", label: "Most likely" },
+      { amount: "167.66", label: "What the receipt's lines add up to" },
+    ]);
+  });
+
+  it("lines that add up change nothing: fees, several taxes, a printed gratuity, a discount", () => {
+    for (const d of [
+      draft({ total: "327.79", printedLines: [line("Subtotal", "293.00"), line("Sales Tax", "26.00"), line("Non Cash Fee", "8.79")] }),
+      draft({ total: "228.98", printedLines: [line("Subtotal", "203.00"), line("State Tax", "14.21"), line("Local Tax", "4.57"), line("Alcohol Tax", "7.20")] }),
+      // A gratuity line is part of the printed total even when checkTotal leaves it out.
+      draft({ total: "438.18", checkTotal: "370.18", printedLines: [line("Subtotal", "340.00"), line("Sales Tax", "30.18"), line("Gratuity (20%)", "68.00")] }),
+      draft({ total: "95.00", printedLines: [line("Subtotal", "100.00"), line("Discount", "-10.00"), line("Tax", "5.00")] }),
+    ]) {
+      expect(sumMismatch(d)).toBeNull();
+      expect(formFrom(d).prefill?.amount).toBe(d.total);
+    }
+  });
+
+  it("with a tip, the lines are checked against the amount before the tip", () => {
+    const ok = draft({ total: "461.75", totalSource: "written", checkTotal: "372.38", printedLines: [line("Subtotal", "340.00"), line("Tax", "32.38")] });
+    expect(sumMismatch(ok)).toBeNull();
+    const off = draft({ total: "461.75", totalSource: "written", checkTotal: "372.88", printedLines: [line("Subtotal", "340.00"), line("Tax", "32.38")] });
+    expect(sumMismatch(off)).toBe(46125);
+  });
+
+  it("nothing to check: no lines, one line, or an unreadable line", () => {
+    expect(sumMismatch(draft({}))).toBeNull();
+    expect(sumMismatch(draft({ printedLines: [line("Subtotal", "1.00")] }))).toBeNull();
+    expect(sumMismatch(draft({ printedLines: [line("Subtotal", "1.00"), line("Tax", "")] }))).toBeNull();
   });
 });

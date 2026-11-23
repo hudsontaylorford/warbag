@@ -38,6 +38,14 @@ export const ReceiptDraft = z.object({
       }),
     )
     .describe("Every row of a printed suggested-tip table, in order, even rows whose amounts are cut off. Empty if there is no such table."),
+  printedLines: z
+    .array(
+      z.object({
+        label: z.string().describe("As printed, e.g. 'Subtotal', 'Sales Tax', 'Gratuity (20%)'"),
+        amount: z.string().describe("Digits and a dot, with a leading minus for a discount; empty if unreadable"),
+      }),
+    )
+    .describe("The lines the check's printed total adds up from: subtotal, each tax, fees, a printed gratuity or service charge, discounts. Not individual items, not the total itself, not a handwritten tip. Empty if there is no such breakdown."),
   confidence: z.enum(["high", "medium", "low"]).describe("How sure you are about the total"),
   note: z.string().describe("One short sentence on anything unclear (tip unclear, two totals, blurry); empty if none"),
   personalDocument: z.boolean().describe("True if the photo also shows an ID, driver's license, payment card or other personal document besides the receipt"),
@@ -53,6 +61,7 @@ The total is what was actually charged to the card or paid in cash, including ta
 - When the itemized check and the signed card slip are both in the photo, the card slip's final amount wins.
 - If a tip is written but the written total is crossed out or unreadable, the total is the slip's amount plus that tip. Say so in the note and use medium confidence at most.
 - If no tip is written anywhere, the printed total is the total. Note that a tip may have been added on a slip not shown.
+- In printedLines, copy the subtotal, tax, fee, gratuity and discount lines above the printed total exactly as printed, digit by digit. Don't make them add up; the form checks the arithmetic.
 - List every row of a printed suggested-tip table in tipTable, marking any row that is circled, ticked or written in, even when that row's amounts are cut off or unreadable. Ticks are easy to misplace by one row: look carefully at which row the mark sits on.
 - When you can't tell which amount was charged, list every plausible amount in candidates (most likely first), put the most likely in total, and use low confidence.
 
