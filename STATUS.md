@@ -1,12 +1,46 @@
 # Status
 
-**Mosey (2026-11-22):** PR 1 live (visible only to Hudson and trip members): trips, day-card Plan, Ideas with organizer "Add to plan", members, view link (/m/…) that hides members-only details. PR 2: the money math library (no screens), checked against the Maine and North Shore sheets privately (Maine to the penny; North Shore within the sheet's own 1¢ rounding). PR 3: expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. PR 4: receipt photos with AI drafts, live (Hudson set up the private Blob store and API key, SETUP.md Part G, 2026-11-22). Left before the December 1 family trial: Hudson's first real receipt test, a real iPhone walkthrough, (Maine and North Shore entered as test trips and compared, Nov 22: they match the sheets except the Maine cabins, which the sheet marks as paid directly) then the go / no-go before inviting anyone. Safety fix (2026-11-22): removing an account moves their trips to the admin instead of deleting them, and an expense saved from a receipt saves in one step, never twice. Paper receipts (2026-11-22): the reader follows handwritten tips and card slips, asks when it isn't sure of the total, never guesses a date, and unsaved photos can be discarded. Checked against 8 of Hudson's real paper receipts (Nov 23, after PR 38): 7/8; the miss is Cozy Royale's handwritten tip (a 4 read as a 9), where the form asks and "Something else" covers it. Tip-table totals and added tips always ask; totals whose printed lines don't add up ask. Hudson: discard the test photos on the live trip. Known gap: a deleted trip's receipt photos stay in the Blob store. Target: private family trial December 1.
+**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 53).
+
+## Mosey (trip planner)
+
+### Live
+- **Plan:** a calendar of the trip on top (tap a day to jump to it), then one card per day with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
+- **Stops:** typed "When" the Crewmaxxing way (7pm, 9:30a, Morning, TBD); status (Tentative, Inquiry sent, Confirmed, Booked); meals (Breakfast, Lunch, Dinner, Food & drink) with "Who's handling it"; members-only details hidden on view links.
+- **Who's going:** only on stops that ask ("Ask who's going"), from the trip's people list; one tap "I'm going" / "Maybe".
+- **Options:** "Monday afternoon: ski, hike or spa" as one block; each person picks one; "Who picked what".
+- **Ideas:** Food & drink filter; "Move to a day" opens the days as buttons; pasting a link files it as the link.
+- **Money:** expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. **Kids** are on the trip but left out of splits unless ticked in (their share goes to their household); they never pay.
+- **Receipts:** photo → AI draft → a person checks and saves. Paper rules (handwritten tips, card slips), asks when unsure (tip tables, added tips, lines that don't add up), never guesses a date, warns about IDs or cards in the photo, unsaved photos can be discarded. Checked on 8 of Hudson's real receipts: 7/8 (the miss: a handwritten 4 read as a 9; the form asks and "Something else" covers it).
+- **Sharing:** members, **co-organizers** (everything except sharing or deleting the trip), view links (no money, no names).
+- **Test trips:** Maine and North Shore entered and compared with the sheets: they match, except the Maine cabins, which the sheet marks as paid directly.
+
+### Left before December 1 (Hudson)
+1. **iPhone walkthrough in Safari** (automated tests emulate an iPhone in Chromium).
+2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
+3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
+4. **Go / no-go** before inviting anyone. Nothing goes to family until Hudson says so.
+
+### Open questions (from the Christmas trip notes)
+- Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
+- Christmas dates: Mosey has Dec 17 to 23; another planner says Dec 17 to 24.
+
+### Known gaps
+- A deleted trip's receipt photos stay in the Blob store.
+- No browser test signs in as a co-organizer or people manager (their rules are covered by database tests).
+
+## Accounts and access
+
+- **Assistant (agent) access**, Hudson's decision 2026-11-23: its own non-admin account. It can be a trip's **co-organizer** and a **people manager** (invite people, manage groups and app access; never its own access or an admin's, no removing people or deleting groups). It never gets admin.
+- Setting it up (🟢 PRODUCTION, warbag.rodeo): People → Invite someone (the agent's email) → open it → tick **People manager**; give it **Mosey** under Apps if it should start trips; on each trip, Manage → **Co-organizers** → tick it.
+- An agent's browser starts fresh each run, so it signs in with an email code every time. For read-only review, a trip's view link needs no sign-in.
+- **Roadmap (each needs Hudson's go):** signed-in devices on Account, passkeys, a dedicated assistant identity with revocable tokens and an audit trail.
 
 ## Gyfte
 
 **2026-11-22. Gyfte is paused, feature-complete for Christmas 2026 and not yet opened to the family.** Everything below is live at https://warbag.rodeo (last change: PR 24). Screenshots of every page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Warbag · All pages · current (after PR 24, 2026-11-21)".
 
-## What's live
+### What's live
 
 - **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher ("Hi, Hudson" on navy; Gyfte plus Chirk and Crewmaxxing as external links), a public page with only the name and Sign in.
 - **Look:** paper and navy palette, serif titles, W and G monograms, no slogans or decorative marks (personal app). See docs/DESIGN.md.
@@ -16,26 +50,26 @@
 - **Import:** upload the gift sheet (.xlsx), review per tab (me, someone in the group, a kid, kids together with split rows, just a name, skip), pick the group, import. Afterwards, Manage › "Lists under just a name" connects name-only lists to a person, every year at once.
 - **Sample family** with View as, for trying things without real data.
 
-## Left to do before the family uses it (Hudson)
+### Left to do before the family uses it (Hudson)
 
 1. **Check it on your phone in Safari.** Automated tests use Chromium emulating an iPhone.
 2. **Run the real import** of "2025 Ford Family Christmas Gifting": pick the family group and go tab by tab, in any order. Then use Connect for any name-only lists that belong to someone with an account.
 3. **Go / no-go before inviting anyone:** who sees what, claim surprises protected, a walkthrough as a family member. Nothing goes to family until Hudson says so.
 4. Then share the family link in the group chat.
 
-## Known issues
+### Known issues
 
 1. **No email to Hudson for join requests:** only the count beside Manage on the family page.
 2. **Admin group page** lists everyone on warbag with a checkbox; needs search once the family is all in.
 3. The Connect button has no browser test (its rules are covered by database tests).
 
-## Later (parked)
+### Later (parked)
 
 - Turn off the family link once everyone has an account.
 - Request-a-group for non-admins; photos (upload or image link); automatic link previews; list/grid view; drag to reorder; Chirk gift-exchange link; screenshot import.
 - A Claude → ChatGPT note on the latest round, only if Hudson asks. Last ChatGPT review: WRB-20261121-07; last Claude note: WRB-20261121-06 v2.
 
-## Where to pick up
+### Where to pick up
 
 Start with step 1 above (the import review reset was fixed in PR 26). Decisions behind all of this are in docs/DECISIONS.md (newest first); words in docs/LANGUAGE.md.
 
