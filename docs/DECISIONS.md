@@ -14,6 +14,14 @@ Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are 
 - **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
 - Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
 
+## 2026-11-23 · Settings save themselves
+
+Hudson: a Save button under every section of a trip's settings is a UX oversight; settings should autosave.
+
+- **Settings save themselves.** Checkbox lists (trip members and co-organizers, a person's apps and groups, People manager, a group's people and apps) save a moment after each change, sending exactly what's ticked. Single fields (names, Your name) save when you leave the field or press Return. Trip details save when a field is left and dates as soon as they're picked. A day's area and tag save when a field is left (Done closes them). "Part of options" saves when picked.
+- **Status, never early:** "Saving…" while the server works, then "Saved ✓" only after it confirms, or the error. Shared pieces: `useAutosave` and `SaveStatus` in `src/components/ui/forms.tsx`.
+- **Buttons stay for actions, not settings:** creating something (Create trip, Add expense), doing something to what's ticked ("Bring forward", "Copy to 2027"), and the stop editor in More, which changes many fields together.
+
 ## 2026-11-23 · Mosey: no sample family
 
 Hudson: remove the sample family stuff from Mosey. Gyfte's sample family (its group and made-up people at `@sample.invalid`) no longer appears in a trip's Members or Co-organizers lists, and the server refuses adding them. Gyfte keeps it for "View as"; People still lists them.

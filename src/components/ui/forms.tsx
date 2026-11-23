@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { FormState } from "./form-state";
 import { Button } from "./Button";
 import { Field } from "./Field";
@@ -21,6 +21,38 @@ function Result({ state, pending }: { state: FormState; pending: boolean }) {
   return null;
 }
 
+/** "Saving…" while the server works, then "Saved ✓" or the error. For forms that save themselves. */
+export function SaveStatus({ state, pending }: { state: FormState; pending: boolean }) {
+  return (
+    <div aria-live="polite" className="min-h-5 text-sm text-soft">
+      {pending ? "Saving…" : <Result state={state} pending={false} />}
+    </div>
+  );
+}
+
+/**
+ * Saves a form a moment after it changes (checkboxes, selects) or right away
+ * when asked (a field left, Enter). Each save sends the whole form, so the
+ * last one always wins and nothing is lost if changes come quickly.
+ */
+export function useAutosave(delay = 500) {
+  const ref = useRef<HTMLFormElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+  const saveNow = () => {
+    if (timer.current) clearTimeout(timer.current);
+    const form = ref.current;
+    if (form && form.checkValidity()) form.requestSubmit();
+  };
+  const saveSoon = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(saveNow, delay);
+  };
+  return { ref, saveNow, saveSoon };
+}
+
 /** A section heading with a short optional hint, used on admin pages. */
 export function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -34,7 +66,11 @@ export function Section({ title, hint, children }: { title: string; hint?: strin
   );
 }
 
-/** A set of checkboxes saved together ("Save" sets exactly what's ticked). */
+/**
+ * A set of checkboxes. As a setting it saves itself a moment after each
+ * change (exactly what's ticked). With `submitLabel` it's an action on the
+ * ticked items instead ("Bring forward"), done with that button.
+ */
 export function CheckboxListForm({
   action,
   id,
@@ -42,7 +78,7 @@ export function CheckboxListForm({
   options,
   selected,
   empty,
-  submitLabel = "Save",
+  submitLabel,
   hidden = {},
 }: {
   action: Action;
@@ -51,20 +87,36 @@ export function CheckboxListForm({
   options: { value: string; label: string; hint?: string; disabled?: boolean }[];
   selected: string[];
   empty?: string;
+  /** Makes this an action with its own button instead of a setting that saves itself. */
   submitLabel?: string;
   /** Extra hidden form fields. */
   hidden?: Record<string, string>;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [dirty, setDirty] = useState(false);
+  const { ref: autoRef, saveSoon: autoSaveSoon } = useAutosave();
+  const isAction = submitLabel !== undefined;
   if (options.length === 0) return <p className="text-soft">{empty ?? "Nothing to choose yet."}</p>;
   return (
-    <form action={(form) => { setDirty(false); return formAction(form); }} className="flex flex-col gap-3">
+    <form
+      ref={autoRef}
+      action={(form) => {
+        setDirty(false);
+        return formAction(form);
+      }}
+      className="flex flex-col gap-3"
+    >
       <input type="hidden" name="id" value={id} />
       {Object.entries(hidden).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
-      <fieldset className="flex flex-col divide-y divide-line border-y border-line" onChange={() => setDirty(true)}>
+      <fieldset
+        className="flex flex-col divide-y divide-line border-y border-line"
+        onChange={() => {
+          setDirty(true);
+          if (!isAction) autoSaveSoon();
+        }}
+      >
         <legend className="sr-only">{legend}</legend>
         {options.map((o) => (
           <label key={o.value} className="flex min-h-13 cursor-pointer items-center gap-3 py-2">
@@ -83,17 +135,23 @@ export function CheckboxListForm({
           </label>
         ))}
       </fieldset>
-      <div className="max-w-xs">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : submitLabel}
-        </Button>
-      </div>
-      {!dirty && <Result state={state} pending={pending} />}
+      {isAction ? (
+        <>
+          <div className="max-w-xs">
+            <Button type="submit" disabled={pending}>
+              {pending ? "Saving…" : submitLabel}
+            </Button>
+          </div>
+          {!dirty && <Result state={state} pending={pending} />}
+        </>
+      ) : (
+        <SaveStatus state={dirty && !pending ? {} : state} pending={pending} />
+      )}
     </form>
   );
 }
 
-/** One text field with a Save button (names). */
+/** One text field that saves itself when you leave it or press Return (names). */
 export function TextForm({
   action,
   id,
@@ -108,16 +166,30 @@ export function TextForm({
   required?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
+  const [saved, setSaved] = useState(value);
+  const { ref: autoRef, saveNow: autoSaveNow } = useAutosave();
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form
+      ref={autoRef}
+      action={(form) => {
+        setSaved(String(form.get("name") ?? ""));
+        return formAction(form);
+      }}
+      className="flex flex-col gap-1"
+    >
       <input type="hidden" name="id" value={id} />
-      <Field label={label} name="name" defaultValue={value} required={required} maxLength={80} />
-      <div className="max-w-xs">
-        <Button type="submit" variant="quiet" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-      </div>
-      <Result state={state} pending={pending} />
+      <Field
+        label={label}
+        name="name"
+        defaultValue={value}
+        required={required}
+        maxLength={80}
+        enterKeyHint="done"
+        onBlur={(e) => {
+          if (e.currentTarget.value !== saved) autoSaveNow();
+        }}
+      />
+      <SaveStatus state={state} pending={pending} />
     </form>
   );
 }
