@@ -2,6 +2,11 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Sign-in: why the agent keeps getting signed out
+
+- Diagnosis: nothing in warbag ties a session to an IP address. Sessions last 60 days and refresh daily; Better Auth 1.7.18 stores the sign-in IP and browser as a record only, and uses the IP (from `x-forwarded-for`) just for sign-in rate limits. The sign-outs Hudson saw were an agentic operator's browser, which starts from a fresh profile each run and keeps no cookies, so each run is signed out.
+- No owner password and no sharing Hudson's session with an agent. For now an agent reviews trips through a read-only view link; a proper assistant identity, passkeys and signed-in devices are on the roadmap.
+
 ## 2026-11-23 · Mosey: reordering stops in a day
 
 - **Times set the order;** untimed stops (Any time, Time TBD) can be placed anywhere, and stops at the same time can swap. Moving an untimed stop next to another gives it that stop's time as its place (`mosey_stops.sort_at`), so "Groceries on the way" stays between the 12:00 pickup and the 1:30 drive. Two stops at different times can't swap: "Times set the order. Change its time to move it there."
