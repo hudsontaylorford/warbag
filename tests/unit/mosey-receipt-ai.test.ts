@@ -14,6 +14,6 @@ describe("receipt reading", () => {
   });
 
   it("asks only for merchant, date, total and description, never who paid or who shares", () => {
-    expect(Object.keys(ReceiptDraft.shape).sort()).toEqual(["candidates", "confidence", "date", "description", "merchant", "note", "personalDocument", "total"]);
+    expect(Object.keys(ReceiptDraft.shape).sort()).toEqual(["candidates", "checkTotal", "confidence", "date", "description", "merchant", "note", "personalDocument", "tipTable", "total", "totalSource"]);
   });
 });

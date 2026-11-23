@@ -12,7 +12,7 @@ import { pool } from "@/lib/db";
 process.env.RECEIPT_STORE_DIR = mkdtempSync(path.join(tmpdir(), "warbag-receipts-"));
 
 // Never call the real AI in tests: a stand-in that "reads" a made-up receipt.
-const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "", personalDocument: false };
+const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "", personalDocument: false, totalSource: "printed" as const, checkTotal: "", tipTable: [] };
 vi.mock("@/lib/mosey/receipt-ai", () => ({
   receiptAiConfigured: () => true,
   readReceipt: vi.fn(async () => ({ draft: fakeDraft, error: null })),
