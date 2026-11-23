@@ -21,6 +21,31 @@ function rowTotal(d: ReceiptDraft, row: ReceiptDraft["tipTable"][number]): numbe
   return base !== null && tip !== null ? base + tip : null;
 }
 
+/** A printed line's amount in cents; a leading minus or parentheses mean a discount. */
+function lineCents(raw: string): number | null {
+  const s = raw.trim();
+  const neg = s.startsWith("-") || s.startsWith("(");
+  const cents = parseDollars(s.replace(/^[-(]\s*/, "").replace(/\)$/, ""));
+  return cents === null ? null : neg ? -cents : cents;
+}
+
+/**
+ * The receipt's own arithmetic: when its printed lines don't add up to the
+ * printed total the reader gave, one of the numbers was misread. Returns
+ * the charge implied by the lines instead, or null when they agree or there
+ * is nothing to check.
+ */
+export function sumMismatch(d: ReceiptDraft): number | null {
+  const lines = (d.printedLines ?? []).map((l) => lineCents(l.amount));
+  if (lines.length < 2 || lines.some((c) => c === null)) return null;
+  const sum = (lines as number[]).reduce((a, b) => a + b, 0);
+  const main = parseDollars(d.total);
+  // The printed check total: the total itself, or the amount before a tip.
+  const base = d.totalSource === "printed" || !d.totalSource ? main : parseDollars(d.checkTotal);
+  if (main === null || base === null || sum === base || sum <= 0) return null;
+  return main - base + sum;
+}
+
 /**
  * Amounts that could be the charge, as "12.34", no repeats. When the total
  * came from a tip table, every row is offered, marked rows first, because a
@@ -38,6 +63,7 @@ export function totalsFrom(d: ReceiptDraft): Total[] {
   const main = parseDollars(d.total);
   const label = (d.candidates ?? []).find((c) => parseDollars(c.amount) === main)?.label ?? "Most likely";
   addTotal(all, main, label);
+  addTotal(all, sumMismatch(d), "What the receipt's lines add up to");
   for (const c of d.candidates ?? []) addTotal(all, c.amount, c.label);
   return all.map((x) => ({ amount: (x.cents / 100).toFixed(2), label: x.label }));
 }

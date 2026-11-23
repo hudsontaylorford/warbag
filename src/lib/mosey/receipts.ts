@@ -81,6 +81,7 @@ function readDraft(raw: unknown): ReceiptDraft | null {
     totalSource: d.totalSource ?? "printed",
     checkTotal: d.checkTotal ?? "",
     tipTable: Array.isArray(d.tipTable) ? d.tipTable : [],
+    printedLines: Array.isArray(d.printedLines) ? d.printedLines : [],
   };
 }
 
