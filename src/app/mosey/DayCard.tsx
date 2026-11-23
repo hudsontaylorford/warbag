@@ -132,7 +132,7 @@ export function DayCard({
               <ul className="divide-y divide-line">
                 {suggested.map(({ stop, canEdit }) => (
                   <li key={stop.id}>
-                    <StopRow stop={{ ...stop, suggestedDay: null }} days={days} canEdit={canEdit} canPlan={canPlan} />
+                    <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} hideSuggested />
                   </li>
                 ))}
               </ul>

@@ -10,9 +10,78 @@ import { StopFields } from "./StopFields";
 import { dayLabel, mapsUrl } from "./format";
 import { whenLabel } from "@/lib/mosey/when";
 
-const small =
-  "min-h-11 rounded-[var(--radius-control)] px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-accent disabled:opacity-50";
+const quiet = "min-h-11 text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50";
+
+/** "Thu 17": short enough for a row of day buttons on a phone. */
+const chipLabel = (day: string) => {
+  const d = new Date(`${day}T00:00:00Z`);
+  return `${d.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })} ${d.getUTCDate()}`;
+};
+
+/**
+ * Putting an idea on the plan (organizers): a quiet "Move to a day", which
+ * opens the trip's days as buttons; one tap plans it. An idea suggested for
+ * a day gets that day as a one-tap shortcut.
+ */
+function MoveToDay({
+  stop,
+  days,
+  action,
+  pending,
+  indent,
+}: {
+  stop: Stop;
+  days: string[];
+  action: (form: FormData) => void;
+  pending: boolean;
+  indent: boolean;
+}) {
+  const [picking, setPicking] = useState(false);
+  const pad = indent ? "sm:pl-21" : "";
+  if (!picking) {
+    return (
+      <form action={action} className={`-mt-4 flex flex-wrap items-center gap-x-5 ${pad}`}>
+        <input type="hidden" name="id" value={stop.id} />
+        {stop.suggestedDay && (
+          <button type="submit" name="day" value={stop.suggestedDay} disabled={pending} className={`${quiet} font-semibold`}>
+            {pending ? "Adding…" : `Add to ${dayLabel(stop.suggestedDay)}`}
+          </button>
+        )}
+        <button type="button" onClick={() => setPicking(true)} aria-label={`Move ${stop.title} to a day`} className={quiet}>
+          {stop.suggestedDay ? "Other day" : "Move to a day"}
+        </button>
+      </form>
+    );
+  }
+  return (
+    <form action={action} className={`flex flex-col gap-1 ${pad}`}>
+      <input type="hidden" name="id" value={stop.id} />
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm font-semibold">Move {stop.title} to</legend>
+        <div className="flex flex-wrap gap-1.5">
+          {days.map((d) => (
+            <button
+              key={d}
+              type="submit"
+              name="day"
+              value={d}
+              disabled={pending}
+              aria-label={dayLabel(d)}
+              className={`min-h-11 min-w-14 rounded-full border px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 ${
+                d === stop.suggestedDay ? "border-ink font-semibold" : "border-line"
+              } bg-field text-ink hover:border-ink`}
+            >
+              {chipLabel(d)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <button type="button" onClick={() => setPicking(false)} className={`${quiet} self-start`}>
+        {pending ? "Moving…" : "Cancel"}
+      </button>
+    </form>
+  );
+}
 
 /**
  * One stop or idea: time, title (opens its link), place with Open in Maps,
@@ -25,12 +94,15 @@ export function StopRow({
   canEdit,
   canPlan,
   showTime = true,
+  hideSuggested = false,
 }: {
   stop: Stop;
   days: string[];
   canEdit: boolean;
   canPlan: boolean;
   showTime?: boolean;
+  /** Already listed under the day it was suggested for. */
+  hideSuggested?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [planState, planAction, planning] = useActionState(planStopAction, {});
@@ -58,9 +130,9 @@ export function StopRow({
             </a>
           )}
           {stop.notes && <span className="text-sm break-words whitespace-pre-line">{stop.notes}</span>}
-          {(stop.membersOnly || stop.suggestedDay) && (
+          {(stop.membersOnly || (stop.suggestedDay && !hideSuggested)) && (
             <span className="text-xs text-soft">
-              {[stop.suggestedDay && `Suggested for ${dayLabel(stop.suggestedDay)}`, stop.membersOnly && "Members only"].filter(Boolean).join(" · ")}
+              {[stop.suggestedDay && !hideSuggested && `Suggested for ${dayLabel(stop.suggestedDay)}`, stop.membersOnly && "Members only"].filter(Boolean).join(" · ")}
             </span>
           )}
         </div>
@@ -76,30 +148,7 @@ export function StopRow({
         )}
       </div>
 
-      {canPlan && !stop.day && !open && (
-        <form action={planAction} className="flex flex-wrap items-center gap-2 pl-0 sm:pl-21">
-          <input type="hidden" name="id" value={stop.id} />
-          <select
-            name="day"
-            required
-            defaultValue={stop.suggestedDay ?? ""}
-            aria-label={`Day for ${stop.title}`}
-            className="min-h-11 rounded-[var(--radius-control)] border border-line bg-field px-2 text-sm"
-          >
-            <option value="" disabled>
-              Pick a day…
-            </option>
-            {days.map((d) => (
-              <option key={d} value={d}>
-                {dayLabel(d)}
-              </option>
-            ))}
-          </select>
-          <button type="submit" disabled={planning} className={`${small} bg-wash text-ink hover:bg-line`}>
-            {planning ? "Adding…" : "Add to plan"}
-          </button>
-        </form>
-      )}
+      {canPlan && !stop.day && !open && <MoveToDay stop={stop} days={days} action={planAction} pending={planning} indent={showTime} />}
       {planState.error && <Alert>{planState.error}</Alert>}
 
       {canEdit && open && <EditStop stop={stop} canPlan={canPlan} onDone={() => setOpen(false)} />}

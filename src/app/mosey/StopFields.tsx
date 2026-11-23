@@ -6,14 +6,14 @@ import type { Stop } from "@/lib/mosey/trips";
 import { WhenField } from "./WhenField";
 
 /** The optional details of a stop, shared by Add and Edit. */
-export function StopFields({ stop }: { stop?: Stop }) {
+export function StopFields({ stop, link }: { stop?: Stop; /** A link pasted into the add box. */ link?: string }) {
   // Several add forms can be open at once, so ids must be unique per form.
   const notesId = useId();
   return (
     <div className="flex flex-col gap-3">
       <WhenField when={stop} />
       <Field label="Place" name="place" defaultValue={stop?.place ?? ""} maxLength={200} placeholder="Name or address" />
-      <Field label="Link" name="link" inputMode="url" defaultValue={stop?.link ?? ""} placeholder="https://" />
+      <Field label="Link" name="link" inputMode="url" defaultValue={stop?.link ?? link ?? ""} placeholder="https://" />
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold" htmlFor={notesId}>
           Notes
