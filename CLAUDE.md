@@ -36,8 +36,8 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 - **Authorization is enforced on the server** for every read, write, file, search, export and background job. Hidden buttons are never the security boundary. Protect against guessed URLs, cross-user leaks, revoked links and removed group members; removal takes effect on the next request.
 - Each app's data is separate even in one database (its own tables and ownership checks).
 - Never put private app names, health data or personal content in public HTML, the sitemap or indexed pages. Everything except the public homepage is `noindex`.
-- Admin (invites, people, groups, grants, revoking links) is done in the app, not by editing database rows.
-- Future assistant access (e.g. Instinct) gets its own revocable identity, starts read-only and is audited. It never inherits admin. Details later.
+- Admin (invites, people, groups, grants, revoking links) is done in the app, not by editing database rows. Admins can make someone a **people manager** (invites, groups, app access; not removing people, deleting groups, admins, or their own access).
+- Assistant access (an AI agent, Instinct): its own revocable, non-admin account, never Hudson's session or a shared password. Hudson decides how much it can do (2026-11-23: full control of the trips he makes it co-organizer of, and "people manager": invite people, manage groups and app access, never its own access or an admin's). It never gets admin. A dedicated read-only, audited assistant identity is on the roadmap.
 
 ## Design and copy
 
@@ -75,3 +75,11 @@ Standing permission from Hudson (2026-11-20): **Claude may merge its PRs into `m
 ## ChatGPT handoffs (only when Hudson asks)
 
 Hudson sometimes uses ChatGPT for planning and review (read-only on GitHub). Exchanges go through the Drive folder "Warbag — AI Handoffs" and happen **only when Hudson asks**: no polling, status logs or acknowledgements. Claude writes only its own `Claude → ChatGPT` notes, one short doc per exchange, titled like `WRB-20261120-01 · Claude → ChatGPT · Topic · v1`; corrections are a new version. Never edit ChatGPT's notes or the protocol. No secrets or personal content in a note unless Hudson approves it.
+
+Drive layout (since 2026-11-23; folder ids and links don't change). Use these folders as they are: don't duplicate, move or reorganize documents unless Hudson asks.
+
+- Parent: "AI Projects" (`1yQ2I_PbzSvY8_5Q6Kycr09r_XCAYPDcr`), shared by several projects.
+- "Warbag — AI Handoffs" (`1nBldALR3PRPlhLtLvajDzwSjfk96HEH0`): the ChatGPT ↔ Claude notes and screenshots.
+- "Warbag — Brand Explorations" (`1zsXWbRtphcfLKweC5Sw2SSgl3F2ouF9k`): look-and-feel explorations.
+- "Warbag — Project Archive" (`17FpWKRvgM4RDtF6HVf39B_4NLIxxI2e9`): past material, for reference.
+- Crewmaxxing's and Chirk's handoff folders sit under the same parent but belong to those separate apps; sharing a parent changes nothing about keeping them separate.

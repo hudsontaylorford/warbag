@@ -29,6 +29,8 @@ export default defineConfig({
       BETTER_AUTH_SECRET: "test-secret-not-for-production-0123456789",
       BETTER_AUTH_URL: `http://localhost:${PORT}`,
       EMAIL_OUTBOX_FILE: OUTBOX,
+      RECEIPT_STORE_DIR: path.join(path.dirname(OUTBOX), "receipts"),
+      ANTHROPIC_API_KEY: "",
       AUTH_RATE_LIMIT: "off",
     },
   },

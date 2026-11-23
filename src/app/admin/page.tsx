@@ -19,7 +19,7 @@ export default async function AdminPage() {
 
   return (
     <>
-      <AppHeader email={user.email} app="People" isAdmin />
+      <AppHeader email={user.email} app="People" isAdmin={actor.isAdmin} people />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <Section title="Invite someone" hint="They can sign in right away, but see no apps until you give them some.">
           <InviteForm />
@@ -33,7 +33,7 @@ export default async function AdminPage() {
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate font-semibold">{p.name || p.email}</span>
                     <span className="truncate text-sm text-soft">
-                      {[p.name ? p.email : null, p.isAdmin ? "Admin" : null, ...p.groups].filter(Boolean).join(" · ")}
+                      {[p.name ? p.email : null, p.isAdmin ? "Admin" : null, p.peopleManager ? "People manager" : null, ...p.groups].filter(Boolean).join(" · ")}
                     </span>
                   </span>
                   <span className="shrink-0 text-sm text-soft">{p.lastSignIn ? "" : "Not signed in yet"}</span>

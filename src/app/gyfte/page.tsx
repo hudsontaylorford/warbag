@@ -46,7 +46,7 @@ export default async function GyftePage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
         <GyfteNav current="mine" />
 

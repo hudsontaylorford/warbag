@@ -1,0 +1,147 @@
+import { afterAll, beforeEach, expect, it, vi } from "vitest";
+import { existsSync, mkdtempSync, readdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { admin, describeDb, makeUser } from "../support/db";
+import { AccessDenied, grantItem, type Actor } from "@/lib/access";
+import { InputError } from "@/lib/errors";
+import { createTrip, setTripMembers } from "@/lib/mosey/trips";
+import { addExpense, addPerson, ledger } from "@/lib/mosey/ledger";
+import { pool } from "@/lib/db";
+
+process.env.RECEIPT_STORE_DIR = mkdtempSync(path.join(tmpdir(), "warbag-receipts-"));
+
+// Never call the real AI in tests: a stand-in that "reads" a made-up receipt.
+const fakeDraft = { merchant: "Example Market", date: "2027-06-05", total: "42.50", description: "Groceries", candidates: [], confidence: "high" as const, note: "", personalDocument: false, totalSource: "printed" as const, checkTotal: "", tipTable: [], printedLines: [] };
+vi.mock("@/lib/mosey/receipt-ai", () => ({
+  receiptAiConfigured: () => true,
+  readReceipt: vi.fn(async () => ({ draft: fakeDraft, error: null })),
+}));
+const { discardReceipt, openReceipt, receiptsByExpense, unsavedReceipts, sniffImage, uploadReceipt, MAX_RECEIPT_BYTES } = await import("@/lib/mosey/receipts");
+
+const png = (n = 0) => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from(`made-up image ${n}`)]);
+const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from("made-up jpeg")]);
+
+let org: Actor, mem: Actor, viewer: Actor, outsider: Actor;
+let tripId: string, ann: string;
+
+const bytes = async (body: ReadableStream<Uint8Array> | Buffer) => (Buffer.isBuffer(body) ? body : Buffer.from(await new Response(body).arrayBuffer()));
+
+describeDb("Mosey receipts", () => {
+  beforeEach(async () => {
+    org = await makeUser({ isAdmin: true });
+    mem = await makeUser();
+    viewer = await makeUser();
+    outsider = await makeUser();
+    tripId = await createTrip(org, { name: "Receipts", start: "2027-06-05", end: "2027-06-06" });
+    await setTripMembers(org, tripId, { groupIds: [], userIds: [mem.id] });
+    await grantItem(org, { app: "mosey", type: "trip", id: tripId, ownerId: org.id }, { userId: viewer.id }, "view");
+    ann = await addPerson(org, tripId, { name: "Ann" });
+  });
+
+  afterAll(async () => {
+    await pool.end();
+    await admin.end();
+  });
+
+  it("knows images by their bytes, not their name", () => {
+    expect(sniffImage(png())).toBe("image/png");
+    expect(sniffImage(jpeg)).toBe("image/jpeg");
+    expect(sniffImage(Buffer.from("RIFF0000WEBPVP8 "))).toBe("image/webp");
+    expect(sniffImage(Buffer.from("%PDF-1.7"))).toBeNull();
+    expect(sniffImage(Buffer.from("<svg xmlns='http://www.w3.org/2000/svg'/>"))).toBeNull();
+  });
+
+  it("members upload and get a suggestion; nothing is added to the money until someone saves", async () => {
+    const r = await uploadReceipt(mem, tripId, png());
+    expect(r.draft).toEqual(fakeDraft);
+    expect(r.warnings).toEqual([]);
+    expect((await ledger(org, tripId)).expenses).toEqual([]);
+    await expect(uploadReceipt(viewer, tripId, png())).rejects.toBeInstanceOf(AccessDenied);
+    await expect(uploadReceipt(outsider, tripId, png())).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("refuses non-images, empty files and big files", async () => {
+    await expect(uploadReceipt(mem, tripId, Buffer.from("%PDF-1.7 fake"))).rejects.toThrow(/JPEG, PNG or WebP/);
+    await expect(uploadReceipt(mem, tripId, Buffer.alloc(0))).rejects.toBeInstanceOf(InputError);
+    await expect(uploadReceipt(mem, tripId, Buffer.concat([png(), Buffer.alloc(MAX_RECEIPT_BYTES)]))).rejects.toThrow(/too big/);
+  });
+
+  it("only trip members can open a receipt", async () => {
+    const r = await uploadReceipt(mem, tripId, png(7));
+    const seen = await openReceipt(org, r.receiptId);
+    expect(seen.contentType).toBe("image/png");
+    expect((await bytes(seen.body)).equals(png(7))).toBe(true);
+    for (const who of [viewer, outsider, null]) await expect(openReceipt(who, r.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(openReceipt(org, "not-a-uuid")).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("warns about the same photo twice, and about an expense already there for that day and amount", async () => {
+    await uploadReceipt(mem, tripId, png(1));
+    expect((await uploadReceipt(mem, tripId, png(1))).warnings[0]).toMatch(/uploaded before/);
+    await addExpense(org, tripId, { description: "Market run", amount: "42.50", spentOn: "2027-06-05", paidBy: ann, participants: [ann] });
+    expect((await uploadReceipt(mem, tripId, png(2))).warnings).toEqual([expect.stringMatching(/"Market run" on the same day/)]);
+  });
+
+  it("saves the expense and its receipt together, within one trip only, and never twice", async () => {
+    const r = await uploadReceipt(mem, tripId, png(3));
+    const exp = { description: "Groceries", amount: "42.50", spentOn: "2027-06-05", paidBy: ann, participants: [ann] };
+    const count = async () => (await admin.query("select count(*)::int as n from mosey_expenses where trip_id = $1", [tripId])).rows[0].n;
+    // A receipt from another trip, or a made-up id, is refused and nothing is saved.
+    const other = await createTrip(org, { name: "Other", start: "2027-07-01", end: "2027-07-01" });
+    const elsewhere = await uploadReceipt(org, other, png(4));
+    await expect(addExpense(org, tripId, { ...exp, receiptId: elsewhere.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(addExpense(org, tripId, { ...exp, receiptId: crypto.randomUUID() })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(addExpense(viewer, tripId, { ...exp, receiptId: r.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    // A bad expense leaves the receipt unattached, so the save can be retried.
+    await expect(addExpense(mem, tripId, { ...exp, amount: "abc", receiptId: r.receiptId })).rejects.toBeInstanceOf(InputError);
+    expect(await count()).toBe(0);
+    const e = await addExpense(mem, tripId, { ...exp, receiptId: r.receiptId });
+    expect((await receiptsByExpense(mem, tripId)).get(e)).toBe(r.receiptId);
+    // Saving the same receipt again (a double tap or a retry) can't make a second expense.
+    await expect(addExpense(mem, tripId, { ...exp, receiptId: r.receiptId })).rejects.toThrow(/already saved/);
+    expect(await count()).toBe(1);
+    await expect(receiptsByExpense(viewer, tripId)).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("lists photos not saved yet, and lets the uploader or an organizer discard them", async () => {
+    const other = await makeUser();
+    await setTripMembers(org, tripId, { groupIds: [], userIds: [mem.id, other.id] });
+    const a = await uploadReceipt(mem, tripId, png(10));
+    const b = await uploadReceipt(mem, tripId, png(11));
+    const saved = await uploadReceipt(mem, tripId, png(12));
+    await addExpense(mem, tripId, { description: "Saved", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: saved.receiptId });
+
+    const list = await unsavedReceipts(other, tripId);
+    expect(list.map((u) => u.receiptId).sort()).toEqual([a.receiptId, b.receiptId].sort());
+    expect(list.every((u) => !u.canDiscard)).toBe(true); // not theirs, not an organizer
+    expect((await unsavedReceipts(org, tripId)).every((u) => u.canDiscard)).toBe(true);
+    await expect(unsavedReceipts(viewer, tripId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(unsavedReceipts(outsider, tripId)).rejects.toBeInstanceOf(AccessDenied);
+
+    await expect(discardReceipt(other, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(viewer, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(outsider, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(mem, crypto.randomUUID())).rejects.toBeInstanceOf(AccessDenied);
+    await expect(discardReceipt(org, saved.receiptId)).rejects.toThrow(/saved with an expense/);
+
+    const dir = path.join(process.env.RECEIPT_STORE_DIR!, "mosey", tripId);
+    const files = () => readdirSync(dir).length;
+    expect(files()).toBe(3);
+    await discardReceipt(mem, a.receiptId); // the uploader
+    await discardReceipt(org, b.receiptId); // an organizer
+    expect(await unsavedReceipts(org, tripId)).toEqual([]);
+    expect(files()).toBe(1); // the images are gone too
+    expect(existsSync(dir)).toBe(true);
+    // A discarded photo can't be saved as an expense afterwards.
+    await expect(addExpense(mem, tripId, { description: "Late", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: a.receiptId })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(openReceipt(mem, a.receiptId)).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("warns when the photo also shows an ID or a card", async () => {
+    const { readReceipt } = await import("@/lib/mosey/receipt-ai");
+    vi.mocked(readReceipt).mockResolvedValueOnce({ draft: { ...fakeDraft, personalDocument: true }, error: null });
+    expect((await uploadReceipt(mem, tripId, png(20))).warnings).toEqual([expect.stringMatching(/shows an ID or a card/)]);
+    expect((await unsavedReceipts(mem, tripId))[0].draft?.personalDocument).toBe(true);
+  });
+});

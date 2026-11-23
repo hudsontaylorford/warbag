@@ -20,7 +20,7 @@ export { atLeast, highest, ROLES, LINK_ROLES, type Role, type LinkRole } from ".
  */
 
 /** The signed-in person, as the access rules need them. */
-export type Actor = { id: string; isAdmin: boolean };
+export type Actor = { id: string; isAdmin: boolean; /** Can manage people and groups (src/lib/people.ts). */ peopleManager?: boolean };
 
 /** An item in some app. `ownerId` comes from the app's own table. */
 export type ItemRef = { app: string; type: string; id: string; ownerId: string };

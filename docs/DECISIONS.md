@@ -2,6 +2,165 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Fix: deleting a trip with expenses
+
+Found while making screenshots: Delete trip failed for any trip with expenses (the cascade removed the trip's people before their expense rows, so a reference check fired too early). The person references on expenses and payments are now checked when the delete finishes (deferrable, migration 0023). Removing one person is still refused in code while they're in expenses or payments. Test: a trip with expenses, payments and a frozen statement deletes completely and leaves other trips alone.
+
+## 2026-11-23 · People managers (the agent can manage people and groups)
+
+Hudson wants the agent to have People and groups access, without admin. Chosen level (asked): **People manager**.
+
+- **Can:** see People and groups, invite people, rename people, create, rename and edit groups and who's in them, give people and groups app access.
+- **Can't:** change its own apps or groups, change an admin (name, apps, groups, or remove an admin from a group), give apps to a group it's in, remove people, delete groups, make anyone an admin or a people manager. All checked in `src/lib/people.ts` on the server; screens hide what it can't do.
+- **Admins set it** on a person's page (People manager), never on themselves. Turning it off applies on the next request.
+- Why the self and admin limits: whoever edits groups could otherwise widen their own access (join the family group, give themselves apps) or take an admin's away.
+
+## 2026-11-23 · Mosey: co-organizers (and an agent with full control)
+
+Hudson: an agent with basically full control is fine, without admin.
+
+- **Co-organizers** on a trip (Manage → Co-organizers, people only): a `manage` grant. They do everything the owner can on that trip: plan, ideas, options, who's going, people, money, settle-up, trip details.
+- **Owner-only (or an admin):** who the trip is shared with (members, co-organizers, view links) and deleting it. So a co-organizer, including an agent, can't hand the trip to anyone else or delete it.
+- **Never admin:** People, groups and app access stay with admins. The agent signs in to its own account (email code to its inbox each run).
+- Saving the members list never downgrades a co-organizer; removing one takes effect on their next request.
+- CLAUDE.md's assistant rule updated to match (own non-admin account; Hudson decides how much it can do).
+
+## 2026-11-23 · Sign-in: why the agent keeps getting signed out
+
+- Diagnosis: nothing in warbag ties a session to an IP address. Sessions last 60 days and refresh daily; Better Auth 1.7.18 stores the sign-in IP and browser as a record only, and uses the IP (from `x-forwarded-for`) just for sign-in rate limits. The sign-outs Hudson saw were an agentic operator's browser, which starts from a fresh profile each run and keeps no cookies, so each run is signed out.
+- No owner password and no sharing Hudson's session with an agent. For now an agent reviews trips through a read-only view link; a proper assistant identity, passkeys and signed-in devices are on the roadmap.
+
+## 2026-11-23 · Mosey: reordering stops in a day
+
+- **Times set the order;** untimed stops (Any time, Time TBD) can be placed anywhere, and stops at the same time can swap. Moving an untimed stop next to another gives it that stop's time as its place (`mosey_stops.sort_at`), so "Groceries on the way" stays between the 12:00 pickup and the 1:30 drive. Two stops at different times can't swap: "Times set the order. Change its time to move it there."
+- **A Reorder mode** on the day card (organizers, two or more stops): up and down buttons on each row while it's on, Done to leave. No buttons on everyday rows; tap and keyboard, no drag.
+- Change: Time TBD and Any time no longer have a fixed order between them; they keep the order people give them (supersedes that line in "typing when a stop happens").
+- Not here: moving between days (use Move to Ideas or Move to a day), drag and drop.
+
+## 2026-11-23 · Mosey: competing options
+
+For plans like "Monday afternoon: ski, hike or spa", the pattern group-trip apps use for "who's in" (choices, not per-line RSVPs).
+
+- **Options are a group of two or more stops on one day** (`mosey_choices`, `mosey_stops.choice_id`). Organizers add them with "+ Add options" on a day (what's being decided, an optional When for all of them, the options), or group an existing stop from its More ("Part of options"). Each option is a normal stop: its own time, place, status, meal.
+- **One pick per person:** "Pick this" / "Your pick" on each option; picking another moves it (server-enforced; "maybe" isn't a pick). "Who picked what" lists everyone, with how many haven't picked; organizers can set anyone's pick there.
+- **One block on the day card,** placed where its first option falls in the day; a When all options share shows once in the header.
+- **Ungroup** keeps the stops and the picks. Moving or deleting options until one is left dissolves the group; the last one stays an ordinary stop.
+- View links show the options and their titles, never who picked what. Not here: a "decided" state, options in Ideas, deadlines to pick.
+
+## 2026-11-23 · Mosey: ask who's going only where it matters
+
+Hudson: "Who's going?" on every stop felt like an extra button. Research: group-trip apps put "who's in" on choices (voting on activities), event apps show a compact tappable summary of who's coming, and family reunions RSVP once for the trip and opt in only to extras.
+
+- **Everyone by default.** A stop shows nothing about attendance unless someone ticks **Ask who's going** in its form (for a split day, limited seats, an optional night out). Marking is refused on stops that don't ask. Stops already marked before this change keep asking.
+- **One tappable summary** on those stops ("Going: Ann, Ben, Cal · Maybe: Dee", or "Who's going?") opens the full list; organizers mark anyone there, everyone else sees it read-only except their own row.
+- **You mark yourself in one tap** on the stop: "I'm going" / "Maybe" (tap again to clear), for anyone linked to a name on Money.
+- Supersedes the per-stop "Who's going?" link in "stop status and who's going" below. Later, maybe: linking competing options ("Monday: ski, hike or spa") as one choice.
+
+## 2026-11-23 · Mosey: meals
+
+From the Christmas-trip notes (WRB-20261122-02 section 11): meals live inside the plan and Ideas, not a fourth tab or a separate meal planner.
+
+- **Any stop or idea can be a meal:** Breakfast, Lunch, Dinner, or Food & drink (restaurants, takeout, a grocery run), plus an optional "Who's handling it" ("Ann cooking, Cal brings pie"), hidden on view links for members-only stops like notes.
+- **On a day card,** a meal with no time shows "Dinner" where the time goes and sits at its usual hour (breakfast 8, lunch 12:30, dinner 6:30); a timed meal shows a quiet "Lunch" beside its name. Status (Tentative, Confirmed...) works as for any stop.
+- **Ideas has a Food & drink filter** for competing options; moving one to a day moves the same record, never a copy.
+- **Not here (later, opt-in):** meal budgets (a budget is an estimate, never an expense), shopping checklists, cooking assignments, AI menus.
+- Also: "Who's going?" only appears once the trip has people on Money.
+
+## 2026-11-23 · Mosey: kids on the trip, adults in the money
+
+Hudson's choice (asked, Nov 23): **adults only by default.**
+
+- **A "Kid" setting on each person** on Money (organizers). Kids stay on the one people list: the plan, who's going, and Money's People section.
+- **Splits:** a new expense starts with every adult ticked and every kid unticked ("All adults"); a kid added later stays out. Ticking a kid in counts their share toward their household (households already settle as one). A kid with no household can't be ticked in, so a share never lands on a child alone.
+- **Kids never pay or get paid:** not in Paid by or payments, refused on the server too, and never the person everyone settles through.
+- **Nothing old changes.** Expenses keep exactly who they were split with. Marking someone a kid is refused if they paid for something or are in a payment, or if they're in splits with no household (their balance would otherwise sit on them).
+- A kid who's in no split isn't listed in settle-up.
+
+## 2026-11-23 · Mosey: stop status and who's going
+
+- **Status:** none, Tentative, Inquiry sent, Confirmed or Booked, chosen in the stop's form by anyone who can edit it; a small label beside the name (Confirmed and Booked filled, the others outlined). View links show it. Words in docs/LANGUAGE.md.
+- **Who's going uses the trip's people list** (the people on Money), not a second roster. Each stop and idea shows "Going: … · Maybe: …" and "Who's going?" / "Change". Two choices per person; tapping the one that's on clears it, so not marked never reads as "no".
+- **Who can mark:** organizers anyone on the list; a member only the person linked to their own account. Members only: viewers and view links never see names or attendance (checked on the server, like money). Removing a person removes their marks.
+- **Kids:** stay on the people list, so they can be marked for stops. Keeping them out of money splits is the separate kids change.
+- Not here: votes between options, deadlines and reminders, attendance counts on the calendar.
+
+## 2026-11-23 · Mosey: the Ideas layout
+
+- **No day menu on every idea.** Organizers see one quiet "Move to a day"; it opens the trip's days as buttons ("Fri 17") and one tap puts the idea on that day. An idea someone suggested for a day shows "Add to Tue, Dec 21" (one tap) and "Other day". Inside a day card's "Suggested for this day", the same shortcut appears.
+- **Pasting a link** into an add box (Ideas or a day card) files it as the link and asks "What is it?", instead of making the link the title.
+- Members still suggest a day by adding from that day's card; organizers decide what goes on the plan.
+
+## 2026-11-23 · Mosey: typing when a stop happens
+
+- **One "When" box, typed like Crewmaxxing.** "7pm", "9:30a", "14:30", "930", "noon". A bare hour is read the likely way (7 to 11 morning, 12 to 6 afternoon) and the box says "Read as 9:00 AM. Add a or p to change."; on leaving the box it shows the full reading. The parser is copied from Crewmaxxing (`src/lib/time-input.ts`, same tests) so both apps read times the same; keep them in step.
+- **Parts of the day and TBD:** one tap for Morning, Afternoon, Evening or TBD, or type them. Empty is still any time. Stored as `time_of_day` next to the exact time (never both).
+- **Order in a day:** a part of the day sorts at the start of its window (morning from 5am, afternoon from noon, evening from 5pm), before exact times there; then time TBD, then any time.
+- Not here: ranges ("2-4"), and times typed in the title ("Dinner at 7"); the second is part of the later natural-language quick add.
+
+## 2026-11-23 · Mosey: day cards and the trip calendar
+
+From Hudson's Christmas-trip test (WRB-20261122-02, sections 2 and 10) and a ticket-calendar screenshot he liked.
+
+- **Mosey's own header:** an M mark (burnt orange) and "Mosey" link to the trip list; "warbag" is a quiet link home on the right. Other apps keep the W for now.
+- **A calendar on top of Plan:** the trip's weeks with its days solid and the days around them faded. Each day shows its first time ("6:30p") and "+2" for more, or dots for any-time plans; today is filled navy. Tapping a day jumps to its card. Shown for trips longer than a day.
+- **One card per day:** a raised card with the date, "Day 3", and an optional area and tag ("Brooklyn → Hillsdale · Travel day"). Today gets a "Today" mark and a darker border. Once a trip is under way, days already over start collapsed with a count; any day can be collapsed or opened.
+- **One add action per day:** "+ Add to this day" opens the add box (and focuses it) instead of a box always open on every day. Members see "Suggest for this day".
+- **Area and tag:** free text, both optional, organizers only, set from the card ("Add area or tag"); tag suggestions are Travel day, Flexible, Rest day, Free day. Stored per trip day (`mosey_days`); a day outside the trip's dates isn't shown. View links show them.
+- **Not in this change:** reordering stops, easier time entry, the Ideas layout, stop status and attendance.
+
+## 2026-11-22 · Mosey: paper receipts
+
+Hudson's first real tests were paper restaurant receipts, not app receipts. One of three got the wrong total (Bar Oliver: it suggested $338.97, the 22% row, without asking; Hudson's card statement later confirmed $338.97, so the problem was being sure without a way to check, not the amount), and an obscured date silently became the trip's first day.
+
+- **The reader follows paper rules:** handwriting overrides print; a suggested-tip table is options, not a charge; a printed gratuity line is already in the total; the signed card slip beats the itemized check; with no tip written, the printed total stands. Effort raised from low to medium for handwriting and faded thermal paper (still a few cents a receipt).
+- **Tip tables and added tips always ask (Nov 23).** The first real-photo run scored 6/8; Bar Oliver came back fully confident from a ticked tip-table row, with no way to check it (the statement later showed the amount was right). A prompt can't make tick-reading reliable, so the reader now lists every tip-table row (marked or not, even cut-off ones) and says where its total came from. When the total came from a tip table, or from adding a handwritten tip to an unreadable written total, the form fills in nothing and offers every row's total, marked rows first, plus "Something else". Printed and written totals still fill in.
+- **The receipt's own arithmetic is checked (Nov 23).** The reader copies the lines the printed total adds up from (subtotal, taxes, fees, printed gratuity, discounts). If they don't add up to the total it read, a digit was misread, so the form asks and offers both (Sobre Masa read $167.86; its lines give $167.66). Known limit: Cozy Royale's handwritten 4 reads as a 9; the form asks and "Something else" covers it.
+- **Unsure means ask.** When more than one amount could be the charge, the form fills in none and asks "Which total was charged?" with each amount and where it came from, plus "Something else".
+- **Dates are never guessed.** From a photo, an unreadable date stays empty and must be chosen ("Choose the date on the receipt."). Past dates are fine.
+- **Unsaved photos can go.** "Discard photo" under the form, and a "photos not saved as expenses" list on Money with Use it and Discard. The uploader or an organizer can discard; a photo saved with an expense stays. Discarding deletes the image from the Blob store too.
+- **IDs and cards in the photo:** the reader flags a photo that also shows an ID, payment card or other personal document, and the form says so: "Only trip members can see it, but you can discard it and retake the photo without it." No automatic blurring (unreliable); the photo stays members-only.
+- **Checking against real receipts:** `npm run eval:receipts` runs the real reader over a private folder of photos and an expected.json (RECEIPT_EVAL_DIR, ANTHROPIC_API_KEY). Real receipts never go in the repo or the normal tests.
+
+## 2026-11-22 · Mosey safety: account removal and receipt saves
+
+- **Removing an account never deletes trips.** The trips that person organizes move to the admin doing the removal, with every expense, payment, statement and receipt; the confirmation says how many. Their name stays on the trip's money, unlinked from the account. The database refuses to delete an account row that still organizes a trip (`on delete restrict`), so nothing outside the app's removal can cascade either.
+- **An expense and its receipt save together.** Saving from a photo is one transaction: both happen or neither does. A receipt already saved as an expense is refused ("This receipt is already saved as an expense."), so a double tap or a retry can't create a duplicate. Found in ChatGPT's review WRB-20261122-02.
+
+## 2026-11-22 · Mosey PR 4: receipt photos with AI drafts
+
+- **The AI suggests, a person saves.** A photo produces a suggested merchant, date, total and short description, shown in the expense form marked "Filled in from the photo. Check it before saving." It never picks who paid or who shares; nothing reaches the ledger until someone taps Add expense. Manual entry always works, and the form says so when reading fails or isn't set up.
+- **Model:** Claude Opus 5.5 (`claude-opus-5-5`, the current default), structured output against a fixed schema, effort `low`, server-side refusal fallback on. About a cent per receipt. Text on a receipt is treated as data, never instructions; card and account numbers are never put in any field.
+- **Privacy:** the browser redraws each photo as a JPEG of at most 2000px before upload, which drops hidden photo data such as GPS. Photos go to a private Vercel Blob store and are only served through `/mosey/receipts/<id>` after a trip-membership check (`no-store`, `nosniff`, noindex). No blob URL reaches a browser; view links and view grants never see receipts. Files are checked by their bytes (JPEG, PNG, WebP), 4 MB max (Vercel caps requests at 4.5 MB).
+- **Duplicates:** a warning when the same photo was uploaded before, or an expense on the same day for the same amount already exists.
+- **Setup:** a private Blob store (`BLOB_READ_WRITE_TOKEN`) and `ANTHROPIC_API_KEY`, Production only (SETUP.md Part G). Without them the receipt button is hidden. Tests never call the real AI.
+- **Not yet:** photos of a deleted trip stay in the Blob store (the database rows go); line items, several receipts at once, and auto-posting are out of scope.
+
+## 2026-11-22 · Mosey PR 3: expenses and settle-up
+
+- **People on a trip's money are their own list**: a name, an optional household, and an optional link to a warbag account on the trip (so they see "You owe" on their screen). Organizers manage it; someone already in an expense or payment can't be removed.
+- **Members add expenses and payments and change only their own; organizers change anything.** Deleted expenses and payments are kept, marked deleted, and never counted. Every change goes in the change log with before and after.
+- **Split defaults to everyone**, with "Everyone" and "Nobody" shortcuts; the form shows "Split N ways, about $X each" before saving and won't save with nobody in the split. People added later are included by default.
+- **Settle up shows final payments first**, then each household's share, what they paid or already sent, and a plain sentence on credits ("$412.37 they already put in is taken off their $1,482.06, so only $1,069.69 is left to send"), then a balance check and a copy-ready message. No Venmo requests are sent.
+- **Freeze** saves the settle-up as a numbered version that never changes; later edits make a new version.
+- **Money is members-only**: no Money tab, data or page for view links or view grants (checked on the server).
+
+## 2026-11-22 · Mosey money rules (PR 2)
+
+- **Whole cents everywhere.** Each person's share is kept exact across the whole trip and rounded once at the end (largest remainder first), so everyone is within a cent of their true share and the shares add up to what was spent exactly. People with identical shares can differ by one cent only when the cents force it.
+- **Net = paid + sent - share - received.** "You owe" / "You are owed" in the interface, never negative numbers.
+- **Already paid is a payment, not a change to the split** (fixes the old sheet's "P"). Example: three split $120 and one already paid the payer $40: the payer is still owed $40, one person owes $40, the third owes nothing, and all three keep a $40 share. A cost settled outside Mosey (Maine's cabins) can be entered as the split plus the payments, or left out; both give the same result.
+- **Households are summed after.** Couples settle as one; people on their own never combine. Nobody pays someone in their own household.
+- **Two settle-up styles over the same balances:** Direct (largest debtor pays largest creditor; few payments, not promised to be the fewest) and Through one person (everyone settles with one hub). Choosing one never changes a balance.
+- **Checked against the real sheets privately** (downloaded to the session's temporary folder, never committed; automated tests use made-up people only). Maine matches to the penny ($1,211.41 to Hudson + Molly). North Shore matches except one cent: the sheet collected $3,665.88 for $3,665.87 owed; Mosey collects exactly $3,665.87 (Sarah $483.70, Andrew $483.69, identical exact shares).
+
+## 2026-11-22 · Mosey PR 1: trips, Plan and Ideas
+
+- **A trip is a name, a place and a date range;** its days fill in. The Plan is one card per day; Ideas are stops with no day. A stop is a title plus optional time (wall-clock, no time zones), place (with Open in Maps, no Google key), link, notes.
+- **Roles reuse the shared access tables** (app "mosey", type "trip"): organizer = manage (owner, plans, shares), member = contribute (adds ideas; a day they pick is a suggestion for an organizer to confirm; edits and deletes only their own ideas), viewer = view.
+- **The view link** (/m/…) shows Plan and Ideas without sign-in. Stops marked "Members only" show just their title there: no place, link or notes. Viewers with a view grant see the same.
+- **Shortening a trip moves stops on dropped days back to Ideas** instead of deleting them.
+- **Who sees Mosey:** people given the app (only Hudson at first) and anyone added to a trip. Money (expenses, settle-up) comes in PRs 2 and 3; receipts with AI drafts in PR 4. Address search (OpenStreetMap) after the trial.
+
 ## 2026-11-22 · Next apps (Hudson)
 
 - **Mosey** is the trip planner's name and the next priority after Gyfte. It should reuse what Gyfte, Chirk and CMX already solved; details to come.

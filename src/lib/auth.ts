@@ -19,6 +19,8 @@ export const auth = betterAuth({
     additionalFields: {
       // Admins manage people, groups and access. Never settable by users.
       isAdmin: { type: "boolean", required: false, defaultValue: false, input: false },
+      // Invites people and manages groups and app access, never admins or its own access.
+      isPeopleManager: { type: "boolean", required: false, defaultValue: false, input: false },
     },
   },
   session: {

@@ -18,7 +18,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <AppHeader email={user.email} app="People" isAdmin />
+      <AppHeader email={user.email} app="People" isAdmin={actor.isAdmin} people />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div>
           <Link href="/admin" className="text-accent underline-offset-4 hover:underline">
@@ -41,6 +41,9 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
         </Section>
 
         <Section title="Apps" hint="Everyone in the group can use these.">
+          {!actor.isAdmin && group.memberIds.includes(actor.id) ? (
+            <p className="text-sm text-soft">You&apos;re in this group, so only an admin can change its apps.</p>
+          ) : (
           <CheckboxListForm
             action={setGroupAppsAction}
             id={group.id}
@@ -48,12 +51,14 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
             options={APPS.map((a) => ({ value: a.id, label: a.name, hint: a.description }))}
             selected={group.apps}
           />
+          )}
         </Section>
 
         <Section title="Name">
           <TextForm action={renameGroupAction} id={group.id} label="Group name" value={group.name} required />
         </Section>
 
+        {actor.isAdmin && (
         <Section title="Delete group">
           <ConfirmForm
             action={deleteGroupAction}
@@ -62,6 +67,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
             consequence={`Everyone in ${group.name} loses the apps and items shared with the group. The people themselves stay on warbag.`}
           />
         </Section>
+        )}
       </main>
     </>
   );
