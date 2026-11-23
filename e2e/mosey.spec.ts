@@ -62,15 +62,27 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
 
   // An idea, then onto the plan.
   await page.getByRole("link", { name: /^Ideas/ }).click();
+  // Pasting a link files it as the link and asks what it is.
+  await page.getByLabel("Add an idea").focus();
+  await page.evaluate(() => {
+    const data = new DataTransfer();
+    data.setData("text", "https://example.com/beehive");
+    document.activeElement!.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await expect(page.getByText("Link added below. Now say what it is.")).toBeVisible();
+  await expect(page.getByLabel("Link", { exact: true })).toHaveValue("https://example.com/beehive");
+  await expect(page.getByLabel("Add an idea")).toHaveValue("");
   await page.getByLabel("Add an idea").fill("Beehive trail");
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText("Beehive trail")).toBeVisible();
-  await page.getByLabel("Day for Beehive trail").selectOption({ label: "Mon, Jun 7" });
-  await page.getByRole("button", { name: "Add to plan" }).click();
+  await expect(page.getByRole("link", { name: /Beehive trail/ })).toHaveAttribute("href", "https://example.com/beehive");
+  // No day menu on every idea: one quiet action opens the days.
+  await expect(page.getByRole("combobox")).toHaveCount(0);
+  await page.getByRole("button", { name: "Move Beehive trail to a day" }).click();
+  await page.getByRole("button", { name: "Mon, Jun 7" }).click();
   await expect(page.getByText("No ideas yet.")).toBeVisible();
   await page.getByRole("link", { name: "Plan" }).click();
   const day3 = page.getByRole("region", { name: /Mon, Jun 7/ });
-  await expect(day3.getByText("Beehive trail")).toBeVisible();
+  await expect(day3.getByRole("link", { name: /Beehive trail/ })).toBeVisible();
 
   // A members-only stop, then the view link.
   const day1 = page.getByRole("region", { name: /Sat, Jun 5/ });

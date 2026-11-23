@@ -2,6 +2,12 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: the Ideas layout
+
+- **No day menu on every idea.** Organizers see one quiet "Move to a day"; it opens the trip's days as buttons ("Fri 17") and one tap puts the idea on that day. An idea someone suggested for a day shows "Add to Tue, Dec 21" (one tap) and "Other day". Inside a day card's "Suggested for this day", the same shortcut appears.
+- **Pasting a link** into an add box (Ideas or a day card) files it as the link and asks "What is it?", instead of making the link the title.
+- Members still suggest a day by adding from that day's card; organizers decide what goes on the plan.
+
 ## 2026-11-23 · Mosey: typing when a stop happens
 
 - **One "When" box, typed like Crewmaxxing.** "7pm", "9:30a", "14:30", "930", "noon". A bare hour is read the likely way (7 to 11 morning, 12 to 6 afternoon) and the box says "Read as 9:00 AM. Add a or p to change."; on leaving the box it shows the full reading. The parser is copied from Crewmaxxing (`src/lib/time-input.ts`, same tests) so both apps read times the same; keep them in step.
