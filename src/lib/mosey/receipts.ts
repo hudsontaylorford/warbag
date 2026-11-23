@@ -70,6 +70,14 @@ async function remove(pathname: string) {
   await del(pathname);
 }
 
+/**
+ * Deletes receipt images from storage, for a trip that was just deleted
+ * (its rows are already gone). Best effort: a failure is logged, never shown.
+ */
+export async function removeReceiptImages(pathnames: string[]): Promise<void> {
+  for (const p of pathnames) await remove(p).catch((err) => console.error("receipt image delete failed", p, err));
+}
+
 /** Older stored drafts predate `candidates`. */
 function readDraft(raw: unknown): ReceiptDraft | null {
   if (!raw || typeof raw !== "object") return null;

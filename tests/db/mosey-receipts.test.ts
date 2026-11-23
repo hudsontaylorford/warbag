@@ -5,7 +5,7 @@ import path from "node:path";
 import { admin, describeDb, makeUser } from "../support/db";
 import { AccessDenied, grantItem, type Actor } from "@/lib/access";
 import { InputError } from "@/lib/errors";
-import { createTrip, setTripMembers } from "@/lib/mosey/trips";
+import { createTrip, deleteTrip, setTripMembers } from "@/lib/mosey/trips";
 import { addExpense, addPerson, ledger } from "@/lib/mosey/ledger";
 import { pool } from "@/lib/db";
 
@@ -143,5 +143,16 @@ describeDb("Mosey receipts", () => {
     vi.mocked(readReceipt).mockResolvedValueOnce({ draft: { ...fakeDraft, personalDocument: true }, error: null });
     expect((await uploadReceipt(mem, tripId, png(20))).warnings).toEqual([expect.stringMatching(/shows an ID or a card/)]);
     expect((await unsavedReceipts(mem, tripId))[0].draft?.personalDocument).toBe(true);
+  });
+
+  it("deleting a trip deletes its receipt photos too", async () => {
+    const r = await uploadReceipt(mem, tripId, png(30));
+    await addExpense(mem, tripId, { description: "Saved", amount: "5", spentOn: "2027-06-05", paidBy: ann, participants: [ann], receiptId: r.receiptId });
+    await uploadReceipt(mem, tripId, png(31)); // one never saved
+    const dir = path.join(process.env.RECEIPT_STORE_DIR!, "mosey", tripId);
+    expect(readdirSync(dir)).toHaveLength(2);
+    await deleteTrip(org, tripId);
+    expect(readdirSync(dir)).toHaveLength(0);
+    expect((await admin.query("select count(*)::int as n from mosey_receipts where trip_id = $1", [tripId])).rows[0].n).toBe(0);
   });
 });
