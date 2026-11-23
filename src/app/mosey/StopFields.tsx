@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { Field } from "@/components/ui/Field";
 import type { Stop } from "@/lib/mosey/trips";
+import { WhenField } from "./WhenField";
 
 /** The optional details of a stop, shared by Add and Edit. */
 export function StopFields({ stop }: { stop?: Stop }) {
@@ -10,10 +11,8 @@ export function StopFields({ stop }: { stop?: Stop }) {
   const notesId = useId();
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[minmax(0,8rem)_1fr] gap-3">
-        <Field label="Time" name="time" type="time" defaultValue={stop?.time ?? ""} hint="Empty is any time" />
-        <Field label="Place" name="place" defaultValue={stop?.place ?? ""} maxLength={200} placeholder="Name or address" />
-      </div>
+      <WhenField when={stop} />
+      <Field label="Place" name="place" defaultValue={stop?.place ?? ""} maxLength={200} placeholder="Name or address" />
       <Field label="Link" name="link" inputMode="url" defaultValue={stop?.link ?? ""} placeholder="https://" />
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold" htmlFor={notesId}>

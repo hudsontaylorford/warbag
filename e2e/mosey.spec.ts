@@ -31,7 +31,13 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await day2.getByRole("button", { name: "+ Add to this day" }).click();
   await day2.getByLabel("Add to Sun, Jun 6").fill("Lobster dinner");
   await day2.getByRole("button", { name: "Add a time, place or link" }).click();
-  await day2.getByLabel("Time", { exact: true }).fill("18:30");
+  // Typed like Crewmaxxing: a bare hour is read the likely way and says so.
+  await day2.getByLabel("When").fill("6:30");
+  await expect(day2.getByText("Read as 6:30 PM. Add a or p to change.")).toBeVisible();
+  await day2.getByLabel("When").fill("soonish");
+  await day2.getByLabel("Place", { exact: true }).click();
+  await expect(day2.getByText(/isn't a time we recognize/)).toBeVisible();
+  await day2.getByLabel("When").fill("6:30p");
   await day2.getByLabel("Place", { exact: true }).fill("Thurston's Lobster Pound");
   await day2.getByRole("button", { name: "Add", exact: true }).click();
   await expect(day2.getByText("Lobster dinner")).toBeVisible();
@@ -71,10 +77,13 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await day1.getByRole("button", { name: "+ Add to this day" }).click();
   await day1.getByLabel("Add to Sat, Jun 5").fill("Check in");
   await day1.getByRole("button", { name: "Add a time, place or link" }).click();
+  await day1.getByRole("button", { name: "Afternoon" }).click();
+  await expect(day1.getByRole("button", { name: "Afternoon" })).toHaveAttribute("aria-pressed", "true");
   await day1.getByLabel("Place", { exact: true }).fill("12 Private Road");
   await day1.getByLabel(/Members only/).check();
   await day1.getByRole("button", { name: "Add", exact: true }).click();
   await expect(day1.getByText("12 Private Road")).toBeVisible();
+  await expect(day1.getByText("Afternoon", { exact: true })).toBeVisible();
 
   await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Make a view link" }).click();
