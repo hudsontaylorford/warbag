@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: competing options
+
+For plans like "Monday afternoon: ski, hike or spa", the pattern group-trip apps use for "who's in" (choices, not per-line RSVPs).
+
+- **Options are a group of two or more stops on one day** (`mosey_choices`, `mosey_stops.choice_id`). Organizers add them with "+ Add options" on a day (what's being decided, an optional When for all of them, the options), or group an existing stop from its More ("Part of options"). Each option is a normal stop: its own time, place, status, meal.
+- **One pick per person:** "Pick this" / "Your pick" on each option; picking another moves it (server-enforced; "maybe" isn't a pick). "Who picked what" lists everyone, with how many haven't picked; organizers can set anyone's pick there.
+- **One block on the day card,** placed where its first option falls in the day; a When all options share shows once in the header.
+- **Ungroup** keeps the stops and the picks. Moving or deleting options until one is left dissolves the group; the last one stays an ordinary stop.
+- View links show the options and their titles, never who picked what. Not here: a "decided" state, options in Ideas, deadlines to pick.
+
 ## 2026-11-23 · Mosey: ask who's going only where it matters
 
 Hudson: "Who's going?" on every stop felt like an extra button. Research: group-trip apps put "who's in" on choices (voting on activities), event apps show a compact tappable summary of who's coming, and family reunions RSVP once for the trip and opt in only to extras.

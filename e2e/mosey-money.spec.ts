@@ -107,6 +107,24 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await day1.getByRole("button", { name: "Done" }).click();
   await expect(day1.getByText("Going: Ann · Maybe: Cal")).toBeVisible();
 
+  // Competing options on a day: one pick each, shown together.
+  const day2 = page.getByRole("region", { name: /Sun, Jun 6/ });
+  await day2.getByRole("button", { name: "+ Add options" }).click();
+  await day2.getByLabel("What's being decided").fill("Afternoon");
+  await day2.getByLabel("Option 1").fill("Kayak");
+  await day2.getByLabel("Option 2").fill("Museum");
+  await day2.getByRole("button", { name: "Add options" }).click();
+  await expect(day2.getByText("Options · pick one")).toBeVisible();
+  await day2.getByRole("button", { name: "Who picked what (4 not yet)" }).click();
+  await day2.getByRole("group", { name: "Ann: pick" }).getByRole("button", { name: "Kayak" }).click();
+  await expect(day2.getByRole("group", { name: "Ann: pick" }).getByRole("button", { name: "Kayak" })).toHaveAttribute("aria-pressed", "true");
+  await day2.getByRole("group", { name: "Ann: pick" }).getByRole("button", { name: "Museum" }).click();
+  await expect(day2.getByRole("group", { name: "Ann: pick" }).getByRole("button", { name: "Museum" })).toHaveAttribute("aria-pressed", "true");
+  await expect(day2.getByRole("group", { name: "Ann: pick" }).getByRole("button", { name: "Kayak" })).toHaveAttribute("aria-pressed", "false");
+  await day2.getByRole("button", { name: "Done" }).click();
+  await expect(day2.getByText("Ann", { exact: true })).toBeVisible(); // under Museum
+  await expect(day2.getByText("No picks yet")).toBeVisible(); // under Kayak
+
   await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Make a view link" }).click();
   const link = await page.getByLabel("View link").inputValue();

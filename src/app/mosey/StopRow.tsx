@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { Stop } from "@/lib/mosey/trips";
-import { deleteStopAction, planStopAction, updateStopAction } from "./actions";
+import { deleteStopAction, planStopAction, setStopChoiceAction, updateStopAction } from "./actions";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
@@ -97,6 +97,7 @@ export function StopRow({
   showTime = true,
   hideSuggested = false,
   attend,
+  choicesHere,
 }: {
   stop: Stop;
   days: string[];
@@ -107,6 +108,8 @@ export function StopRow({
   hideSuggested?: boolean;
   /** Members only: the trip's people and who's marked for this stop. */
   attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: { personId: string; state: "going" | "maybe" }[]; organizer: boolean };
+  /** Choices on this stop's day, for "Part of options" in More (organizers). */
+  choicesHere?: { id: string; title: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [planState, planAction, planning] = useActionState(planStopAction, {});
@@ -173,12 +176,49 @@ export function StopRow({
       {planState.error && <Alert>{planState.error}</Alert>}
       {attend && stop.askWho && !open && <Attendance tripId={attend.tripId} stopId={stop.id} people={attend.people} marks={attend.marks} organizer={attend.organizer} indent={showTime} />}
 
-      {canEdit && open && <EditStop stop={stop} canPlan={canPlan} onDone={() => setOpen(false)} />}
+      {canEdit && open && <EditStop stop={stop} canPlan={canPlan} choicesHere={choicesHere ?? []} onDone={() => setOpen(false)} />}
     </div>
   );
 }
 
-function EditStop({ stop, canPlan, onDone }: { stop: Stop; canPlan: boolean; onDone: () => void }) {
+/** Organizers: make a stop one of a day's options, or take it out. */
+function PartOfOptions({ stop, choicesHere }: { stop: Stop; choicesHere: { id: string; title: string }[] }) {
+  const [state, action, pending] = useActionState(setStopChoiceAction, {});
+  return (
+    <form action={action} className="flex flex-col gap-2 border-t border-line pt-4">
+      <input type="hidden" name="id" value={stop.id} />
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold">Part of options</span>
+        <select
+          name="choice"
+          defaultValue={stop.choiceId ?? ""}
+          className="min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        >
+          <option value="">Not part of options</option>
+          {choicesHere.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm text-soft">To start new options, use &quot;+ Add options&quot; on the day.</span>
+      </label>
+      {state.error && <Alert>{state.error}</Alert>}
+      {state.ok && !pending && (
+        <p role="status" className="text-sm text-soft">
+          Saved ✓
+        </p>
+      )}
+      <div className="max-w-xs">
+        <Button type="submit" variant="quiet" disabled={pending}>
+          {pending ? "Saving…" : "Save"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function EditStop({ stop, canPlan, choicesHere, onDone }: { stop: Stop; canPlan: boolean; choicesHere: { id: string; title: string }[]; onDone: () => void }) {
   const [saveState, saveAction, saving] = useActionState(updateStopAction, {});
   const [moveState, moveAction, moving] = useActionState(planStopAction, {});
   const [delState, delAction, deleting] = useActionState(deleteStopAction, {});
@@ -208,6 +248,7 @@ function EditStop({ stop, canPlan, onDone }: { stop: Stop; canPlan: boolean; onD
         </div>
       </form>
 
+      {canPlan && stop.day && (stop.choiceId || choicesHere.length > 0) && <PartOfOptions stop={stop} choicesHere={choicesHere} />}
       <div className="flex flex-wrap gap-3 border-t border-line pt-4">
         {canPlan && stop.day && (
           <form action={moveAction} className="flex-1">

@@ -12,6 +12,9 @@ import {
   getTrip,
   planStop,
   revokeTripLink,
+  createChoice,
+  setStopChoice,
+  ungroupChoice,
   setAttendance,
   setDayInfo,
   setTripMembers,
@@ -319,5 +322,56 @@ describeDb("Mosey trips", () => {
     const [link] = (await tripSharing(hudson, tripId)).links;
     const seen = (await tripByLink(link.token))!.stops.find((s) => s.id === dinner)!;
     expect([seen.meal, seen.handledBy]).toEqual(["dinner", ""]);
+  });
+
+  it("options: one pick per person, organizers group and ungroup, a lone option stands alone", async () => {
+    const day = "2027-06-07";
+    const ann = await addPerson(hudson, tripId, { name: "Ann", userId: hudson.id });
+    const ben = await addPerson(hudson, tripId, { name: "Ben", userId: molly.id });
+    await expect(createChoice(molly, tripId, { day, title: "Monday afternoon", options: ["Ski", "Hike"] })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(createChoice(hudson, tripId, { day, title: "Monday afternoon", options: ["Ski", " "] })).rejects.toThrow(/at least two/);
+    await expect(createChoice(hudson, tripId, { day: "2027-07-01", title: "Later", options: ["A", "B"] })).rejects.toBeInstanceOf(InputError);
+    const choice = await createChoice(hudson, tripId, { day, title: "Monday afternoon", options: ["Ski", "Hike", "Spa"] });
+    let t = await getTrip(molly, tripId);
+    expect(t.choices[choice].title).toBe("Monday afternoon");
+    const opt = (title: string) => t.stops.find((s) => s.title === title)!;
+    const [ski, hike, spa] = [opt("Ski"), opt("Hike"), opt("Spa")];
+    expect([ski.day, ski.choiceId, ski.askWho]).toEqual([day, choice, true]);
+
+    // Picking another option moves the pick; "maybe" isn't a pick.
+    await setAttendance(molly, ski.id, ben, "going");
+    await setAttendance(molly, spa.id, ben, "going");
+    await setAttendance(hudson, ski.id, ann, "going");
+    await expect(setAttendance(molly, hike.id, ben, "maybe")).rejects.toThrow(/pick one/);
+    t = await getTrip(molly, tripId);
+    expect(t.attendance![ski.id]).toEqual([{ personId: ann, state: "going" }]);
+    expect(t.attendance![spa.id]).toEqual([{ personId: ben, state: "going" }]);
+
+    // Grouping a stop from another day is refused; same day works.
+    const other = (await addStop(hudson, tripId, { title: "Museum", day: "2027-06-06" })).id;
+    await expect(setStopChoice(hudson, other, choice)).rejects.toThrow(/same day/);
+    const nap = (await addStop(hudson, tripId, { title: "Nap", day })).id;
+    await expect(setStopChoice(molly, nap, choice)).rejects.toBeInstanceOf(AccessDenied);
+    await setStopChoice(hudson, nap, choice);
+    expect((await getTrip(hudson, tripId)).stops.find((s) => s.id === nap)!.choiceId).toBe(choice);
+
+    // Moving options away until one is left dissolves the choice; that one stays a stop.
+    await planStop(hudson, nap, null);
+    await setStopChoice(hudson, hike.id, null);
+    await deleteStop(hudson, spa.id);
+    t = await getTrip(hudson, tripId);
+    expect(t.choices[choice]).toBeUndefined();
+    expect(t.stops.find((s) => s.id === ski.id)!.choiceId).toBeNull();
+    expect(t.attendance![ski.id]).toEqual([{ personId: ann, state: "going" }]); // picks are kept
+
+    // Ungrouping keeps the options and the picks.
+    const c2 = await createChoice(hudson, tripId, { day, title: "Dinner", options: ["Pizza", "Tacos"] });
+    const pizza = (await getTrip(hudson, tripId)).stops.find((s) => s.title === "Pizza")!;
+    await setAttendance(hudson, pizza.id, ann, "going");
+    await expect(ungroupChoice(molly, tripId, c2)).rejects.toBeInstanceOf(AccessDenied);
+    await ungroupChoice(hudson, tripId, c2);
+    t = await getTrip(hudson, tripId);
+    expect(t.stops.filter((s) => ["Pizza", "Tacos"].includes(s.title)).map((s) => s.choiceId)).toEqual([null, null]);
+    expect(t.attendance![pizza.id]).toEqual([{ personId: ann, state: "going" }]);
   });
 });

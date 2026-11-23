@@ -37,6 +37,10 @@
 | Booked | Reserved or paid with someone outside the family. |
 | Breakfast / Lunch / Dinner / Food & drink | What kind of meal a stop or idea is. Food & drink is anything else to eat or drink (takeout, a grocery run). |
 | Who's handling it | Who's cooking, bringing or booking a meal. |
+| Options · pick one | Two or more stops on a day that compete; each person picks one. |
+| Pick this / Your pick | Choosing one option for yourself; tap your pick again to clear it. |
+| Who picked what | Everyone's pick for a set of options. |
+| Ungroup | Turns options back into ordinary stops, keeping picks. |
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |
 | All adults | The split shortcut when a trip has kids (otherwise "Everyone"). |
 | Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |
