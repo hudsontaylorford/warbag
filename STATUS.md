@@ -1,6 +1,6 @@
 # Status
 
-**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 57, which added Room Tuner at /roomtune). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01.
+**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 64, Mosey cleanup). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01.
 
 ## Mosey (trip planner)
 
@@ -12,22 +12,25 @@
 - **Ideas:** Food & drink filter; "Move to a day" opens the days as buttons; pasting a link files it as the link.
 - **Money:** expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. **Kids** are on the trip but left out of splits unless ticked in (their share goes to their household); they never pay.
 - **Receipts:** photo → AI draft → a person checks and saves. Paper rules (handwritten tips, card slips), asks when unsure (tip tables, added tips, lines that don't add up), never guesses a date, warns about IDs or cards in the photo, unsaved photos can be discarded. Checked on 8 of Hudson's real receipts: 7/8 (the miss: a handwritten 4 read as a 9; the form asks and "Something else" covers it).
-- **Sharing:** members, **co-organizers** (everything except sharing or deleting the trip), view links (no money, no names).
+- **Getting people in:** **Invite by email** from Manage (on warbag and the trip in one step, as Member or Co-organizer, with an email naming the trip). The **trip link** (anyone sees the plan and ideas, never money or names) has **Join this trip**: name and email, now or later; the owner taps Add under Manage → Asking to join. Clear pages when you have no trips or open a trip that isn't shared with you, saying who you're signed in as.
+- **Sharing:** members, **co-organizers** (everything except sharing or deleting the trip), the trip link.
+- **Editing:** one editor open at a time, named ("Editing: Van pickup"); unsaved changes are kept until Save or Cancel; Save closes it with "Saved ✓". Settings (Manage, People, Account) save themselves.
 - **Test trips:** Maine and North Shore entered and compared with the sheets: they match, except the Maine cabins, which the sheet marks as paid directly.
 
 ### Left before December 1 (Hudson)
 1. **iPhone walkthrough in Safari** (automated tests emulate an iPhone in Chromium).
 2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
 3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
-4. **Go / no-go** before inviting anyone. Nothing goes to family until Hudson says so.
+4. **Go / no-go** before inviting anyone, then send the family the **trip link** (Manage → Trip link) and add people as they ask. Nothing goes to family until Hudson says so.
+5. Agent test of the access and editing fixes (running 2026-11-23).
 
 ### Open questions (from the Christmas trip notes)
 - Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
 - Christmas dates: Mosey has Dec 17 to 23; another planner says Dec 17 to 24.
 
 ### Known gaps
-- A deleted trip's receipt photos stay in the Blob store.
-- No browser test signs in as a co-organizer or people manager (their rules are covered by database tests).
+- Inviting new people from a trip needs an admin or people manager (by design; today Hudson and his agent).
+- Gyfte's sharing still has its own Share / Save step (Gyfte is paused).
 
 ## Room Tuner (room EQ)
 

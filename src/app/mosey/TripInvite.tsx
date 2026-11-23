@@ -20,7 +20,7 @@ export function InviteByEmail({ tripId }: { tripId: string }) {
       <Field label="Their name" name="name" required maxLength={80} autoComplete="off" />
       <Field label="Their email" name="email" type="email" inputMode="email" required autoComplete="off" />
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold">As</span>
+        <span className="text-sm font-semibold">Add as</span>
         <select
           name="role"
           defaultValue="contribute"

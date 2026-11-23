@@ -14,6 +14,12 @@ Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are 
 - **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
 - Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
 
+## 2026-11-23 · Mosey cleanup
+
+- **Deleting a trip deletes its receipt photos** from storage too (best effort, after the database rows are gone), closing the known gap.
+- **Browser tests now sign in as a co-organizer and as a people manager** (`e2e/roles.spec.ts`), alongside the database tests of their rules.
+- The invite form's role field is labelled "Add as".
+
 ## 2026-11-23 · Mosey: editing confidence
 
 From the agent's test: a note landed on the wrong entry while an editor was open. Reproduced: several editors could be open at once (a stop's More, another stop's More, a day's add box), each with fields labelled Notes, Place and When, so a field filled by its label (as a browser agent does, and as screen readers announce) could reach the wrong one.

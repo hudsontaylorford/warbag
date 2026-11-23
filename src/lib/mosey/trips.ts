@@ -1,6 +1,7 @@
 import "server-only";
 import type { PoolClient } from "pg";
 import { parseWhen, type Part, type When } from "./when";
+import { removeReceiptImages } from "./receipts";
 import { pool } from "../db";
 import { InputError } from "../errors";
 import {
@@ -250,7 +251,10 @@ export async function updateTrip(
 export async function deleteTrip(actor: Actor, id: string): Promise<void> {
   const { trip } = await ownerOnly(actor, id);
   await forgetItem(actor, ref(trip));
+  // Receipt photos live outside the database: delete them once the trip is gone.
+  const photos = await pool.query<{ blob_path: string }>("select blob_path from mosey_receipts where trip_id = $1", [trip.id]);
   await pool.query("delete from mosey_trips where id = $1", [trip.id]);
+  await removeReceiptImages(photos.rows.map((r) => r.blob_path));
 }
 
 /** Trips this person organizes or was added to, soonest first. */
