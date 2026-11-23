@@ -71,6 +71,23 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   // The view link never shows money.
   const trip = page.url().split("/money")[0];
   await page.goto(trip);
+
+  // A booked stop, and who's going, from the same people.
+  const day1 = page.getByRole("region", { name: /Sat, Jun 5/ });
+  await day1.getByRole("button", { name: "+ Add to this day" }).click();
+  await day1.getByLabel(/^Add to/).fill("Boat tour");
+  await day1.getByRole("button", { name: "Add a time, place or link" }).click();
+  await day1.getByLabel("Status").selectOption({ label: "Booked" });
+  await day1.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(day1.getByText("Booked", { exact: true })).toBeVisible();
+  await day1.getByRole("button", { name: "Done adding" }).click();
+  await day1.getByRole("button", { name: "Who's going?" }).click();
+  await day1.getByRole("group", { name: "Ann: going?" }).getByRole("button", { name: "Going" }).click();
+  await expect(day1.getByRole("group", { name: "Ann: going?" }).getByRole("button", { name: "Going" })).toHaveAttribute("aria-pressed", "true");
+  await day1.getByRole("group", { name: "Cal: going?" }).getByRole("button", { name: "Maybe" }).click();
+  await day1.getByRole("button", { name: "Done" }).click();
+  await expect(day1.getByText("Going: Ann · Maybe: Cal")).toBeVisible();
+
   await page.locator("summary", { hasText: "Manage" }).click();
   await page.getByRole("button", { name: "Make a view link" }).click();
   const link = await page.getByLabel("View link").inputValue();
@@ -79,6 +96,10 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await expect(guest.getByRole("heading", { name: `Money ${tag}` })).toBeVisible();
   await expect(guest.getByRole("link", { name: "Money" })).toHaveCount(0);
   await expect(guest.getByText("Dinner")).toHaveCount(0);
+  // The view link shows the stop and its status, never who's going.
+  await expect(guest.getByText("Boat tour")).toBeVisible();
+  await expect(guest.getByText("Booked", { exact: true })).toBeVisible();
+  await expect(guest.getByText(/Going:|Who's going/)).toHaveCount(0);
   const res = await guest.goto(`${trip.replace(/.*\/mosey\//, "/mosey/")}/money`);
   expect(guest.url()).toContain("/sign-in");
   expect(res?.status()).toBeLessThan(500);

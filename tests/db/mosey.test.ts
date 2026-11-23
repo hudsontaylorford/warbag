@@ -12,6 +12,7 @@ import {
   getTrip,
   planStop,
   revokeTripLink,
+  setAttendance,
   setDayInfo,
   setTripMembers,
   tripByLink,
@@ -20,6 +21,7 @@ import {
   updateStop,
   updateTrip,
 } from "@/lib/mosey/trips";
+import { addPerson, removePerson } from "@/lib/mosey/ledger";
 import { pool } from "@/lib/db";
 
 let hudson: Actor, molly: Actor, aunt: Actor, outsider: Actor;
@@ -231,5 +233,60 @@ describeDb("Mosey trips", () => {
     await updateStop(hudson, dinner.id, { title: "Dinner", time: "19:15" });
     d = (await getTrip(hudson, tripId)).stops.find((s) => s.id === dinner.id)!;
     expect([d.time, d.part]).toEqual(["19:15", null]);
+  });
+
+  it("a stop's status: set with the stop, shown everywhere, only known words", async () => {
+    const id = (await addStop(hudson, tripId, { title: "Cabin", day: "2027-06-05", status: "asked" })).id;
+    expect((await getTrip(molly, tripId)).stops.find((s) => s.id === id)!.status).toBe("asked");
+    await updateStop(hudson, id, { title: "Cabin", status: "booked" });
+    await createTripLink(hudson, tripId);
+    const [link] = (await tripSharing(hudson, tripId)).links;
+    expect((await tripByLink(link.token))!.stops.find((s) => s.id === id)!.status).toBe("booked");
+    await expect(updateStop(hudson, id, { title: "Cabin", status: "paid" })).rejects.toBeInstanceOf(InputError);
+    await updateStop(hudson, id, { title: "Cabin", status: "" });
+    expect((await getTrip(hudson, tripId)).stops.find((s) => s.id === id)!.status).toBeNull();
+  });
+
+  it("who's going: organizers mark anyone, members only themselves, nobody else sees it", async () => {
+    await grantItem(hudson, { app: "mosey", type: "trip", id: tripId, ownerId: hudson.id }, { userId: aunt.id }, "view");
+    const ann = await addPerson(hudson, tripId, { name: "Ann", userId: hudson.id });
+    const ben = await addPerson(hudson, tripId, { name: "Ben", userId: molly.id });
+    const kid = await addPerson(hudson, tripId, { name: "Kid" });
+    const ski = (await addStop(hudson, tripId, { title: "Ski", day: "2027-06-06" })).id;
+    const idea = (await addStop(molly, tripId, { title: "Spa" })).id;
+
+    await setAttendance(hudson, ski, kid, "going"); // an organizer marks anyone
+    await setAttendance(molly, ski, ben, "maybe"); // a member marks themselves
+    await setAttendance(molly, idea, ben, "going"); // ideas too
+    await expect(setAttendance(molly, ski, ann, "going")).rejects.toBeInstanceOf(AccessDenied); // not someone else
+    await expect(setAttendance(aunt, ski, kid, "going")).rejects.toBeInstanceOf(AccessDenied); // viewers can't
+    await expect(setAttendance(outsider, ski, kid, "going")).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setAttendance(hudson, ski, kid, "sure" as "going")).rejects.toBeInstanceOf(InputError);
+    // Someone from another trip can't be marked.
+    const other = await createTrip(hudson, { ...maine, name: "Other" });
+    const zed = await addPerson(hudson, other, { name: "Zed" });
+    await expect(setAttendance(hudson, ski, zed, "going")).rejects.toBeInstanceOf(AccessDenied);
+
+    const t = await getTrip(molly, tripId);
+    expect(t.people!.map((p) => [p.name, p.me])).toEqual([["Ann", false], ["Ben", true], ["Kid", false]]);
+    expect(t.attendance![ski]).toEqual([
+      { personId: ben, state: "maybe" },
+      { personId: kid, state: "going" },
+    ]);
+    expect(t.attendance![idea]).toEqual([{ personId: ben, state: "going" }]);
+    // Viewers and view links never see names or attendance.
+    const seen = await getTrip(aunt, tripId);
+    expect(seen.people).toBeUndefined();
+    expect(seen.attendance).toBeUndefined();
+    await createTripLink(hudson, tripId);
+    const [link] = (await tripSharing(hudson, tripId)).links;
+    const byLink = (await tripByLink(link.token))!;
+    expect(byLink.people).toBeUndefined();
+    expect(JSON.stringify(byLink)).not.toContain("Kid");
+
+    // Clearing, and removing a person, take their marks away.
+    await setAttendance(molly, ski, ben, null);
+    await removePerson(hudson, tripId, kid);
+    expect((await getTrip(hudson, tripId)).attendance![ski]).toBeUndefined();
   });
 });

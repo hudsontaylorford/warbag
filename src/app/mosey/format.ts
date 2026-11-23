@@ -32,3 +32,6 @@ export function shortTimeLabel(time: string): string {
   const [h, m] = time.split(":").map(Number);
   return `${h % 12 || 12}${m ? `:${String(m).padStart(2, "0")}` : ""}${h < 12 ? "a" : "p"}`;
 }
+
+/** The words for a stop's status. Same everywhere: the label, the form and docs/LANGUAGE.md. */
+export const STATUS_LABEL = { tentative: "Tentative", asked: "Inquiry sent", confirmed: "Confirmed", booked: "Booked" } as const;

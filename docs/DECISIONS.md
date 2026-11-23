@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: stop status and who's going
+
+- **Status:** none, Tentative, Inquiry sent, Confirmed or Booked, chosen in the stop's form by anyone who can edit it; a small label beside the name (Confirmed and Booked filled, the others outlined). View links show it. Words in docs/LANGUAGE.md.
+- **Who's going uses the trip's people list** (the people on Money), not a second roster. Each stop and idea shows "Going: … · Maybe: …" and "Who's going?" / "Change". Two choices per person; tapping the one that's on clears it, so not marked never reads as "no".
+- **Who can mark:** organizers anyone on the list; a member only the person linked to their own account. Members only: viewers and view links never see names or attendance (checked on the server, like money). Removing a person removes their marks.
+- **Kids:** stay on the people list, so they can be marked for stops. Keeping them out of money splits is the separate kids change.
+- Not here: votes between options, deadlines and reminders, attendance counts on the calendar.
+
 ## 2026-11-23 · Mosey: the Ideas layout
 
 - **No day menu on every idea.** Organizers see one quiet "Move to a day"; it opens the trip's days as buttons ("Fri 17") and one tap puts the idea on that day. An idea someone suggested for a day shows "Add to Tue, Dec 21" (one tap) and "Other day". Inside a day card's "Suggested for this day", the same shortcut appears.

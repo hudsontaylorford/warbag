@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { StopFields } from "./StopFields";
-import { dayLabel, mapsUrl } from "./format";
+import { dayLabel, mapsUrl, STATUS_LABEL } from "./format";
+import { Attendance } from "./Attendance";
 import { whenLabel } from "@/lib/mosey/when";
 
 const quiet = "min-h-11 text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50";
@@ -95,6 +96,7 @@ export function StopRow({
   canPlan,
   showTime = true,
   hideSuggested = false,
+  attend,
 }: {
   stop: Stop;
   days: string[];
@@ -103,6 +105,8 @@ export function StopRow({
   showTime?: boolean;
   /** Already listed under the day it was suggested for. */
   hideSuggested?: boolean;
+  /** Members only: the trip's people and who's marked for this stop. */
+  attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: { personId: string; state: "going" | "maybe" }[]; organizer: boolean };
 }) {
   const [open, setOpen] = useState(false);
   const [planState, planAction, planning] = useActionState(planStopAction, {});
@@ -116,14 +120,25 @@ export function StopRow({
           </span>
         )}
         <div className="flex min-w-0 flex-1 flex-col">
-          {stop.link ? (
-            <a href={stop.link} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold break-words text-accent underline-offset-4 hover:underline">
-              {stop.title}
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          ) : (
-            <span className="font-semibold break-words">{stop.title}</span>
-          )}
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            {stop.link ? (
+              <a href={stop.link} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold break-words text-accent underline-offset-4 hover:underline">
+                {stop.title}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            ) : (
+              <span className="font-semibold break-words">{stop.title}</span>
+            )}
+            {stop.status && (
+              <span
+                className={`rounded px-1.5 text-xs leading-5 font-semibold ${
+                  stop.status === "booked" || stop.status === "confirmed" ? "bg-ink text-page" : "border border-line text-soft"
+                }`}
+              >
+                {STATUS_LABEL[stop.status]}
+              </span>
+            )}
+          </div>
           {stop.place && (
             <a href={mapsUrl(stop.place)} target="_blank" rel="noopener noreferrer" className="text-sm break-words text-soft underline-offset-4 hover:underline">
               {stop.place} · <span className="text-accent">Maps ›</span>
@@ -150,6 +165,7 @@ export function StopRow({
 
       {canPlan && !stop.day && !open && <MoveToDay stop={stop} days={days} action={planAction} pending={planning} indent={showTime} />}
       {planState.error && <Alert>{planState.error}</Alert>}
+      {attend && !open && <Attendance tripId={attend.tripId} stopId={stop.id} people={attend.people} marks={attend.marks} organizer={attend.organizer} indent={showTime} />}
 
       {canEdit && open && <EditStop stop={stop} canPlan={canPlan} onDone={() => setOpen(false)} />}
     </div>

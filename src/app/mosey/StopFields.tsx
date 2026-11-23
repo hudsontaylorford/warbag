@@ -4,6 +4,7 @@ import { useId } from "react";
 import { Field } from "@/components/ui/Field";
 import type { Stop } from "@/lib/mosey/trips";
 import { WhenField } from "./WhenField";
+import { STATUS_LABEL } from "./format";
 
 /** The optional details of a stop, shared by Add and Edit. */
 export function StopFields({ stop, link }: { stop?: Stop; /** A link pasted into the add box. */ link?: string }) {
@@ -12,6 +13,21 @@ export function StopFields({ stop, link }: { stop?: Stop; /** A link pasted into
   return (
     <div className="flex flex-col gap-3">
       <WhenField when={stop} />
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold">Status</span>
+        <select
+          name="status"
+          defaultValue={stop?.status ?? ""}
+          className="min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        >
+          <option value="">No status</option>
+          {(Object.keys(STATUS_LABEL) as (keyof typeof STATUS_LABEL)[]).map((s) => (
+            <option key={s} value={s}>
+              {STATUS_LABEL[s]}
+            </option>
+          ))}
+        </select>
+      </label>
       <Field label="Place" name="place" defaultValue={stop?.place ?? ""} maxLength={200} placeholder="Name or address" />
       <Field label="Link" name="link" inputMode="url" defaultValue={stop?.link ?? link ?? ""} placeholder="https://" />
       <div className="flex flex-col gap-1.5">

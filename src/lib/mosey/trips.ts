@@ -45,6 +45,10 @@ type TripRow = {
   end_date: string;
 };
 
+export const STATUSES = ["tentative", "asked", "confirmed", "booked"] as const;
+export type Status = (typeof STATUSES)[number];
+export type Attending = "going" | "maybe";
+
 export type Stop = {
   id: string;
   day: string | null;
@@ -52,6 +56,8 @@ export type Stop = {
   time: string | null;
   /** Part of the day or "tbd" when there's no exact time; both null is any time. */
   part: Part | null;
+  /** Tentative, inquiry sent, confirmed or booked; null is no status. */
+  status: Status | null;
   title: string;
   place: string;
   link: string;
@@ -72,6 +78,9 @@ export type TripDetail = TripSummary & {
   /** Area and tag by day, only for days that have one. */
   dayInfo: Record<string, DayInfo>;
   stops: Stop[];
+  /** Members only: the trip's people (from Money), and who's going to what. */
+  people?: { id: string; name: string; me: boolean }[];
+  attendance?: Record<string, { personId: string; state: Attending }[]>;
 };
 
 const ref = (t: { id: string; owner_id: string }): ItemRef => ({ app: APP, type: "trip", id: t.id, ownerId: t.owner_id });
@@ -246,6 +255,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     suggested_day: string | null;
     at_time: string | null;
     time_of_day: Part | null;
+    status: Status | null;
     title: string;
     place: string;
     link: string;
@@ -254,7 +264,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     created_by: string | null;
   }>(
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
-       to_char(at_time, 'HH24:MI') as at_time, time_of_day, title, place, link, notes, members_only, created_by
+       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
      -- Parts of the day sort at the start of their window, before exact
      -- times there; time TBD and any time come last.
@@ -273,6 +283,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       suggestedDay: r.suggested_day,
       time: r.at_time,
       part: r.time_of_day,
+      status: r.status,
       title: r.title,
       place: hide ? "" : r.place,
       link: hide ? "" : r.link,
@@ -327,7 +338,26 @@ export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
     // Someone with only a view grant sees what a link sees.
     stops: await stopsOf(trip.id, actor.id, !atLeast(role, "contribute")),
+    ...(atLeast(role, "contribute") ? await attendanceOf(trip.id, actor.id) : {}),
   };
+}
+
+/** The trip's people and who's going to which stop. Members only (callers check). */
+async function attendanceOf(tripId: string, viewerId: string) {
+  const people = await pool.query<{ id: string; name: string; user_id: string | null }>(
+    "select id, name, user_id from mosey_people where trip_id = $1 order by position, created_at",
+    [tripId],
+  );
+  const marks = await pool.query<{ stop_id: string; person_id: string; state: Attending }>(
+    `select a.stop_id, a.person_id, a.state from mosey_attendance a
+       join mosey_people p on p.id = a.person_id
+      where p.trip_id = $1
+      order by p.position, p.created_at`,
+    [tripId],
+  );
+  const attendance: Record<string, { personId: string; state: Attending }[]> = {};
+  for (const m of marks.rows) (attendance[m.stop_id] ??= []).push({ personId: m.person_id, state: m.state });
+  return { people: people.rows.map((r) => ({ id: r.id, name: r.name, me: r.user_id === viewerId })), attendance };
 }
 
 /** What a view-only link shows: the plan and ideas, minus members-only details. */
@@ -352,7 +382,14 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
 
 // ------------------------------------------------------------ stops
 
-type StopInput = { title: string; time?: string; place?: string; link?: string; notes?: string; membersOnly?: boolean };
+type StopInput = { title: string; time?: string; place?: string; link?: string; notes?: string; membersOnly?: boolean; status?: string };
+
+function cleanStatus(raw: unknown): Status | null {
+  const s = String(raw ?? "").trim();
+  if (!s) return null;
+  if (!(STATUSES as readonly string[]).includes(s)) throw new InputError("Pick a status from the list.");
+  return s as Status;
+}
 
 function readStop(input: StopInput) {
   const title = cleanText(input.title, 200, "A title");
@@ -364,6 +401,7 @@ function readStop(input: StopInput) {
     link: cleanLink(input.link),
     notes: cleanText(input.notes, 2000, "Notes"),
     membersOnly: input.membersOnly === true,
+    status: cleanStatus(input.status),
   };
 }
 
@@ -381,11 +419,11 @@ export async function addStop(actor: Actor, tripId: string, input: StopInput & {
   }
   const planned = role === "manage" && day !== null;
   const { rows } = await pool.query<{ id: string }>(
-    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day)
+    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day, status)
      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12)
+       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12, $13)
      returning id`,
-    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part],
+    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part, s.status],
   );
   return { id: rows[0].id, planned };
 }
@@ -407,9 +445,9 @@ export async function updateStop(actor: Actor, stopId: string, input: StopInput)
   if (role !== "manage" && !mine) throw new AccessDenied();
   const s = readStop(input);
   await pool.query(
-    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
+    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, status = $9, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
      where id = $1`,
-    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part],
+    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part, s.status],
   );
 }
 
@@ -425,6 +463,29 @@ export async function planStop(actor: Actor, stopId: string, day: string | null)
   await pool.query(
     `update mosey_stops set day = $2, suggested_day = null, planned_by = $3, updated_at = now() where id = $1`,
     [stopId, day, day ? actor.id : null],
+  );
+}
+
+/**
+ * Marks someone going, maybe, or neither (null) for a stop or idea. Organizers
+ * can mark anyone on the trip's people list; a member only the person linked
+ * to their own account.
+ */
+export async function setAttendance(actor: Actor, stopId: string, personId: string, state: Attending | null): Promise<void> {
+  const { trip, role } = await stopWithTrip(actor, stopId);
+  if (!UUID.test(personId)) throw new AccessDenied();
+  if (state !== null && state !== "going" && state !== "maybe") throw new InputError("Pick going or maybe.");
+  const { rows } = await pool.query<{ user_id: string | null }>("select user_id from mosey_people where id = $1 and trip_id = $2", [personId, trip.id]);
+  if (!rows[0]) throw new AccessDenied();
+  if (role !== "manage" && rows[0].user_id !== actor.id) throw new AccessDenied();
+  if (state === null) {
+    await pool.query("delete from mosey_attendance where stop_id = $1 and person_id = $2", [stopId, personId]);
+    return;
+  }
+  await pool.query(
+    `insert into mosey_attendance (stop_id, person_id, state, updated_by) values ($1, $2, $3, $4)
+     on conflict (stop_id, person_id) do update set state = excluded.state, updated_by = excluded.updated_by, updated_at = now()`,
+    [stopId, personId, state, actor.id],
   );
 }
 

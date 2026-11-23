@@ -27,6 +27,17 @@
 | I'm getting | Gifts you said you'd get (your claims). |
 | Manage | A closed section for organizer tools (groups, import, kids, family link). |
 
+## Mosey plan words
+
+| Label | Means |
+|---|---|
+| Tentative | Probably happening, not settled. |
+| Inquiry sent | We asked (a booking request, an email) and are waiting to hear. |
+| Confirmed | Settled, nothing to book (a dinner at home, a plan everyone agreed). |
+| Booked | Reserved or paid with someone outside the family. |
+| Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |
+| Morning / Afternoon / Evening / Time TBD / Any time | When, without an exact time. |
+
 ## Style
 
 - Short by default. Sentence case for labels and headings.
