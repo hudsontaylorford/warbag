@@ -99,13 +99,39 @@ export async function inviteToTrip(
 export async function requestToJoinTrip(token: string, input: { name: string; email: string }): Promise<void> {
   const link = await resolveShareLink(token);
   if (!link || link.app !== "mosey" || link.type !== "trip") throw new InputError("This trip link isn't working anymore. Ask for a new one.");
+  await saveJoinRequest(link.id, cleanName(input.name), normalizeEmail(input.email));
+}
+
+/**
+ * "Ask to join" from a trip's own address (/mosey/<id>) by someone signed in
+ * who isn't on it, as themselves. Answers the same whether or not the trip
+ * exists, so the address reveals nothing; the owner sees it under Asking to
+ * join, like a request from the trip link.
+ */
+export async function requestToJoinTripById(actor: Actor, tripId: string, input: { name: string }): Promise<void> {
   const name = cleanName(input.name);
-  const email = normalizeEmail(input.email);
+  if (!UUID.test(tripId)) return;
+  const { rows: trips } = await pool.query<{ id: string }>("select id from mosey_trips where id = $1", [tripId]);
+  if (!trips[0]) return;
+  const { rows: users } = await pool.query<{ email: string }>(`select email from "user" where id = $1`, [actor.id]);
+  if (!users[0]) throw new AccessDenied();
+  // Already on it: nothing to ask.
+  const { rows: grants } = await pool.query(
+    `select 1 from item_grants where app = 'mosey' and item_type = 'trip' and item_id = $1
+       and (user_id = $2 or group_id in (select group_id from group_members where user_id = $2))
+     union all select 1 from mosey_trips where id = $1::uuid and owner_id = $2`,
+    [tripId, actor.id],
+  );
+  if (grants.length > 0) return;
+  await saveJoinRequest(tripId, name, normalizeEmail(users[0].email));
+}
+
+async function saveJoinRequest(tripId: string, name: string, email: string): Promise<void> {
   const { rows } = await pool.query<{ pending: number; recent: number }>(
     `select count(*)::int as pending,
             count(*) filter (where created_at > now() - interval '1 hour')::int as recent
      from mosey_join_requests where trip_id = $1`,
-    [link.id],
+    [tripId],
   );
   if (rows[0].pending >= TRIP_JOIN_LIMIT.pendingPerTrip || rows[0].recent >= TRIP_JOIN_LIMIT.perTripPerHour) {
     throw new InputError("Lots of requests right now. Try again in an hour.");
@@ -113,7 +139,7 @@ export async function requestToJoinTrip(token: string, input: { name: string; em
   await pool.query(
     `insert into mosey_join_requests (trip_id, name, email) values ($1, $2, $3)
      on conflict (trip_id, email) do update set name = excluded.name`,
-    [link.id, name, email],
+    [tripId, name, email],
   );
 }
 

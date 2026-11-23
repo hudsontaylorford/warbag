@@ -39,6 +39,7 @@ export function TripManage({
         {requests.length > 0 && <span className="font-normal text-soft"> · {requests.length} asking to join</span>}
       </summary>
       <div className="mt-4 flex flex-col gap-8">
+        {sharing && <TripLink tripId={trip.id} tripName={trip.name} links={sharing.links} siteUrl={siteUrl} />}
         {sharing && canInvite && (
           <Section title="Invite by email" hint="Adds them to warbag (if they're new) and to this trip in one step.">
             <InviteByEmail tripId={trip.id} />
@@ -73,7 +74,6 @@ export function TripManage({
             />
           </Section>
         )}
-        {sharing && <TripLink tripId={trip.id} links={sharing.links} siteUrl={siteUrl} />}
         <Section title="Trip details">
           <TripForm trip={trip} />
         </Section>

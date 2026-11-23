@@ -24,6 +24,9 @@ export default async function SignInPage({
     <main className="mx-auto flex max-w-sm flex-col gap-6 px-4 py-16">
       <Monogram letter="W" size="md" label="warbag" />
       <h1 className="title">Sign in to warbag</h1>
+      {next.startsWith("/mosey/") && next !== "/mosey/" && (
+        <p className="text-soft">This trip is private. Sign in with the email it was shared with. Got a trip link instead? Open it to see the plan and ask to join.</p>
+      )}
       <SignInForm next={next} />
     </main>
   );

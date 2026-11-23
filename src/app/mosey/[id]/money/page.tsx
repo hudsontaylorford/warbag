@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { requireMosey } from "@/lib/mosey/page";
 import { AccessDenied } from "@/lib/access";
 import { getTrip } from "@/lib/mosey/trips";
 import { ledger, linkableAccounts, moneyLog } from "@/lib/mosey/ledger";
 import { dollars } from "@/lib/mosey/money";
+import { NotShared } from "../../NotShared";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { Alert } from "@/components/ui/Alert";
 import { TripHeader } from "../../TripParts";
@@ -27,11 +27,12 @@ function defaultDay(start: string, end: string) {
 
 export default async function TripMoneyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, actor } = await requireMosey(`/mosey/${id}/money`);
+  const { user, actor } = await requireMosey(`/mosey/${id}/money`, { trip: true });
   const loaded = await Promise.all([getTrip(actor, id), ledger(actor, id)]).catch((err) => {
-    if (err instanceof AccessDenied) notFound();
+    if (err instanceof AccessDenied) return null;
     throw err;
   });
+  if (!loaded) return <NotShared tripId={id} />;
   const [trip, l] = loaded;
   const [accounts, log, receipts, unsaved] = await Promise.all([
     l.organizer ? linkableAccounts(actor, id) : Promise.resolve([]),

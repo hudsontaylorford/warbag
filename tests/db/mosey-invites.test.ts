@@ -3,7 +3,7 @@ import { admin, describeDb, makeUser } from "../support/db";
 import { AccessDenied, grantApp, type Actor } from "@/lib/access";
 import { InputError } from "@/lib/errors";
 import { createTrip, createTripLink, getTrip, revokeTripLink, setTripOrganizers, tripSharing } from "@/lib/mosey/trips";
-import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip, TRIP_JOIN_LIMIT, tripJoinRequests } from "@/lib/mosey/invites";
+import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip, requestToJoinTripById, TRIP_JOIN_LIMIT, tripJoinRequests } from "@/lib/mosey/invites";
 import { pool } from "@/lib/db";
 
 // Made-up people only.
@@ -82,6 +82,31 @@ describeDb("Mosey: getting people into a trip", () => {
     await declineTripJoin(hudson, (await tripJoinRequests(hudson, tripId))[0].id);
     expect(await tripJoinRequests(hudson, tripId)).toEqual([]);
     expect(await userByEmail(other)).toBeUndefined();
+  });
+
+  it("ask to join from the trip's own address: as yourself, and it reveals nothing", async () => {
+    const emailOf = async (id: string) => (await admin.query(`select email from "user" where id = $1`, [id])).rows[0].email as string;
+    // A made-up or malformed id answers the same as a real one, and saves nothing.
+    await requestToJoinTripById(outsider, crypto.randomUUID(), { name: "Someone" });
+    await requestToJoinTripById(outsider, "not-a-trip", { name: "Someone" });
+    await expect(requestToJoinTripById(outsider, tripId, { name: "" })).rejects.toBeInstanceOf(InputError);
+    expect(await tripJoinRequests(hudson, tripId)).toHaveLength(0);
+
+    // A real trip: the request carries their own sign-in email, not a typed one.
+    await requestToJoinTripById(outsider, tripId, { name: "Outsider" });
+    await requestToJoinTripById(outsider, tripId, { name: "Outsider again" });
+    const asks = await tripJoinRequests(hudson, tripId);
+    expect(asks.map((r) => [r.name, r.email])).toEqual([["Outsider again", await emailOf(outsider.id)]]);
+
+    // Someone already on it (or its owner) has nothing to ask.
+    await setTripOrganizers(hudson, tripId, [helper.id]);
+    await requestToJoinTripById(helper, tripId, { name: "Helper" });
+    await requestToJoinTripById(hudson, tripId, { name: "Hudson" });
+    expect(await tripJoinRequests(hudson, tripId)).toHaveLength(1);
+
+    // Add works the same as for a trip-link request.
+    await approveTripJoin(hudson, asks[0].id);
+    expect((await getTrip(outsider, tripId)).role).toBe("contribute");
   });
 
   it("a turned-off or made-up link can't be used to ask, and asks are limited", async () => {

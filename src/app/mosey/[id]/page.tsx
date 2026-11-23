@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { requireMosey } from "@/lib/mosey/page";
 import { AccessDenied } from "@/lib/access";
 import { getTrip, tripSharing } from "@/lib/mosey/trips";
 import { tripJoinRequests } from "@/lib/mosey/invites";
 import { siteUrl } from "@/lib/site";
+import { NotShared } from "../NotShared";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { DayCards, TripHeader } from "../TripParts";
 import { TripManage } from "../TripManage";
@@ -13,11 +13,12 @@ export const metadata: Metadata = { title: "Trip · Mosey", robots: { index: fal
 
 export default async function TripPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, actor } = await requireMosey(`/mosey/${id}`);
+  const { user, actor } = await requireMosey(`/mosey/${id}`, { trip: true });
   const trip = await getTrip(actor, id).catch((err) => {
-    if (err instanceof AccessDenied) notFound();
+    if (err instanceof AccessDenied) return null;
     throw err;
   });
+  if (!trip) return <NotShared tripId={id} />;
   const canAdd = trip.role === "manage" || trip.role === "contribute";
   const sharing = trip.owner ? await tripSharing(actor, id) : null;
   const requests = trip.owner ? await tripJoinRequests(actor, id) : [];
