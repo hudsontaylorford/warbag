@@ -127,8 +127,8 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await page.getByLabel("Trip name").fill(`Maine ${tag}`);
   await page.getByLabel("Where").focus();
   await expect(page.getByRole("heading", { name: `Maine ${tag}`, exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Make a view link" }).click();
-  const link = await page.getByLabel("View link").inputValue();
+  await page.getByRole("button", { name: "Make a trip link" }).click();
+  const link = await page.getByLabel("Trip link").inputValue();
   expect(link).toMatch(/\/m\/[A-Za-z0-9_-]{32}$/);
 
   const guest = await (await browser.newContext({ ...test.info().project.use })).newPage();
@@ -144,7 +144,7 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
 
   // Turned off, the link stops working.
   await page.getByRole("button", { name: "Turn off" }).click();
-  await expect(page.getByRole("button", { name: "Make a view link" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Make a trip link" })).toBeVisible();
   const res = await guest.goto(link);
   expect(res?.status()).toBe(404);
 });

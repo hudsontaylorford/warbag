@@ -3,12 +3,27 @@ import { CheckboxListForm, ConfirmForm, Section } from "@/components/ui/forms";
 import { TripForm } from "./TripForm";
 import { TripLink } from "./TripLink";
 import { deleteTripAction, setMembersAction, setOrganizersAction } from "./actions";
+import { InviteByEmail, JoinRequests } from "./TripInvite";
 
 /**
  * Organizer tools, closed by default. The owner: who's on the trip,
  * co-organizers, the view link, details, delete. A co-organizer: details.
  */
-export function TripManage({ trip, sharing, siteUrl }: { trip: TripDetail; sharing: TripSharing | null; siteUrl: string }) {
+export function TripManage({
+  trip,
+  sharing,
+  siteUrl,
+  requests = [],
+  canInvite = false,
+}: {
+  trip: TripDetail;
+  sharing: TripSharing | null;
+  siteUrl: string;
+  /** People asking to join from the trip link (owner only). */
+  requests?: { id: string; name: string; email: string }[];
+  /** May add new people to warbag from here (admins and people managers). */
+  canInvite?: boolean;
+}) {
   const organizerIds = new Set(sharing?.organizers.map((o) => o.id) ?? []);
   const options = sharing
     ? [
@@ -19,8 +34,21 @@ export function TripManage({ trip, sharing, siteUrl }: { trip: TripDetail; shari
   const selected = sharing?.members.map((m) => `${m.kind === "group" ? "g" : "p"}:${m.id}`) ?? [];
   return (
     <details>
-      <summary className="min-h-11 cursor-pointer content-center font-semibold">Manage</summary>
+      <summary className="min-h-11 cursor-pointer content-center font-semibold">
+        Manage
+        {requests.length > 0 && <span className="font-normal text-soft"> · {requests.length} asking to join</span>}
+      </summary>
       <div className="mt-4 flex flex-col gap-8">
+        {sharing && canInvite && (
+          <Section title="Invite by email" hint="Adds them to warbag (if they're new) and to this trip in one step.">
+            <InviteByEmail tripId={trip.id} />
+          </Section>
+        )}
+        {sharing && (
+          <Section title="Asking to join" hint={canInvite ? "From the trip link. Add puts them on the trip and emails them how to sign in." : "From the trip link. An admin adds new people to warbag."}>
+            <JoinRequests requests={requests} />
+          </Section>
+        )}
         {sharing && (
           <Section title="Who's on the trip" hint="Members can see everything here, add ideas and suggest a day. You put things on the plan.">
             <CheckboxListForm
@@ -29,7 +57,7 @@ export function TripManage({ trip, sharing, siteUrl }: { trip: TripDetail; shari
               legend="Members"
               options={options}
               selected={selected}
-              empty="Nobody to add yet. Add people under People first."
+              empty={canInvite ? "Nobody to add yet. Use Invite by email above." : "Nobody to add yet."}
             />
           </Section>
         )}
@@ -41,7 +69,7 @@ export function TripManage({ trip, sharing, siteUrl }: { trip: TripDetail; shari
               legend="Co-organizers"
               options={sharing.people.map((p) => ({ value: p.id, label: p.name }))}
               selected={sharing.organizers.map((o) => o.id)}
-              empty="Nobody to add yet. Add people under People first."
+              empty={canInvite ? "Nobody to add yet. Use Invite by email above." : "Nobody to add yet."}
             />
           </Section>
         )}

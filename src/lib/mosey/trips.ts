@@ -162,7 +162,7 @@ async function tripRow(id: string): Promise<TripRow | null> {
 }
 
 /** Sharing a trip and deleting it: its owner (or an admin), never a co-organizer. */
-async function ownerOnly(actor: Actor, id: string) {
+export async function ownerOnly(actor: Actor, id: string) {
   const r = await tripWithRole(actor, id, "manage");
   if (r.trip.owner_id !== actor.id && !actor.isAdmin) throw new AccessDenied();
   return r;

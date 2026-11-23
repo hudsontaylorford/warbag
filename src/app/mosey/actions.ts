@@ -34,6 +34,7 @@ import {
   updateExpense,
   updatePerson,
 } from "@/lib/mosey/ledger";
+import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip } from "@/lib/mosey/invites";
 import { discardReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
 import { currentActor } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
@@ -267,5 +268,45 @@ export async function freezeAction(_: FormState, form: FormData): Promise<FormSt
   return runAction(async (actor) => {
     const v = await freezeStatement(actor, text(form, "id"));
     return `Saved as version ${v}`;
+  });
+}
+
+/** Invite by email from Manage: on warbag and on the trip in one step. */
+export async function inviteToTripAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const email = text(form, "email").trim().toLowerCase();
+    const { emailed } = await inviteToTrip(actor, text(form, "id"), {
+      name: text(form, "name"),
+      email,
+      role: text(form, "role"),
+      sendEmail: form.get("sendEmail") === "on",
+    });
+    return emailed ? `Added ${email} and emailed them how to sign in` : `Added ${email}`;
+  }, "You can't add people to this trip.");
+}
+
+/** "Ask to join" on a trip link. Works signed out; the reply never reveals who's on warbag. */
+export async function requestJoinTripAction(_: FormState, form: FormData): Promise<FormState> {
+  try {
+    await requestToJoinTrip(text(form, "token"), { name: text(form, "name"), email: text(form, "email") });
+    return { ok: true, message: "Asked" };
+  } catch (err) {
+    if (err instanceof InputError) return { error: err.message };
+    console.error("trip join request failed", err);
+    return { error: "Something went wrong and nothing was sent. Try again." };
+  }
+}
+
+export async function approveTripJoinAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const { name } = await approveTripJoin(actor, text(form, "id"));
+    return `Added ${name} and emailed them how to sign in`;
+  }, "You can't add people to this trip.");
+}
+
+export async function declineTripJoinAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await declineTripJoin(actor, text(form, "id"));
+    return "Declined";
   });
 }

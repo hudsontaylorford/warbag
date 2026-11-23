@@ -14,6 +14,15 @@ Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are 
 - **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
 - Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
 
+## 2026-11-23 · Mosey: getting into a trip (access clarity)
+
+From the agent's test: signing in worked, but an empty trip list and a bare 404 didn't say what was missing, and the empty list suggested starting a new trip (a duplicate risk). Hudson: fix access first; invite by email is fine; trip links that people can join from later should stay.
+
+- **Invite by email** (Manage, the trip's owner if they can add people to warbag: an admin or people manager): name, email, Member or Co-organizer, "Email them how to sign in". One step puts them on warbag (if new) and on the trip; the email names the trip and links to sign-in with the trip as the next page. A member invite never downgrades a co-organizer.
+- **Trip link** (was "View link"): anyone with it sees the plan and ideas (never money or members-only details) and can **Ask to join** with a name and email, now or any time. Nothing is created until the owner taps **Add** under Manage → Asking to join (a count shows beside Manage); Add puts them on the trip and emails them. Decline deletes the request. The reply never reveals who's on warbag; asks are limited per trip (25 pending, 10 an hour). Someone already on the trip sees "You're on this trip. Open it".
+- **Clear dead ends:** an empty trip list says who you're signed in as and what to ask for; a trip that isn't shared with you (or doesn't exist; same words for both) says the same instead of a bare 404. "New trip" is no longer suggested in the empty state.
+- Members see money, so joining from a link needs the owner's Add, matching Gyfte's family link.
+
 ## 2026-11-23 · Settings save themselves
 
 Hudson: a Save button under every section of a trip's settings is a UX oversight; settings should autosave.

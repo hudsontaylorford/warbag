@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Mosey · warbag", robots: { index: f
 
 /** Your trips: ones you organize or were added to. */
 export default async function MoseyPage() {
-  const { user, actor, canCreate } = await requireMosey("/mosey");
+  const { user, actor, canCreate } = await requireMosey("/mosey", { list: true });
   const trips = await tripsFor(actor);
 
   return (
@@ -49,7 +49,14 @@ export default async function MoseyPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-soft">{canCreate ? "No trips yet. Start one with its dates; the days fill in." : "No trips shared with you yet."}</p>
+          <div className="flex flex-col gap-2 rounded-[var(--radius-control)] bg-wash p-4">
+            <p className="font-semibold">No trips shared with you yet.</p>
+            <p className="text-sm">
+              You&apos;re signed in as <span className="font-semibold break-all">{user.email}</span>. If someone invited you to a trip, ask them to add this
+              email under Manage, or open the trip link they sent and ask to join.
+            </p>
+            {canCreate && <p className="text-sm text-soft">Planning your own trip? Use New trip.</p>}
+          </div>
         )}
       </main>
     </>
