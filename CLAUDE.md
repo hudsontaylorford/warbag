@@ -75,3 +75,11 @@ Standing permission from Hudson (2026-11-20): **Claude may merge its PRs into `m
 ## ChatGPT handoffs (only when Hudson asks)
 
 Hudson sometimes uses ChatGPT for planning and review (read-only on GitHub). Exchanges go through the Drive folder "Warbag — AI Handoffs" and happen **only when Hudson asks**: no polling, status logs or acknowledgements. Claude writes only its own `Claude → ChatGPT` notes, one short doc per exchange, titled like `WRB-20261120-01 · Claude → ChatGPT · Topic · v1`; corrections are a new version. Never edit ChatGPT's notes or the protocol. No secrets or personal content in a note unless Hudson approves it.
+
+Drive layout (since 2026-11-23; folder ids and links don't change). Use these folders as they are: don't duplicate, move or reorganize documents unless Hudson asks.
+
+- Parent: "AI Projects" (`1yQ2I_PbzSvY8_5Q6Kycr09r_XCAYPDcr`), shared by several projects.
+- "Warbag — AI Handoffs" (`1nBldALR3PRPlhLtLvajDzwSjfk96HEH0`): the ChatGPT ↔ Claude notes and screenshots.
+- "Warbag — Brand Explorations" (`1zsXWbRtphcfLKweC5Sw2SSgl3F2ouF9k`): look-and-feel explorations.
+- "Warbag — Project Archive" (`17FpWKRvgM4RDtF6HVf39B_4NLIxxI2e9`): past material, for reference.
+- Crewmaxxing's and Chirk's handoff folders sit under the same parent but belong to those separate apps; sharing a parent changes nothing about keeping them separate.
