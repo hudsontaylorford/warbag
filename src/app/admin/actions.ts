@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createGroup, deleteGroup } from "@/lib/access";
+import { deleteGroup } from "@/lib/access";
 import { runAction } from "@/lib/run-action";
 import {
   InputError,
   invitePerson,
+  newGroup,
+  setPeopleManager,
   removePerson,
   renameGroup,
   renamePerson,
@@ -17,7 +19,7 @@ import {
 
 import type { FormState } from "@/components/ui/form-state";
 
-const run = (work: Parameters<typeof runAction>[0]) => runAction(work, "Only admins can do this.");
+const run = (work: Parameters<typeof runAction>[0]) => runAction(work, "You can't do that here. Admins and people managers have different limits.");
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 const list = (form: FormData, key: string) => form.getAll(key).map(String);
@@ -59,7 +61,7 @@ export async function createGroupAction(_: FormState, form: FormData): Promise<F
   const state = await run(async (actor) => {
     const name = text(form, "name").trim();
     if (!name) throw new InputError("Give the group a name.");
-    id = await createGroup(actor, name);
+    id = await newGroup(actor, name);
   });
   if (state.ok) redirect(`/admin/groups/${id}`);
   return state;
@@ -81,4 +83,8 @@ export async function deleteGroupAction(_: FormState, form: FormData): Promise<F
   const state = await run((actor) => deleteGroup(actor, text(form, "id")));
   if (state.ok) redirect("/admin");
   return state;
+}
+
+export async function setPeopleManagerAction(_: FormState, form: FormData): Promise<FormState> {
+  return run((actor) => setPeopleManager(actor, text(form, "id"), form.getAll("value").includes("on")));
 }

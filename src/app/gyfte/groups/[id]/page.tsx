@@ -33,7 +33,7 @@ export default async function GroupPage({
   const { id } = await params;
   const { year: wantYear, as, imported } = await searchParams;
   const user = await requireUser(`/gyfte/groups/${id}`);
-  const actor = { id: user.id, isAdmin: user.isAdmin === true };
+  const actor = { id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true };
   const { viewer, previewName } = await viewerFor(actor, as);
   const page = await groupPage(viewer, id, wantYear).catch((err) => {
     if (err instanceof AccessDenied) notFound();
@@ -100,7 +100,7 @@ export default async function GroupPage({
 
   return (
     <>
-      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/groups/${page.id}${keep({ year: page.year }).replace(/as=[^&]*&?/, "")}`} />}
         {!previewName && <GyfteNav current="family" />}

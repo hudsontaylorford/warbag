@@ -36,8 +36,8 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 - **Authorization is enforced on the server** for every read, write, file, search, export and background job. Hidden buttons are never the security boundary. Protect against guessed URLs, cross-user leaks, revoked links and removed group members; removal takes effect on the next request.
 - Each app's data is separate even in one database (its own tables and ownership checks).
 - Never put private app names, health data or personal content in public HTML, the sitemap or indexed pages. Everything except the public homepage is `noindex`.
-- Admin (invites, people, groups, grants, revoking links) is done in the app, not by editing database rows.
-- Assistant access (an AI agent, Instinct): its own revocable, non-admin account, never Hudson's session or a shared password. Hudson decides how much it can do (2026-11-23: full control of the trips he makes it co-organizer of is fine). It never gets admin. A dedicated read-only, audited assistant identity is on the roadmap.
+- Admin (invites, people, groups, grants, revoking links) is done in the app, not by editing database rows. Admins can make someone a **people manager** (invites, groups, app access; not removing people, deleting groups, admins, or their own access).
+- Assistant access (an AI agent, Instinct): its own revocable, non-admin account, never Hudson's session or a shared password. Hudson decides how much it can do (2026-11-23: full control of the trips he makes it co-organizer of, and "people manager": invite people, manage groups and app access, never its own access or an admin's). It never gets admin. A dedicated read-only, audited assistant identity is on the roadmap.
 
 ## Design and copy
 

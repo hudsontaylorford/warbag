@@ -10,6 +10,7 @@ export function AppHeader({
   email,
   app,
   isAdmin,
+  people,
   tone = "light",
   letter,
   appHref,
@@ -17,6 +18,8 @@ export function AppHeader({
   email: string;
   app?: string;
   isAdmin?: boolean;
+  /** Shows People for a people manager (admins always see it). */
+  people?: boolean;
   tone?: "light" | "dark";
   /** An app's own mark (e.g. "M"): shown instead of the W, linking to the app; warbag becomes a quiet link. */
   letter?: string;
@@ -56,7 +59,7 @@ export function AppHeader({
               warbag
             </Link>
           )}
-          {isAdmin && (
+          {(isAdmin || people) && (
             <Link href="/admin" className={link}>
               People
             </Link>
