@@ -14,6 +14,10 @@ Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are 
 - **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
 - Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
 
+## 2026-11-23 · Mosey: no sample family
+
+Hudson: remove the sample family stuff from Mosey. Gyfte's sample family (its group and made-up people at `@sample.invalid`) no longer appears in a trip's Members or Co-organizers lists, and the server refuses adding them. Gyfte keeps it for "View as"; People still lists them.
+
 ## 2026-11-23 · Fix: deleting a trip with expenses
 
 Found while making screenshots: Delete trip failed for any trip with expenses (the cascade removed the trip's people before their expense rows, so a reference check fired too early). The person references on expenses and payments are now checked when the delete finishes (deferrable, migration 0023). Removing one person is still refused in code while they're in expenses or payments. Test: a trip with expenses, payments and a frozen statement deletes completely and leaves other trips alone.

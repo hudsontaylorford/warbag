@@ -744,6 +744,17 @@ export type TripSharing = {
 };
 
 /** People an organizer may add: everyone in their groups (admins: everyone). */
+/**
+ * Gyfte's sample family (made-up people at @sample.invalid and their group)
+ * is for trying Gyfte. It never appears in Mosey's sharing lists and can't
+ * be added to a trip.
+ */
+async function moseyGroups(actor: Actor) {
+  const sample = await pool.query<{ access_group_id: string }>("select access_group_id from gyfte_groups where is_sample");
+  const hidden = new Set(sample.rows.map((r) => r.access_group_id));
+  return (await groupsFor(actor)).filter((g) => !hidden.has(g.id));
+}
+
 async function addablePeople(actor: Actor, ownerId: string) {
   const { rows } = await pool.query<{ id: string; name: string; email: string }>(
     actor.isAdmin
@@ -754,7 +765,9 @@ async function addablePeople(actor: Actor, ownerId: string) {
          order by 1`,
     [actor.id],
   );
-  return rows.filter((r) => r.id !== ownerId).map((r) => ({ id: r.id, name: r.name?.trim() || r.email.split("@")[0] }));
+  return rows
+    .filter((r) => r.id !== ownerId && !r.email.toLowerCase().endsWith("@sample.invalid"))
+    .map((r) => ({ id: r.id, name: r.name?.trim() || r.email.split("@")[0] }));
 }
 
 export async function tripSharing(actor: Actor, tripId: string): Promise<TripSharing> {
@@ -771,7 +784,7 @@ export async function tripSharing(actor: Actor, tripId: string): Promise<TripSha
         ? { kind: "group" as const, id: g.groupId, name: g.groupName ?? "Group" }
         : { kind: "person" as const, id: g.userId!, name: names.get(g.userId!) ?? (g.email ?? "").split("@")[0] },
     ),
-    groups: await groupsFor(actor),
+    groups: await moseyGroups(actor),
     people,
     links: (await listShareLinks(actor, r)).map((l) => ({ id: l.id, token: l.token })),
   };
@@ -780,7 +793,7 @@ export async function tripSharing(actor: Actor, tripId: string): Promise<TripSha
 /** Sets exactly who's on the trip as a member (groups and people). */
 export async function setTripMembers(actor: Actor, tripId: string, input: { groupIds: string[]; userIds: string[] }): Promise<void> {
   const { trip } = await ownerOnly(actor, tripId);
-  const allowedGroups = new Set((await groupsFor(actor)).map((g) => g.id));
+  const allowedGroups = new Set((await moseyGroups(actor)).map((g) => g.id));
   const allowedPeople = new Set((await addablePeople(actor, trip.owner_id)).map((p) => p.id));
   const groupIds = [...new Set(input.groupIds)];
   const userIds = [...new Set(input.userIds)];
