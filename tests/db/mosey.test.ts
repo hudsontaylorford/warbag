@@ -12,6 +12,7 @@ import {
   getTrip,
   planStop,
   revokeTripLink,
+  setDayInfo,
   setTripMembers,
   tripByLink,
   tripSharing,
@@ -174,5 +175,30 @@ describeDb("Mosey trips", () => {
       [tripId],
     );
     expect(left.rows[0]).toEqual({ stops: 0, grants: 0 });
+  });
+
+  it("a day's area and tag: organizers set them, everyone who sees the plan sees them", async () => {
+    await grantItem(hudson, { app: "mosey", type: "trip", id: tripId, ownerId: hudson.id }, { userId: aunt.id }, "view");
+    await setDayInfo(hudson, tripId, "2027-06-06", { area: " Bar Harbor → Acadia ", tag: "Travel day" });
+    expect((await getTrip(molly, tripId)).dayInfo).toEqual({ "2027-06-06": { area: "Bar Harbor → Acadia", tag: "Travel day" } });
+    expect((await getTrip(aunt, tripId)).dayInfo["2027-06-06"].tag).toBe("Travel day");
+    await createTripLink(hudson, tripId);
+    const [link] = (await tripSharing(hudson, tripId)).links;
+    expect((await tripByLink(link.token))!.dayInfo["2027-06-06"].area).toBe("Bar Harbor → Acadia");
+
+    // Members suggest stops but don't label days; nobody else can at all.
+    for (const who of [molly, aunt, outsider]) {
+      await expect(setDayInfo(who, tripId, "2027-06-06", { area: "Hijack", tag: "" })).rejects.toBeInstanceOf(AccessDenied);
+    }
+    await expect(setDayInfo(hudson, tripId, "2027-06-20", { area: "Later", tag: "" })).rejects.toBeInstanceOf(InputError);
+    await expect(setDayInfo(hudson, tripId, "June 6", { area: "x", tag: "" })).rejects.toBeInstanceOf(InputError);
+    await expect(setDayInfo(hudson, tripId, "2027-06-06", { area: "x".repeat(81), tag: "" })).rejects.toBeInstanceOf(InputError);
+
+    // A day the trip no longer covers isn't shown; clearing both removes it.
+    await updateTrip(hudson, tripId, { ...maine, start: "2027-06-07" });
+    expect((await getTrip(hudson, tripId)).dayInfo).toEqual({});
+    await updateTrip(hudson, tripId, maine);
+    await setDayInfo(hudson, tripId, "2027-06-06", { area: "", tag: "" });
+    expect((await admin.query("select count(*)::int as n from mosey_days where trip_id = $1", [tripId])).rows[0].n).toBe(0);
   });
 });

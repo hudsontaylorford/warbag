@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { Stop, TripDetail } from "@/lib/mosey/trips";
 import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
-import { dayLabel, rangeLabel } from "./format";
+import { rangeLabel } from "./format";
+import { DayCard } from "./DayCard";
+import { TripCalendar } from "./TripCalendar";
 
 /** Trip name, dates and place, with Plan / Ideas. */
 export function TripHeader({ trip, base, current, back, money }: { trip: TripDetail; base: string; current: "plan" | "ideas" | "money"; back?: boolean; money?: boolean }) {
@@ -40,57 +42,33 @@ export function TripHeader({ trip, base, current, back, money }: { trip: TripDet
 }
 
 /**
- * The plan: one card per day, stops in time order (any-time last), and
- * ideas someone suggested for that day underneath for an organizer.
+ * The plan: a calendar of the trip, then one card per day with stops in
+ * time order (any time last) and ideas suggested for that day.
  */
 export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDetail; canAdd: boolean; canPlan: boolean; viewerOnly?: boolean }) {
   const editable = (s: Stop) => !viewerOnly && (canPlan || s.mine);
+  const plan = canPlan && !viewerOnly;
+  const byDay = Object.fromEntries(trip.days.map((d) => [d, trip.stops.filter((s) => s.day === d).map((s) => s.time)]));
   return (
-    <ol className="flex flex-col gap-6">
-      {trip.days.map((day, i) => {
-        const planned = trip.stops.filter((s) => s.day === day);
-        const suggested = trip.stops.filter((s) => !s.day && s.suggestedDay === day);
-        return (
-          <li key={day} className="flex flex-col gap-2 border-t-2 border-ink pt-3">
-            <h2 className="flex items-baseline justify-between gap-3">
-              <span className="heading">{dayLabel(day)}</span>
-              <span className="text-sm text-soft">Day {i + 1}</span>
-            </h2>
-            {planned.length > 0 ? (
-              <ul className="divide-y divide-line">
-                {planned.map((s) => (
-                  <li key={s.id}>
-                    <StopRow stop={s} days={trip.days} canEdit={editable(s)} canPlan={canPlan && !viewerOnly} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="py-2 text-sm text-soft">Nothing planned yet.</p>
-            )}
-            {suggested.length > 0 && (
-              <div className="rounded-[var(--radius-control)] bg-wash px-3">
-                <p className="pt-3 text-sm font-semibold">Suggested for this day</p>
-                <ul className="divide-y divide-line">
-                  {suggested.map((s) => (
-                    <li key={s.id}>
-                      <StopRow stop={{ ...s, suggestedDay: null }} days={trip.days} canEdit={editable(s)} canPlan={canPlan && !viewerOnly} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {canAdd && (
-              <QuickAdd
-                tripId={trip.id}
-                day={day}
-                label={`Add to ${dayLabel(day)}`}
-                placeholder={canPlan ? "Add to this day" : "Suggest something for this day"}
-              />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+    <div className="flex flex-col gap-6">
+      {trip.days.length > 1 && <TripCalendar days={trip.days} stops={byDay} />}
+      <div className="flex flex-col gap-4">
+        {trip.days.map((day, i) => (
+          <DayCard
+            key={day}
+            tripId={trip.id}
+            day={day}
+            index={i}
+            days={trip.days}
+            info={trip.dayInfo[day]}
+            planned={trip.stops.filter((s) => s.day === day).map((stop) => ({ stop, canEdit: editable(stop) }))}
+            suggested={trip.stops.filter((s) => !s.day && s.suggestedDay === day).map((stop) => ({ stop, canEdit: editable(stop) }))}
+            canAdd={canAdd && !viewerOnly}
+            canPlan={plan}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 

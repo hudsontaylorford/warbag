@@ -2,6 +2,17 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: day cards and the trip calendar
+
+From Hudson's Christmas-trip test (WRB-20261122-02, sections 2 and 10) and a ticket-calendar screenshot he liked.
+
+- **Mosey's own header:** an M mark (burnt orange) and "Mosey" link to the trip list; "warbag" is a quiet link home on the right. Other apps keep the W for now.
+- **A calendar on top of Plan:** the trip's weeks with its days solid and the days around them faded. Each day shows its first time ("6:30p") and "+2" for more, or dots for any-time plans; today is filled navy. Tapping a day jumps to its card. Shown for trips longer than a day.
+- **One card per day:** a raised card with the date, "Day 3", and an optional area and tag ("Brooklyn → Hillsdale · Travel day"). Today gets a "Today" mark and a darker border. Once a trip is under way, days already over start collapsed with a count; any day can be collapsed or opened.
+- **One add action per day:** "+ Add to this day" opens the add box (and focuses it) instead of a box always open on every day. Members see "Suggest for this day".
+- **Area and tag:** free text, both optional, organizers only, set from the card ("Add area or tag"); tag suggestions are Travel day, Flexible, Rest day, Free day. Stored per trip day (`mosey_days`); a day outside the trip's dates isn't shown. View links show them.
+- **Not in this change:** reordering stops, easier time entry, the Ideas layout, stop status and attendance.
+
 ## 2026-11-22 · Mosey: paper receipts
 
 Hudson's first real tests were paper restaurant receipts, not app receipts. One of three got the wrong total (Bar Oliver: it suggested $338.97, the 22% row, without asking; Hudson's card statement later confirmed $338.97, so the problem was being sure without a way to check, not the amount), and an obscured date silently became the trip's first day.

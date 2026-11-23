@@ -61,9 +61,14 @@ export type Stop = {
 
 export type TripSummary = { id: string; name: string; place: string; startDate: string; endDate: string; organizer: boolean };
 
+/** A day's optional area and tag. Empty strings when not set. */
+export type DayInfo = { area: string; tag: string };
+
 export type TripDetail = TripSummary & {
   role: Role;
   days: string[];
+  /** Area and tag by day, only for days that have one. */
+  dayInfo: Record<string, DayInfo>;
   stops: Stop[];
 };
 
@@ -270,6 +275,35 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
   });
 }
 
+async function dayInfoOf(tripId: string, days: string[]): Promise<Record<string, DayInfo>> {
+  const { rows } = await pool.query<{ day: string; area: string; tag: string }>(
+    "select to_char(day, 'YYYY-MM-DD') as day, area, tag from mosey_days where trip_id = $1",
+    [tripId],
+  );
+  const out: Record<string, DayInfo> = {};
+  // Rows for days the trip no longer covers are kept but not shown.
+  for (const r of rows) if (days.includes(r.day)) out[r.day] = { area: r.area, tag: r.tag };
+  return out;
+}
+
+/** Sets a day's area and tag. Organizers only; both empty clears it. */
+export async function setDayInfo(actor: Actor, tripId: string, day: string, input: { area: string; tag: string }): Promise<void> {
+  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const d = parseDay(day);
+  if (!d || !daysBetween(trip.start_date, trip.end_date).includes(d)) throw new InputError("That day isn't part of this trip.");
+  const area = cleanText(input.area, 80, "The area");
+  const tag = cleanText(input.tag, 40, "The tag");
+  if (!area && !tag) {
+    await pool.query("delete from mosey_days where trip_id = $1 and day = $2", [trip.id, d]);
+    return;
+  }
+  await pool.query(
+    `insert into mosey_days (trip_id, day, area, tag) values ($1, $2, $3, $4)
+     on conflict (trip_id, day) do update set area = excluded.area, tag = excluded.tag, updated_at = now()`,
+    [trip.id, d, area, tag],
+  );
+}
+
 export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
   const { trip, role } = await tripWithRole(actor, id, "view");
   return {
@@ -281,6 +315,7 @@ export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
     organizer: role === "manage",
     role,
     days: daysBetween(trip.start_date, trip.end_date),
+    dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
     // Someone with only a view grant sees what a link sees.
     stops: await stopsOf(trip.id, actor.id, !atLeast(role, "contribute")),
   };
@@ -301,6 +336,7 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
     organizer: false,
     role: "view",
     days: daysBetween(trip.start_date, trip.end_date),
+    dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
     stops: await stopsOf(trip.id, null, true),
   };
 }

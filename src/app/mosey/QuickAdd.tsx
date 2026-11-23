@@ -6,7 +6,20 @@ import { Alert } from "@/components/ui/Alert";
 import { StopFields } from "./StopFields";
 
 /** One box to add a stop or idea; time, place and the rest are optional. */
-export function QuickAdd({ tripId, day, label, placeholder }: { tripId: string; day?: string; label: string; placeholder: string }) {
+export function QuickAdd({
+  tripId,
+  day,
+  label,
+  placeholder,
+  autoFocus,
+}: {
+  tripId: string;
+  day?: string;
+  label: string;
+  placeholder: string;
+  /** Focus the box when it appears after a tap (the day card's "Add to this day"). */
+  autoFocus?: boolean;
+}) {
   const [more, setMore] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(async (prev: Parameters<typeof addStopAction>[0], form: FormData) => {
@@ -33,6 +46,7 @@ export function QuickAdd({ tripId, day, label, placeholder }: { tripId: string; 
           required
           maxLength={200}
           autoComplete="off"
+          autoFocus={autoFocus}
           placeholder={placeholder}
           className="min-h-12 min-w-0 flex-1 rounded-[var(--radius-control)] border border-line bg-field px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />

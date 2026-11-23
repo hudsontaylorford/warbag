@@ -11,6 +11,7 @@ import {
   deleteTrip,
   planStop,
   revokeTripLink,
+  setDayInfo,
   setTripMembers,
   updateStop,
   updateTrip,
@@ -47,6 +48,14 @@ const tripFields = (form: FormData) => ({
   start: text(form, "start"),
   end: text(form, "end"),
 });
+
+/** A day's area and tag. Organizers only. */
+export async function setDayAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await setDayInfo(actor, text(form, "id"), text(form, "day"), { area: text(form, "area"), tag: text(form, "tag") });
+    return "Saved";
+  });
+}
 
 export async function createTripAction(_: FormState, form: FormData): Promise<FormState> {
   let id = "";

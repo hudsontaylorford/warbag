@@ -19,7 +19,7 @@ export default async function TripIdeasPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <AppHeader email={user.email} app="Mosey" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="ideas" back money={canAdd} />
         <IdeaList trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} />
