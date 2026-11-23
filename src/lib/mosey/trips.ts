@@ -48,6 +48,8 @@ type TripRow = {
 export const STATUSES = ["tentative", "asked", "confirmed", "booked"] as const;
 export type Status = (typeof STATUSES)[number];
 export type Attending = "going" | "maybe";
+export const MEALS = ["breakfast", "lunch", "dinner", "food"] as const;
+export type Meal = (typeof MEALS)[number];
 
 export type Stop = {
   id: string;
@@ -58,6 +60,10 @@ export type Stop = {
   part: Part | null;
   /** Tentative, inquiry sent, confirmed or booked; null is no status. */
   status: Status | null;
+  /** Breakfast, lunch, dinner or other food and drink; null when it isn't a meal. */
+  meal: Meal | null;
+  /** Who's cooking, bringing or booking it. Hidden like notes on members-only stops. */
+  handledBy: string;
   title: string;
   place: string;
   link: string;
@@ -256,6 +262,8 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     at_time: string | null;
     time_of_day: Part | null;
     status: Status | null;
+    meal: Meal | null;
+    handled_by: string;
     title: string;
     place: string;
     link: string;
@@ -264,13 +272,16 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     created_by: string | null;
   }>(
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
-       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, title, place, link, notes, members_only, created_by
+       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
      -- Parts of the day sort at the start of their window, before exact
-     -- times there; time TBD and any time come last.
+     -- times there; a meal with no time sits at its usual hour; time TBD
+     -- and any time come last.
      order by day nulls last,
        coalesce(at_time, case time_of_day when 'morning' then time '05:00' when 'afternoon' then time '12:00'
-         when 'evening' then time '17:00' end) nulls last,
+         when 'evening' then time '17:00' end,
+         case when time_of_day is null then case meal when 'breakfast' then time '08:00' when 'lunch' then time '12:30'
+           when 'dinner' then time '18:30' end end) nulls last,
        at_time is not null, time_of_day = 'tbd' desc nulls last, position, created_at`,
     [tripId],
   );
@@ -284,6 +295,8 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       time: r.at_time,
       part: r.time_of_day,
       status: r.status,
+      meal: r.meal,
+      handledBy: hide ? "" : r.handled_by,
       title: r.title,
       place: hide ? "" : r.place,
       link: hide ? "" : r.link,
@@ -382,7 +395,24 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
 
 // ------------------------------------------------------------ stops
 
-type StopInput = { title: string; time?: string; place?: string; link?: string; notes?: string; membersOnly?: boolean; status?: string };
+type StopInput = {
+  title: string;
+  time?: string;
+  place?: string;
+  link?: string;
+  notes?: string;
+  membersOnly?: boolean;
+  status?: string;
+  meal?: string;
+  handledBy?: string;
+};
+
+function cleanMeal(raw: unknown): Meal | null {
+  const s = String(raw ?? "").trim();
+  if (!s) return null;
+  if (!(MEALS as readonly string[]).includes(s)) throw new InputError("Pick a meal from the list.");
+  return s as Meal;
+}
 
 function cleanStatus(raw: unknown): Status | null {
   const s = String(raw ?? "").trim();
@@ -402,6 +432,8 @@ function readStop(input: StopInput) {
     notes: cleanText(input.notes, 2000, "Notes"),
     membersOnly: input.membersOnly === true,
     status: cleanStatus(input.status),
+    meal: cleanMeal(input.meal),
+    handledBy: cleanText(input.handledBy, 200, "Who's handling it"),
   };
 }
 
@@ -419,11 +451,11 @@ export async function addStop(actor: Actor, tripId: string, input: StopInput & {
   }
   const planned = role === "manage" && day !== null;
   const { rows } = await pool.query<{ id: string }>(
-    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day, status)
+    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day, status, meal, handled_by)
      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12, $13)
+       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12, $13, $14, $15)
      returning id`,
-    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part, s.status],
+    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part, s.status, s.meal, s.handledBy],
   );
   return { id: rows[0].id, planned };
 }
@@ -445,9 +477,9 @@ export async function updateStop(actor: Actor, stopId: string, input: StopInput)
   if (role !== "manage" && !mine) throw new AccessDenied();
   const s = readStop(input);
   await pool.query(
-    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, status = $9, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
+    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, status = $9, meal = $10, handled_by = $11, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
      where id = $1`,
-    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part, s.status],
+    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part, s.status, s.meal, s.handledBy],
   );
 }
 

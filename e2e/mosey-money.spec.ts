@@ -89,7 +89,7 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   const day1 = page.getByRole("region", { name: /Sat, Jun 5/ });
   await day1.getByRole("button", { name: "+ Add to this day" }).click();
   await day1.getByLabel(/^Add to/).fill("Boat tour");
-  await day1.getByRole("button", { name: "Add a time, place or link" }).click();
+  await day1.getByRole("button", { name: "Add a time, place, meal or link" }).click();
   await day1.getByLabel("Status").selectOption({ label: "Booked" });
   await day1.getByRole("button", { name: "Add", exact: true }).click();
   await expect(day1.getByText("Booked", { exact: true })).toBeVisible();

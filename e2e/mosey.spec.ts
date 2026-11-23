@@ -30,7 +30,7 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(day2.getByLabel("Add to Sun, Jun 6")).toHaveCount(0); // no always-open add box
   await day2.getByRole("button", { name: "+ Add to this day" }).click();
   await day2.getByLabel("Add to Sun, Jun 6").fill("Lobster dinner");
-  await day2.getByRole("button", { name: "Add a time, place or link" }).click();
+  await day2.getByRole("button", { name: "Add a time, place, meal or link" }).click();
   // Typed like Crewmaxxing: a bare hour is read the likely way and says so.
   await day2.getByLabel("When").fill("6:30");
   await expect(day2.getByText("Read as 6:30 PM. Add a or p to change.")).toBeVisible();
@@ -75,6 +75,21 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await page.getByLabel("Add an idea").fill("Beehive trail");
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByRole("link", { name: /Beehive trail/ })).toHaveAttribute("href", "https://example.com/beehive");
+  // A meal idea: who's handling it, and a Food & drink filter.
+  await page.getByLabel("Add an idea").fill("Lobster bake at the house");
+  await page.getByRole("button", { name: "Add a time, place, meal or link" }).click();
+  await page.getByLabel("Meal").selectOption({ label: "Dinner" });
+  await page.getByLabel("Who's handling it").fill("Ann cooking");
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.getByText("Handling it: Ann cooking")).toBeVisible();
+  await page.getByRole("link", { name: "Food & drink (1)" }).click();
+  await expect(page.getByText("Lobster bake at the house")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Beehive trail/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Move Lobster bake at the house to a day" }).click();
+  await page.getByRole("button", { name: "Sat, Jun 5" }).click();
+  await expect(page.getByText("No food or drink ideas.")).toBeVisible();
+  await page.getByRole("link", { name: /^All/ }).click();
+
   // No day menu on every idea: one quiet action opens the days.
   await expect(page.getByRole("combobox")).toHaveCount(0);
   await page.getByRole("button", { name: "Move Beehive trail to a day" }).click();
@@ -83,12 +98,16 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await page.getByRole("link", { name: "Plan" }).click();
   const day3 = page.getByRole("region", { name: /Mon, Jun 7/ });
   await expect(day3.getByRole("link", { name: /Beehive trail/ })).toBeVisible();
+  // An untimed dinner shows "Dinner" where the time goes.
+  const day1meal = page.getByRole("region", { name: /Sat, Jun 5/ });
+  await expect(day1meal.getByText("Dinner", { exact: true })).toBeVisible();
+  await expect(day1meal.getByText("Handling it: Ann cooking")).toBeVisible();
 
   // A members-only stop, then the view link.
   const day1 = page.getByRole("region", { name: /Sat, Jun 5/ });
   await day1.getByRole("button", { name: "+ Add to this day" }).click();
   await day1.getByLabel("Add to Sat, Jun 5").fill("Check in");
-  await day1.getByRole("button", { name: "Add a time, place or link" }).click();
+  await day1.getByRole("button", { name: "Add a time, place, meal or link" }).click();
   await day1.getByRole("button", { name: "Afternoon" }).click();
   await expect(day1.getByRole("button", { name: "Afternoon" })).toHaveAttribute("aria-pressed", "true");
   await day1.getByLabel("Place", { exact: true }).fill("12 Private Road");

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { StopFields } from "./StopFields";
-import { dayLabel, mapsUrl, STATUS_LABEL } from "./format";
+import { dayLabel, mapsUrl, MEAL_LABEL, STATUS_LABEL } from "./format";
 import { Attendance } from "./Attendance";
 import { whenLabel } from "@/lib/mosey/when";
 
@@ -110,13 +110,17 @@ export function StopRow({
 }) {
   const [open, setOpen] = useState(false);
   const [planState, planAction, planning] = useActionState(planStopAction, {});
+  // A meal with no time shows "Dinner" where the time goes.
+  const mealInTime = Boolean(stop.meal && stop.meal !== "food" && !stop.time && !stop.part);
 
   return (
     <div className="flex flex-col gap-2 py-3">
       <div className="flex items-start gap-3">
         {showTime && (
-          <span className={`w-18 shrink-0 pt-0.5 text-sm ${stop.time || (stop.part && stop.part !== "tbd") ? "font-semibold" : "text-soft"}`}>
-            {whenLabel(stop)}
+          <span
+            className={`w-18 shrink-0 pt-0.5 text-sm ${stop.time || (stop.part && stop.part !== "tbd") || mealInTime ? "font-semibold" : "text-soft"}`}
+          >
+            {mealInTime ? MEAL_LABEL[stop.meal!] : whenLabel(stop)}
           </span>
         )}
         <div className="flex min-w-0 flex-1 flex-col">
@@ -129,6 +133,7 @@ export function StopRow({
             ) : (
               <span className="font-semibold break-words">{stop.title}</span>
             )}
+            {stop.meal && !(showTime && mealInTime) && <span className="text-xs leading-5 text-soft">{MEAL_LABEL[stop.meal]}</span>}
             {stop.status && (
               <span
                 className={`rounded px-1.5 text-xs leading-5 font-semibold ${
@@ -144,6 +149,7 @@ export function StopRow({
               {stop.place} · <span className="text-accent">Maps ›</span>
             </a>
           )}
+          {stop.handledBy && <span className="text-sm break-words">Handling it: {stop.handledBy}</span>}
           {stop.notes && <span className="text-sm break-words whitespace-pre-line">{stop.notes}</span>}
           {(stop.membersOnly || (stop.suggestedDay && !hideSuggested)) && (
             <span className="text-xs text-soft">
