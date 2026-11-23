@@ -62,6 +62,8 @@ export type Stop = {
   status: Status | null;
   /** Breakfast, lunch, dinner or other food and drink; null when it isn't a meal. */
   meal: Meal | null;
+  /** Ask who's going (split, limited or optional plans). Otherwise everyone goes. */
+  askWho: boolean;
   /** Who's cooking, bringing or booking it. Hidden like notes on members-only stops. */
   handledBy: string;
   title: string;
@@ -264,6 +266,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     status: Status | null;
     meal: Meal | null;
     handled_by: string;
+    ask_attendance: boolean;
     title: string;
     place: string;
     link: string;
@@ -272,7 +275,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     created_by: string | null;
   }>(
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
-       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, title, place, link, notes, members_only, created_by
+       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, ask_attendance, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
      -- Parts of the day sort at the start of their window, before exact
      -- times there; a meal with no time sits at its usual hour; time TBD
@@ -296,6 +299,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       part: r.time_of_day,
       status: r.status,
       meal: r.meal,
+      askWho: r.ask_attendance,
       handledBy: hide ? "" : r.handled_by,
       title: r.title,
       place: hide ? "" : r.place,
@@ -405,6 +409,7 @@ type StopInput = {
   status?: string;
   meal?: string;
   handledBy?: string;
+  askWho?: boolean;
 };
 
 function cleanMeal(raw: unknown): Meal | null {
@@ -434,6 +439,7 @@ function readStop(input: StopInput) {
     status: cleanStatus(input.status),
     meal: cleanMeal(input.meal),
     handledBy: cleanText(input.handledBy, 200, "Who's handling it"),
+    askWho: input.askWho === true,
   };
 }
 
@@ -451,11 +457,11 @@ export async function addStop(actor: Actor, tripId: string, input: StopInput & {
   }
   const planned = role === "manage" && day !== null;
   const { rows } = await pool.query<{ id: string }>(
-    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day, status, meal, handled_by)
+    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day, status, meal, handled_by, ask_attendance)
      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12, $13, $14, $15)
+       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12, $13, $14, $15, $16)
      returning id`,
-    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part, s.status, s.meal, s.handledBy],
+    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part, s.status, s.meal, s.handledBy, s.askWho],
   );
   return { id: rows[0].id, planned };
 }
@@ -477,9 +483,9 @@ export async function updateStop(actor: Actor, stopId: string, input: StopInput)
   if (role !== "manage" && !mine) throw new AccessDenied();
   const s = readStop(input);
   await pool.query(
-    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, status = $9, meal = $10, handled_by = $11, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
+    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, status = $9, meal = $10, handled_by = $11, ask_attendance = $12, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
      where id = $1`,
-    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part, s.status, s.meal, s.handledBy],
+    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part, s.status, s.meal, s.handledBy, s.askWho],
   );
 }
 
@@ -506,6 +512,8 @@ export async function planStop(actor: Actor, stopId: string, day: string | null)
 export async function setAttendance(actor: Actor, stopId: string, personId: string, state: Attending | null): Promise<void> {
   const { trip, role } = await stopWithTrip(actor, stopId);
   if (!UUID.test(personId)) throw new AccessDenied();
+  const asks = await pool.query<{ ask_attendance: boolean }>("select ask_attendance from mosey_stops where id = $1", [stopId]);
+  if (state !== null && !asks.rows[0]?.ask_attendance) throw new InputError("Turn on \"Ask who's going\" for this stop first.");
   if (state !== null && state !== "going" && state !== "maybe") throw new InputError("Pick going or maybe.");
   const { rows } = await pool.query<{ user_id: string | null }>("select user_id from mosey_people where id = $1 and trip_id = $2", [personId, trip.id]);
   if (!rows[0]) throw new AccessDenied();

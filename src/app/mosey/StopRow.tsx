@@ -171,7 +171,7 @@ export function StopRow({
 
       {canPlan && !stop.day && !open && <MoveToDay stop={stop} days={days} action={planAction} pending={planning} indent={showTime} />}
       {planState.error && <Alert>{planState.error}</Alert>}
-      {attend && !open && <Attendance tripId={attend.tripId} stopId={stop.id} people={attend.people} marks={attend.marks} organizer={attend.organizer} indent={showTime} />}
+      {attend && stop.askWho && !open && <Attendance tripId={attend.tripId} stopId={stop.id} people={attend.people} marks={attend.marks} organizer={attend.organizer} indent={showTime} />}
 
       {canEdit && open && <EditStop stop={stop} canPlan={canPlan} onDone={() => setOpen(false)} />}
     </div>

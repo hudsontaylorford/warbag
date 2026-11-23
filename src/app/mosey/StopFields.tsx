@@ -72,6 +72,13 @@ export function StopFields({ stop, link }: { stop?: Stop; /** A link pasted into
           className="rounded-[var(--radius-control)] border border-line bg-field px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
       </div>
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+        <input type="checkbox" name="askWho" defaultChecked={stop?.askWho} className="mt-0.5 size-5 shrink-0 accent-ink" />
+        <span>
+          Ask who&apos;s going
+          <span className="block text-soft">For plans not everyone does: a split day, limited seats, an optional night out.</span>
+        </span>
+      </label>
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
         <input type="checkbox" name="membersOnly" defaultChecked={stop?.membersOnly} className="size-5 accent-ink" />
         Members only (hide the place, link and notes from the view link)

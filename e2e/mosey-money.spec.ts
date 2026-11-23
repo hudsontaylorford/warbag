@@ -91,9 +91,15 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await day1.getByLabel(/^Add to/).fill("Boat tour");
   await day1.getByRole("button", { name: "Add a time, place, meal or link" }).click();
   await day1.getByLabel("Status").selectOption({ label: "Booked" });
+  await day1.getByLabel(/Ask who's going/).check();
   await day1.getByRole("button", { name: "Add", exact: true }).click();
   await expect(day1.getByText("Booked", { exact: true })).toBeVisible();
+  // A stop that doesn't ask shows nothing about attendance.
+  await day1.getByLabel(/^Add to/).fill("Lunch");
+  await day1.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(day1.getByText("Lunch", { exact: true })).toBeVisible();
   await day1.getByRole("button", { name: "Done adding" }).click();
+  await expect(day1.getByRole("button", { name: "Who's going?" })).toHaveCount(1);
   await day1.getByRole("button", { name: "Who's going?" }).click();
   await day1.getByRole("group", { name: "Ann: going?" }).getByRole("button", { name: "Going" }).click();
   await expect(day1.getByRole("group", { name: "Ann: going?" }).getByRole("button", { name: "Going" })).toHaveAttribute("aria-pressed", "true");

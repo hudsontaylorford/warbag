@@ -252,8 +252,12 @@ describeDb("Mosey trips", () => {
     const ann = await addPerson(hudson, tripId, { name: "Ann", userId: hudson.id });
     const ben = await addPerson(hudson, tripId, { name: "Ben", userId: molly.id });
     const kid = await addPerson(hudson, tripId, { name: "Kid" });
-    const ski = (await addStop(hudson, tripId, { title: "Ski", day: "2027-06-06" })).id;
-    const idea = (await addStop(molly, tripId, { title: "Spa" })).id;
+    const ski = (await addStop(hudson, tripId, { title: "Ski", day: "2027-06-06", askWho: true })).id;
+    const idea = (await addStop(molly, tripId, { title: "Spa", askWho: true })).id;
+    // Stops that don't ask are everyone: nobody can be marked on them.
+    const dinner = (await addStop(hudson, tripId, { title: "Dinner", day: "2027-06-06" })).id;
+    expect((await getTrip(molly, tripId)).stops.find((s) => s.id === dinner)!.askWho).toBe(false);
+    await expect(setAttendance(hudson, dinner, ann, "going")).rejects.toThrow(/Ask who's going/);
 
     await setAttendance(hudson, ski, kid, "going"); // an organizer marks anyone
     await setAttendance(molly, ski, ben, "maybe"); // a member marks themselves

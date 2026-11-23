@@ -45,6 +45,7 @@ const stopFields = (form: FormData) => ({
   status: text(form, "status"),
   meal: text(form, "meal"),
   handledBy: text(form, "handledBy"),
+  askWho: form.get("askWho") === "on",
 });
 const tripFields = (form: FormData) => ({
   name: text(form, "name"),
