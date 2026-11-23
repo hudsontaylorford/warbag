@@ -2,6 +2,10 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Fix: deleting a trip with expenses
+
+Found while making screenshots: Delete trip failed for any trip with expenses (the cascade removed the trip's people before their expense rows, so a reference check fired too early). The person references on expenses and payments are now checked when the delete finishes (deferrable, migration 0023). Removing one person is still refused in code while they're in expenses or payments. Test: a trip with expenses, payments and a frozen statement deletes completely and leaves other trips alone.
+
 ## 2026-11-23 · People managers (the agent can manage people and groups)
 
 Hudson wants the agent to have People and groups access, without admin. Chosen level (asked): **People manager**.
