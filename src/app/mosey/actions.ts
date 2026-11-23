@@ -12,6 +12,9 @@ import {
   planStop,
   revokeTripLink,
   setAttendance,
+  createChoice,
+  setStopChoice,
+  ungroupChoice,
   setDayInfo,
   setTripMembers,
   updateStop,
@@ -53,6 +56,28 @@ const tripFields = (form: FormData) => ({
   start: text(form, "start"),
   end: text(form, "end"),
 });
+
+/** A choice between options on a day. Organizers only. */
+export async function createChoiceAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await createChoice(actor, text(form, "id"), { day: text(form, "day"), title: text(form, "title"), options: form.getAll("option").map(String), time: text(form, "time") });
+    return "Added";
+  });
+}
+
+export async function setStopChoiceAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await setStopChoice(actor, text(form, "id"), text(form, "choice") || null);
+    return "Saved";
+  });
+}
+
+export async function ungroupChoiceAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await ungroupChoice(actor, text(form, "id"), text(form, "choice"));
+    return "Ungrouped";
+  });
+}
 
 /** Going, maybe, or not set, for one person and one stop. */
 export async function setAttendanceAction(_: FormState, form: FormData): Promise<FormState> {

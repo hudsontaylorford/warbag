@@ -5,6 +5,7 @@ import type { DayInfo, Stop } from "@/lib/mosey/trips";
 import { setDayAction } from "./actions";
 import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
+import { AddOptions, OptionsBlock } from "./Options";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
@@ -63,6 +64,7 @@ export function DayCard({
   canAdd,
   canPlan,
   attend,
+  choices = {},
 }: {
   tripId: string;
   day: string;
@@ -75,11 +77,22 @@ export function DayCard({
   canPlan: boolean;
   /** Members only: the trip's people and who's going to what. */
   attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: Record<string, { personId: string; state: "going" | "maybe" }[]>; organizer: boolean };
+  /** The trip's choices between options, by id. */
+  choices?: Record<string, { title: string }>;
 }) {
   const today = useToday();
   const [openChoice, setOpen] = useState<boolean | null>(null);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [addingOptions, setAddingOptions] = useState(false);
+  // Options of one choice show together, where the first of them falls in the day.
+  const choicesHere = [...new Set(planned.map((r) => r.stop.choiceId).filter((c): c is string => Boolean(c && choices[c])))].map((id) => ({ id, title: choices[id].title }));
+  const items: ({ kind: "stop"; row: Row } | { kind: "options"; id: string; rows: Row[] })[] = [];
+  for (const row of planned) {
+    const c = row.stop.choiceId && choices[row.stop.choiceId] ? row.stop.choiceId : null;
+    if (!c) items.push({ kind: "stop", row });
+    else if (!items.some((it) => it.kind === "options" && it.id === c)) items.push({ kind: "options", id: c, rows: planned.filter((r) => r.stop.choiceId === c) });
+  }
   const isToday = day === today;
   const underway = today !== null && days[0] <= today && today <= days[days.length - 1];
   const open = openChoice ?? !(underway && day < today!);
@@ -120,11 +133,24 @@ export function DayCard({
         <div id={bodyId} className="flex flex-col gap-3 px-4 pb-4">
           {count > 0 ? (
             <ul className="divide-y divide-line border-t border-line">
-              {planned.map(({ stop, canEdit }) => (
-                <li key={stop.id}>
-                  <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} attend={attend && { ...attend, marks: attend.marks[stop.id] ?? [] }} />
-                </li>
-              ))}
+              {items.map((it) =>
+                it.kind === "stop" ? (
+                  <li key={it.row.stop.id}>
+                    <StopRow
+                      stop={it.row.stop}
+                      days={days}
+                      canEdit={it.row.canEdit}
+                      canPlan={canPlan}
+                      choicesHere={choicesHere}
+                      attend={attend && { ...attend, marks: attend.marks[it.row.stop.id] ?? [] }}
+                    />
+                  </li>
+                ) : (
+                  <li key={it.id}>
+                    <OptionsBlock choiceId={it.id} title={choices[it.id].title} rows={it.rows} days={days} canPlan={canPlan} attend={attend} choicesHere={choicesHere} />
+                  </li>
+                ),
+              )}
             </ul>
           ) : (
             <p className="border-t border-line pt-3 text-sm text-soft">Nothing planned yet.</p>
@@ -156,11 +182,17 @@ export function DayCard({
               </button>
             </div>
           )}
-          {(canAdd || canPlan) && !adding && !editing && (
+          {addingOptions && <AddOptions tripId={tripId} day={day} onDone={() => setAddingOptions(false)} />}
+          {(canAdd || canPlan) && !adding && !editing && !addingOptions && (
             <div className="flex flex-wrap gap-x-5">
               {canAdd && (
                 <button type="button" onClick={() => setAdding(true)} className="min-h-11 px-1 font-semibold text-accent underline-offset-4 hover:underline">
                   + {canPlan ? "Add to this day" : "Suggest for this day"}
+                </button>
+              )}
+              {canPlan && (
+                <button type="button" onClick={() => setAddingOptions(true)} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
+                  + Add options
                 </button>
               )}
               {canPlan && (

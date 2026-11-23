@@ -66,6 +66,7 @@ export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
             canAdd={canAdd && !viewerOnly}
             canPlan={plan}
             attend={attendFor(trip, viewerOnly)}
+            choices={trip.choices}
           />
         ))}
       </div>

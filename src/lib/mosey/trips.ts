@@ -1,4 +1,5 @@
 import "server-only";
+import type { PoolClient } from "pg";
 import { parseWhen, type Part, type When } from "./when";
 import { pool } from "../db";
 import { InputError } from "../errors";
@@ -64,6 +65,8 @@ export type Stop = {
   meal: Meal | null;
   /** Ask who's going (split, limited or optional plans). Otherwise everyone goes. */
   askWho: boolean;
+  /** The choice this stop is one option of ("Monday afternoon: ski, hike or spa"). */
+  choiceId: string | null;
   /** Who's cooking, bringing or booking it. Hidden like notes on members-only stops. */
   handledBy: string;
   title: string;
@@ -85,6 +88,8 @@ export type TripDetail = TripSummary & {
   days: string[];
   /** Area and tag by day, only for days that have one. */
   dayInfo: Record<string, DayInfo>;
+  /** Choices between options, by id. */
+  choices: Record<string, { title: string }>;
   stops: Stop[];
   /** Members only: the trip's people (from Money), and who's going to what. */
   people?: { id: string; name: string; me: boolean }[];
@@ -267,6 +272,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     meal: Meal | null;
     handled_by: string;
     ask_attendance: boolean;
+    choice_id: string | null;
     title: string;
     place: string;
     link: string;
@@ -275,7 +281,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     created_by: string | null;
   }>(
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
-       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, ask_attendance, title, place, link, notes, members_only, created_by
+       to_char(at_time, 'HH24:MI') as at_time, time_of_day, status, meal, handled_by, ask_attendance, choice_id, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
      -- Parts of the day sort at the start of their window, before exact
      -- times there; a meal with no time sits at its usual hour; time TBD
@@ -300,6 +306,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       status: r.status,
       meal: r.meal,
       askWho: r.ask_attendance,
+      choiceId: r.choice_id,
       handledBy: hide ? "" : r.handled_by,
       title: r.title,
       place: hide ? "" : r.place,
@@ -310,6 +317,22 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       mine: viewerId !== null && r.created_by === viewerId,
     };
   });
+}
+
+async function choicesOf(tripId: string): Promise<Record<string, { title: string }>> {
+  const { rows } = await pool.query<{ id: string; title: string }>("select id, title from mosey_choices where trip_id = $1", [tripId]);
+  return Object.fromEntries(rows.map((r) => [r.id, { title: r.title }]));
+}
+
+/** A choice with fewer than two options isn't a choice: let the last one stand alone. */
+async function tidyChoices(db: Pick<PoolClient, "query">, tripId: string) {
+  await db.query(
+    `with thin as (
+       select c.id from mosey_choices c where c.trip_id = $1
+         and (select count(*) from mosey_stops s where s.choice_id = c.id) < 2)
+     delete from mosey_choices where id in (select id from thin)`,
+    [tripId],
+  );
 }
 
 async function dayInfoOf(tripId: string, days: string[]): Promise<Record<string, DayInfo>> {
@@ -353,6 +376,7 @@ export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
     role,
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
+    choices: await choicesOf(trip.id),
     // Someone with only a view grant sees what a link sees.
     stops: await stopsOf(trip.id, actor.id, !atLeast(role, "contribute")),
     ...(atLeast(role, "contribute") ? await attendanceOf(trip.id, actor.id) : {}),
@@ -393,6 +417,7 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
     role: "view",
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
+    choices: await choicesOf(trip.id),
     stops: await stopsOf(trip.id, null, true),
   };
 }
@@ -499,9 +524,85 @@ export async function planStop(actor: Actor, stopId: string, day: string | null)
     day = d;
   }
   await pool.query(
-    `update mosey_stops set day = $2, suggested_day = null, planned_by = $3, updated_at = now() where id = $1`,
+    `update mosey_stops set day = $2, suggested_day = null, planned_by = $3, updated_at = now(),
+       choice_id = case when day is not distinct from $2::date then choice_id else null end
+     where id = $1`,
     [stopId, day, day ? actor.id : null],
   );
+  await tidyChoices(pool, trip.id);
+}
+
+// ------------------------------------------------------------ choices
+
+/**
+ * Adds a choice to a day: a title ("Monday afternoon") and two or more
+ * options, each a stop on that day that asks who's going. Organizers only.
+ */
+export async function createChoice(actor: Actor, tripId: string, input: { day: string; title: string; options: string[]; time?: string }): Promise<string> {
+  const { trip } = await tripWithRole(actor, tripId, "manage");
+  const day = parseDay(input.day);
+  if (!day || day < trip.start_date || day > trip.end_date) throw new InputError("Pick a day on the trip.");
+  const title = cleanText(input.title, 80, "What's being decided");
+  if (!title) throw new InputError("Say what's being decided, like \"Monday afternoon\".");
+  const options = input.options.map((o) => cleanText(o, 200, "An option")).filter(Boolean);
+  if (options.length < 2) throw new InputError("Add at least two options.");
+  if (options.length > 8) throw new InputError("Eight options at most.");
+  const when = cleanWhen(input.time);
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    const { rows } = await client.query<{ id: string }>("insert into mosey_choices (trip_id, title, created_by) values ($1, $2, $3) returning id", [
+      trip.id,
+      title,
+      actor.id,
+    ]);
+    for (const o of options) {
+      await client.query(
+        `insert into mosey_stops (trip_id, day, title, created_by, planned_by, ask_attendance, choice_id, at_time, time_of_day, position)
+         values ($1, $2, $3, $4, $4, true, $5, $6, $7, coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0))`,
+        [trip.id, day, o, actor.id, rows[0].id, when.time, when.part],
+      );
+    }
+    await client.query("commit");
+    return rows[0].id;
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Makes a stop one of a choice's options, or takes it out (null). The stop
+ * must be on the same day as the other options. Organizers only.
+ */
+export async function setStopChoice(actor: Actor, stopId: string, choiceId: string | null): Promise<void> {
+  const { trip, role } = await stopWithTrip(actor, stopId);
+  if (role !== "manage") throw new AccessDenied();
+  if (choiceId === null) {
+    await pool.query("update mosey_stops set choice_id = null, updated_at = now() where id = $1", [stopId]);
+    await tidyChoices(pool, trip.id);
+    return;
+  }
+  if (!UUID.test(choiceId)) throw new AccessDenied();
+  const c = await pool.query<{ day: string | null }>(
+    `select (select to_char(s.day, 'YYYY-MM-DD') from mosey_stops s where s.choice_id = c.id limit 1) as day
+       from mosey_choices c where c.id = $1 and c.trip_id = $2`,
+    [choiceId, trip.id],
+  );
+  if (!c.rows[0]) throw new AccessDenied();
+  const stop = await pool.query<{ day: string | null }>("select to_char(day, 'YYYY-MM-DD') as day from mosey_stops where id = $1", [stopId]);
+  if (!stop.rows[0].day || stop.rows[0].day !== c.rows[0].day) throw new InputError("Options in a choice are on the same day. Put it on that day first.");
+  await pool.query("update mosey_stops set choice_id = $2, ask_attendance = true, updated_at = now() where id = $1", [stopId, choiceId]);
+}
+
+/** Ungroups a choice: its options stay as stops, picks and all. Organizers only. */
+export async function ungroupChoice(actor: Actor, tripId: string, choiceId: string): Promise<void> {
+  const { trip } = await tripWithRole(actor, tripId, "manage");
+  if (!UUID.test(choiceId)) throw new AccessDenied();
+  const gone = await pool.query("delete from mosey_choices where id = $1 and trip_id = $2", [choiceId, trip.id]);
+  if (!gone.rowCount) throw new AccessDenied();
 }
 
 /**
@@ -512,8 +613,10 @@ export async function planStop(actor: Actor, stopId: string, day: string | null)
 export async function setAttendance(actor: Actor, stopId: string, personId: string, state: Attending | null): Promise<void> {
   const { trip, role } = await stopWithTrip(actor, stopId);
   if (!UUID.test(personId)) throw new AccessDenied();
-  const asks = await pool.query<{ ask_attendance: boolean }>("select ask_attendance from mosey_stops where id = $1", [stopId]);
+  const asks = await pool.query<{ ask_attendance: boolean; choice_id: string | null }>("select ask_attendance, choice_id from mosey_stops where id = $1", [stopId]);
   if (state !== null && !asks.rows[0]?.ask_attendance) throw new InputError("Turn on \"Ask who's going\" for this stop first.");
+  const choice = asks.rows[0]?.choice_id ?? null;
+  if (choice && state === "maybe") throw new InputError("For options, pick one.");
   if (state !== null && state !== "going" && state !== "maybe") throw new InputError("Pick going or maybe.");
   const { rows } = await pool.query<{ user_id: string | null }>("select user_id from mosey_people where id = $1 and trip_id = $2", [personId, trip.id]);
   if (!rows[0]) throw new AccessDenied();
@@ -521,6 +624,13 @@ export async function setAttendance(actor: Actor, stopId: string, personId: stri
   if (state === null) {
     await pool.query("delete from mosey_attendance where stop_id = $1 and person_id = $2", [stopId, personId]);
     return;
+  }
+  // One pick per person in a choice: picking this option drops their others.
+  if (choice) {
+    await pool.query(
+      "delete from mosey_attendance where person_id = $1 and stop_id in (select id from mosey_stops where choice_id = $2 and id <> $3)",
+      [personId, choice, stopId],
+    );
   }
   await pool.query(
     `insert into mosey_attendance (stop_id, person_id, state, updated_by) values ($1, $2, $3, $4)
@@ -536,7 +646,8 @@ export async function deleteStop(actor: Actor, stopId: string): Promise<void> {
     const { rows } = await pool.query<{ day: string | null }>("select day from mosey_stops where id = $1", [stopId]);
     if (!mine || rows[0]?.day) throw new AccessDenied();
   }
-  await pool.query("delete from mosey_stops where id = $1", [stopId]);
+  const trip = await pool.query<{ trip_id: string }>("delete from mosey_stops where id = $1 returning trip_id", [stopId]);
+  if (trip.rows[0]) await tidyChoices(pool, trip.rows[0].trip_id);
 }
 
 // ------------------------------------------------------------ people and links
