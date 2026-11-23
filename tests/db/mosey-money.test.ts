@@ -2,7 +2,7 @@ import { afterAll, beforeEach, expect, it } from "vitest";
 import { admin, describeDb, makeUser } from "../support/db";
 import { AccessDenied, grantItem, type Actor } from "@/lib/access";
 import { InputError } from "@/lib/errors";
-import { createTrip, createTripLink, setTripMembers, tripByLink, tripSharing } from "@/lib/mosey/trips";
+import { createTrip, createTripLink, deleteTrip, setTripMembers, tripByLink, tripSharing } from "@/lib/mosey/trips";
 import {
   addExpense,
   addPayment,
@@ -193,5 +193,23 @@ describeDb("Mosey money", () => {
     expect((await ledger(org, tripId)).units).toEqual(before);
     // Organizers only, like every people change.
     await expect(updatePerson(mem, tripId, kit, { name: "Kit", household: "Ann + Ben", kid: false })).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("deleting a trip with money on it deletes everything, and nothing else", async () => {
+    await addExpense(org, tripId, { description: "Dinner", amount: "90", spentOn: "2027-06-05", paidBy: ann, participants: [ann, ben, cal] });
+    await addPayment(org, tripId, { from: cal, to: ann, amount: "30", paidOn: "2027-06-06" });
+    const other = await createTrip(org, { name: "Other", start: "2027-07-01", end: "2027-07-02" });
+    const zed = await addPerson(org, other, { name: "Zed" });
+    await addExpense(org, other, { description: "Kept", amount: "5", spentOn: "2027-07-01", paidBy: zed, participants: [zed] });
+    await freezeStatement(org, tripId);
+    await deleteTrip(org, tripId);
+    const left = await admin.query(
+      `select (select count(*)::int from mosey_people where trip_id = $1) as people,
+              (select count(*)::int from mosey_expenses where trip_id = $1) as expenses,
+              (select count(*)::int from mosey_payments where trip_id = $1) as payments`,
+      [tripId],
+    );
+    expect(left.rows[0]).toEqual({ people: 0, expenses: 0, payments: 0 });
+    expect((await ledger(org, other)).expenses.map((e) => e.description)).toEqual(["Kept"]);
   });
 });
