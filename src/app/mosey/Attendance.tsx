@@ -86,7 +86,7 @@ export function Attendance({
   const pad = indent ? "sm:pl-21" : "";
 
   return (
-    <div className={`-mt-2 flex flex-col gap-1 text-sm ${pad}`}>
+    <div className={`-mt-4 flex flex-col gap-1 text-sm ${pad}`}>
       {!open && (
         <div className="flex flex-wrap items-baseline gap-x-3">
           {(going.length > 0 || maybe.length > 0) && (

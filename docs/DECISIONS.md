@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: meals
+
+From the Christmas-trip notes (WRB-20261122-02 section 11): meals live inside the plan and Ideas, not a fourth tab or a separate meal planner.
+
+- **Any stop or idea can be a meal:** Breakfast, Lunch, Dinner, or Food & drink (restaurants, takeout, a grocery run), plus an optional "Who's handling it" ("Ann cooking, Cal brings pie"), hidden on view links for members-only stops like notes.
+- **On a day card,** a meal with no time shows "Dinner" where the time goes and sits at its usual hour (breakfast 8, lunch 12:30, dinner 6:30); a timed meal shows a quiet "Lunch" beside its name. Status (Tentative, Confirmed...) works as for any stop.
+- **Ideas has a Food & drink filter** for competing options; moving one to a day moves the same record, never a copy.
+- **Not here (later, opt-in):** meal budgets (a budget is an estimate, never an expense), shopping checklists, cooking assignments, AI menus.
+- Also: "Who's going?" only appears once the trip has people on Money.
+
 ## 2026-11-23 · Mosey: kids on the trip, adults in the money
 
 Hudson's choice (asked, Nov 23): **adults only by default.**

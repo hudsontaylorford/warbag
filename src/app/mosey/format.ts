@@ -35,3 +35,6 @@ export function shortTimeLabel(time: string): string {
 
 /** The words for a stop's status. Same everywhere: the label, the form and docs/LANGUAGE.md. */
 export const STATUS_LABEL = { tentative: "Tentative", asked: "Inquiry sent", confirmed: "Confirmed", booked: "Booked" } as const;
+
+/** Meal words, the same on stops, the form and the Ideas filter. */
+export const MEAL_LABEL = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", food: "Food & drink" } as const;

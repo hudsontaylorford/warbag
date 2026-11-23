@@ -75,16 +75,50 @@ export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
 
 /** Who's going, for members only: never for viewers or view links. */
 function attendFor(trip: TripDetail, viewerOnly?: boolean) {
-  if (viewerOnly || !trip.people || !trip.attendance) return undefined;
+  // Nothing to mark until the trip has people (added on Money).
+  if (viewerOnly || !trip.people?.length || !trip.attendance) return undefined;
   return { tripId: trip.id, people: trip.people, marks: trip.attendance, organizer: trip.organizer };
 }
 
 /** Ideas: everything not on a day yet. */
-export function IdeaList({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDetail; canAdd: boolean; canPlan: boolean; viewerOnly?: boolean }) {
-  const ideas = trip.stops.filter((s) => !s.day);
+export function IdeaList({
+  trip,
+  canAdd,
+  canPlan,
+  viewerOnly,
+  food,
+  base,
+}: {
+  trip: TripDetail;
+  canAdd: boolean;
+  canPlan: boolean;
+  viewerOnly?: boolean;
+  /** Show only food and drink ideas. */
+  food?: boolean;
+  /** Where the Ideas page lives, for the All / Food & drink links. */
+  base?: string;
+}) {
+  const all = trip.stops.filter((s) => !s.day);
+  const meals = all.filter((s) => s.meal);
+  const ideas = food ? meals : all;
+  const filter = (on: boolean, label: string, href: string) => (
+    <Link
+      href={href}
+      aria-current={on ? "page" : undefined}
+      className={`inline-flex min-h-11 items-center rounded-full border px-3 text-sm ${on ? "border-ink bg-ink text-page" : "border-line bg-field text-ink"}`}
+    >
+      {label}
+    </Link>
+  );
   return (
     <div className="flex flex-col gap-4">
       {canAdd && <QuickAdd tripId={trip.id} label="Add an idea" placeholder="A place, a restaurant, something to bring…" />}
+      {base && (meals.length > 0 || food) && (
+        <nav aria-label="Show" className="flex gap-2">
+          {filter(!food, `All (${all.length})`, base)}
+          {filter(Boolean(food), `Food & drink (${meals.length})`, `${base}?show=food`)}
+        </nav>
+      )}
       {ideas.length > 0 ? (
         <ul className="divide-y divide-line border-y border-line">
           {ideas.map((s) => (
@@ -104,7 +138,7 @@ export function IdeaList({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
           ))}
         </ul>
       ) : (
-        <p className="text-soft">No ideas yet. Anything goes: places to check out, food, things to bring.</p>
+        <p className="text-soft">{food ? "No food or drink ideas." : "No ideas yet. Anything goes: places to check out, food, things to bring."}</p>
       )}
     </div>
   );

@@ -289,4 +289,31 @@ describeDb("Mosey trips", () => {
     await removePerson(hudson, tripId, kid);
     expect((await getTrip(hudson, tripId)).attendance![ski]).toBeUndefined();
   });
+
+  it("meals: a stop or idea can be a meal with who's handling it; untimed meals sit at their usual hour", async () => {
+    const day = "2027-06-06";
+    await addStop(hudson, tripId, { title: "Hike", day, time: "morning" });
+    const dinner = (await addStop(hudson, tripId, { title: "Family dinner", day, meal: "dinner", handledBy: "Ann cooking, Ben brings pie" })).id;
+    await addStop(hudson, tripId, { title: "Pancakes", day, meal: "breakfast" });
+    await addStop(hudson, tripId, { title: "Movie", day, time: "8pm" });
+    await addStop(hudson, tripId, { title: "Lunch spot", day, time: "1pm", meal: "lunch" });
+    const t = await getTrip(molly, tripId);
+    expect(t.stops.filter((s) => s.day === day).map((s) => [s.title, s.meal])).toEqual([
+      ["Hike", null],
+      ["Pancakes", "breakfast"],
+      ["Lunch spot", "lunch"],
+      ["Family dinner", "dinner"],
+      ["Movie", null],
+    ]);
+    expect(t.stops.find((s) => s.id === dinner)!.handledBy).toBe("Ann cooking, Ben brings pie");
+    await expect(addStop(hudson, tripId, { title: "Bad", meal: "brunch" })).rejects.toBeInstanceOf(InputError);
+    await expect(addStop(hudson, tripId, { title: "Long", meal: "dinner", handledBy: "x".repeat(201) })).rejects.toBeInstanceOf(InputError);
+
+    // Who's handling a members-only meal stays off view links, like its notes.
+    await updateStop(hudson, dinner, { title: "Family dinner", meal: "dinner", handledBy: "Ann cooking", membersOnly: true });
+    await createTripLink(hudson, tripId);
+    const [link] = (await tripSharing(hudson, tripId)).links;
+    const seen = (await tripByLink(link.token))!.stops.find((s) => s.id === dinner)!;
+    expect([seen.meal, seen.handledBy]).toEqual(["dinner", ""]);
+  });
 });

@@ -35,6 +35,8 @@
 | Inquiry sent | We asked (a booking request, an email) and are waiting to hear. |
 | Confirmed | Settled, nothing to book (a dinner at home, a plan everyone agreed). |
 | Booked | Reserved or paid with someone outside the family. |
+| Breakfast / Lunch / Dinner / Food & drink | What kind of meal a stop or idea is. Food & drink is anything else to eat or drink (takeout, a grocery run). |
+| Who's handling it | Who's cooking, bringing or booking a meal. |
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |
 | All adults | The split shortcut when a trip has kids (otherwise "Everyone"). |
 | Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |
