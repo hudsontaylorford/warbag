@@ -18,6 +18,7 @@ import {
   ungroupChoice,
   setDayInfo,
   setTripMembers,
+  setTripOrganizers,
   updateStop,
   updateTrip,
 } from "@/lib/mosey/trips";
@@ -152,6 +153,10 @@ export async function setMembersAction(_: FormState, form: FormData): Promise<Fo
       userIds: values.filter((v) => v.startsWith("p:")).map((v) => v.slice(2)),
     }),
   );
+}
+
+export async function setOrganizersAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) => setTripOrganizers(actor, text(form, "id"), form.getAll("value").map(String)));
 }
 
 export async function createLinkAction(_: FormState, form: FormData): Promise<FormState> {

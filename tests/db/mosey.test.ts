@@ -12,6 +12,7 @@ import {
   getTrip,
   planStop,
   revokeTripLink,
+  setTripOrganizers,
   moveStop,
   createChoice,
   setStopChoice,
@@ -380,7 +381,7 @@ describeDb("Mosey trips", () => {
   it("reorder: untimed stops go anywhere, times still set the order, organizers only", async () => {
     const day = "2027-06-06";
     const add = async (title: string, time = "") => (await addStop(hudson, tripId, { title, day, time })).id;
-    const pickup = await add("Van pickup", "12pm");
+    await add("Van pickup", "12pm");
     const drive = await add("Drive north", "1:30p");
     const groceries = await add("Groceries on the way");
     const ferry = await add("Ferry", "TBD");
@@ -411,5 +412,35 @@ describeDb("Mosey trips", () => {
     expect((await order())[0]).toBe("Lunch");
     await expect(moveStop(molly, groceries, "up")).rejects.toBeInstanceOf(AccessDenied);
     await expect(moveStop(outsider, groceries, "up")).rejects.toBeInstanceOf(AccessDenied);
+  });
+
+  it("co-organizers do everything on the trip except share it or delete it", async () => {
+    const agent = await makeUser(); // e.g. an assistant's own account, not an admin
+    await setTripOrganizers(hudson, tripId, [agent.id]);
+    expect((await tripSharing(hudson, tripId)).organizers.map((o) => o.id)).toEqual([agent.id]);
+    const t = await getTrip(agent, tripId);
+    expect([t.organizer, t.owner]).toEqual([true, false]);
+
+    // Plans, money and settle-up, like the owner.
+    const idea = (await addStop(agent, tripId, { title: "Boat tour" })).id;
+    await planStop(agent, idea, "2027-06-06");
+    const ann = await addPerson(agent, tripId, { name: "Ann" });
+    expect(ann).toBeTruthy();
+    await updateTrip(agent, tripId, { ...maine, name: "Maine trip" });
+
+    // Not sharing, not deleting.
+    await expect(tripSharing(agent, tripId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setTripMembers(agent, tripId, { groupIds: [], userIds: [] })).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setTripOrganizers(agent, tripId, [])).rejects.toBeInstanceOf(AccessDenied);
+    await expect(createTripLink(agent, tripId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(deleteTrip(agent, tripId)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setTripOrganizers(molly, tripId, [molly.id])).rejects.toBeInstanceOf(AccessDenied);
+
+    // Saving the members list never downgrades a co-organizer.
+    await setTripMembers(hudson, tripId, { groupIds: [], userIds: [molly.id, agent.id] });
+    expect((await getTrip(agent, tripId)).organizer).toBe(true);
+    // The owner takes it away; it applies on the next request.
+    await setTripOrganizers(hudson, tripId, []);
+    await expect(getTrip(agent, tripId)).rejects.toBeInstanceOf(AccessDenied);
   });
 });
