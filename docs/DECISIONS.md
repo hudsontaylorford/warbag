@@ -2,6 +2,18 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Room Tuner moves into warbag
+
+Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are his). It was a standalone page published from another Claude session; its code came back from that page and his downloads (`roomtune.zip`, `room-tuner-setups.json`).
+
+- **Native app at `/roomtune`, letter R.** Same sound analysis, Lossless decoder and fit as before (ported to TypeScript, math unchanged; the decoder matches ffmpeg sample for sample). Screens rebuilt in warbag's look and shared primitives (Hudson chose this over embedding the old page).
+- **Who can use it** (Hudson): anyone with an account he turns it on for (People → a person → Apps), plus a **view link** per setup for anyone without an account. Setups are private to their owner; admins don't see other people's setups. App access is checked on every read and save, so turning it off takes effect on the next request.
+- **One JSON document per setup** in `roomtune_setups`, cleaned on the server (`cleanSetup`) before every save or import. No audio is stored, only 55 numbers per recording; recordings are analyzed in the browser.
+- **Saving:** the page saves the whole setup a moment after each change, one save at a time, and says "Saved to your account" only after the server confirms. A failed save keeps the change on the page with Try again.
+- **Import:** Room Tuner's export file adds its setups as new ones (copies, never overwrites), all or nothing.
+- **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
+- Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
+
 ## 2026-11-23 · Fix: deleting a trip with expenses
 
 Found while making screenshots: Delete trip failed for any trip with expenses (the cascade removed the trip's people before their expense rows, so a reference check fired too early). The person references on expenses and payments are now checked when the delete finishes (deferrable, migration 0023). Removing one person is still refused in code while they're in expenses or payments. Test: a trip with expenses, payments and a frozen statement deletes completely and leaves other trips alone.

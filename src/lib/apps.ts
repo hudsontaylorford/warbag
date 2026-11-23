@@ -45,6 +45,15 @@ export const APPS: readonly App[] = [
     letter: "M",
   },
   {
+    id: "roomtune",
+    name: "Room Tuner",
+    description: "Speaker EQ for your room",
+    kind: "native",
+    href: "/roomtune",
+    status: "live",
+    letter: "R",
+  },
+  {
     id: "chirk",
     name: "Chirk",
     description: "Invites and plans",

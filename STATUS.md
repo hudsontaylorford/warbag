@@ -29,6 +29,22 @@
 - A deleted trip's receipt photos stay in the Blob store.
 - No browser test signs in as a co-organizer or people manager (their rules are covered by database tests).
 
+## Room Tuner (room EQ)
+
+### Live
+- **Native app at /roomtune**, for Hudson and anyone he ticks it for under People → Apps. One setup per speaker and room; each is private to its owner.
+- **The same tool as the old page, in warbag's look:** play pink noise, record rounds at 3 spots, upload, see the room against the target, copy the suggested slider values, save presets, measure band width. Recordings are analyzed in the browser (Lossless included); only 55 numbers per recording are saved.
+- **Saved to your account** after each change, confirmed by the server. **Import setups** reads the old page's export file. **View link** per setup for anyone without an account.
+- **Fill from a screenshot** on a new setup reads the speaker app's EQ screen, using Mosey's Anthropic key.
+
+### Left (Hudson)
+1. **Import your setup:** Room Tuner → Import setups → `room-tuner-setups.json`.
+2. **Try it on your phone in Safari**, including a Voice Memos upload and Fill from a screenshot (automated tests use Chromium; screenshot reading has no automated test because it calls Claude).
+3. **Turn off the old page's public link** (claude.ai artifact "Room Tuner": set it to private), once you're happy here.
+
+### Next (needs Hudson's go)
+- Its own roadmap is in docs/ROOMTUNE.md; first up is an unprocessed iPhone recorder.
+
 ## Accounts and access
 
 - **Assistant (agent) access**, Hudson's decision 2026-11-23: its own non-admin account. It can be a trip's **co-organizer** and a **people manager** (invite people, manage groups and app access; never its own access or an admin's, no removing people or deleting groups). It never gets admin.

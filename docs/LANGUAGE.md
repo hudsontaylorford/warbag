@@ -49,6 +49,18 @@
 | Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |
 | Morning / Afternoon / Evening / Time TBD / Any time | When, without an exact time. |
 
+## Room Tuner words
+
+| Label | Means |
+|---|---|
+| Setup | One speaker in one room: its EQ layout, rounds and presets. |
+| Round | One set of recordings (usually 3 spots) made with one EQ on the speaker. Round 1 is with every slider at 0. |
+| EQ on the speaker | What the speaker's own app is set to. "I've entered these in the app" and "I put this on the speaker" change it. |
+| Preset | Saved slider values, to put on the speaker later. |
+| Off target | How far the sound is from the target curve, in dB (lower is better). |
+| Good fit | The latest round needs no change worth making: keep what's on the speaker. |
+| View link | Anyone with it sees one setup without signing in; can't change anything. |
+
 ## Style
 
 - Short by default. Sentence case for labels and headings.

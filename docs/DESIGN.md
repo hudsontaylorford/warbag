@@ -28,6 +28,9 @@ All colors and fonts come from the `@theme` block in `src/app/globals.css`. Comp
 | ember | #b4461a | app monograms, rare emphasis |
 | cream | #ffcd82 | headline on navy, text selection |
 | mist | #c9d3dc | secondary text on navy |
+| measured | #b4461a | chart line: what was recorded (Room Tuner) |
+| target | #00508f | chart line: the target curve, dashed |
+| predicted | #2e7d4f | chart line: predicted with the suggested EQ |
 
 Contrast (WCAG): ink on page 13.1:1, soft on page 5.4:1 (4.9:1 on wash), accent on page 7.3:1, cream on ink 10.2:1, mist on ink 9.8:1, paper letter on ember 4.8:1. Every text pairing passes AA.
 
@@ -44,6 +47,7 @@ One serif letter in a square (`src/components/ui/Monogram.tsx`). Letters are ass
 | W | warbag (header, sign-in, favicon) | ink, cream letter |
 | G | Gyfte | ember |
 | M | Mosey | ember |
+| R | Room Tuner | ember |
 
 External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag.
 
@@ -51,3 +55,4 @@ External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, a
 
 - **Launcher and public home:** the bold surface. Navy field, cream serif headline, ember monograms. The launcher's heading is a plain greeting ("Hi, Hudson"): warbag is a personal app, not a product with a tagline. No decorative marks. On desktop the launcher is two columns (headline left, apps right) with the header widened to match.
 - **Gyfte:** calm. Paper background, serif page titles, everything else plain sans. Lists are rows divided by hairlines, not cards. A list page leads with the person's name in the serif, the occasion as a small line above (`ListTitle`); screen readers hear the full title once. Family link pages carry a "G · Gyfte · warbag" eyebrow so people know where they've landed.
+- **Room Tuner:** calm, like Gyfte, and a long page on purpose: steps 1 to 4 top to bottom, then Rounds, Presets and Manage. Instructions are folded into bordered sections ("How the rounds work") so the steps stay short. Numbers use tabular figures. The chart uses the three chart tokens (each at least 3:1 on paper) plus soft for the previous round; the suggested values are drawn as sliders so they're easy to copy into a speaker's app.
