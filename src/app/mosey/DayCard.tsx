@@ -7,6 +7,7 @@ import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
 import { AddOptions, OptionsBlock } from "./Options";
 import { Reorder } from "./Reorder";
+import { useEditor } from "./editing";
 import { Field } from "@/components/ui/Field";
 import { SaveStatus, useAutosave } from "@/components/ui/forms";
 import { dayLabel } from "./format";
@@ -80,7 +81,10 @@ export function DayCard({
 }) {
   const today = useToday();
   const [openChoice, setOpen] = useState<boolean | null>(null);
-  const [adding, setAdding] = useState(false);
+  // The add box is an editor too: one open on the page at a time.
+  const addBox = useEditor(`add:${day}`);
+  const adding = addBox.open;
+  const setAdding = (on: boolean) => (on ? addBox.request() : addBox.close());
   const [editing, setEditing] = useState(false);
   const [addingOptions, setAddingOptions] = useState(false);
   const [reordering, setReordering] = useState(false);

@@ -14,6 +14,16 @@ Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are 
 - **Reading an EQ screenshot** uses the Anthropic key Mosey's receipts already use; the image isn't kept, 20 reads per person per hour. Without the key the button is hidden.
 - Room Tuner's measurement notes and its own roadmap live in `docs/ROOMTUNE.md`. The unprocessed iPhone recorder stays out of scope.
 
+## 2026-11-23 · Mosey: editing confidence
+
+From the agent's test: a note landed on the wrong entry while an editor was open. Reproduced: several editors could be open at once (a stop's More, another stop's More, a day's add box), each with fields labelled Notes, Place and When, so a field filled by its label (as a browser agent does, and as screen readers announce) could reach the wrong one.
+
+- **One editor at a time** on a page (`src/app/mosey/editing.ts`): opening another closes the current one. Covers stops' More, a day's add box, and the extra details of the Ideas add box.
+- **Unsaved changes are never thrown away by accident:** opening another editor, or the row's Close, keeps it open with "Save or cancel these changes first." Cancel is the explicit way to discard.
+- **Named:** the editor says "Editing: Van pickup" (also its accessible name) and has a strong border.
+- **Save closes it,** and the entry shows "Saved ✓" only after the server confirms.
+- Test: `e2e/mosey-editing.spec.ts` failed before the fix (two Notes fields on the page) and passes after.
+
 ## 2026-11-23 · Mosey: getting into a trip (access clarity)
 
 From the agent's test: signing in worked, but an empty trip list and a bare 404 didn't say what was missing, and the empty list suggested starting a new trip (a duplicate risk). Hudson: fix access first; invite by email is fine; trip links that people can join from later should stay.
