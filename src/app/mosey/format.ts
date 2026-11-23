@@ -20,11 +20,7 @@ export function rangeLabel(start: string, end: string): string {
   return `${md(s)} to ${endPart}, ${year}`;
 }
 
-/** "6:30 PM" from "18:30". */
-export function timeLabel(time: string): string {
-  const [h, m] = time.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
-}
+export { timeLabel } from "@/lib/mosey/when";
 
 /** Opens the place in Google Maps (search), no API key needed. */
 export function mapsUrl(place: string): string {

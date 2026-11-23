@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { StopFields } from "./StopFields";
-import { dayLabel, mapsUrl, timeLabel } from "./format";
+import { dayLabel, mapsUrl } from "./format";
+import { whenLabel } from "@/lib/mosey/when";
 
 const small =
   "min-h-11 rounded-[var(--radius-control)] px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 " +
@@ -38,8 +39,8 @@ export function StopRow({
     <div className="flex flex-col gap-2 py-3">
       <div className="flex items-start gap-3">
         {showTime && (
-          <span className={`w-18 shrink-0 pt-0.5 text-sm ${stop.time ? "font-semibold" : "text-soft"}`}>
-            {stop.time ? timeLabel(stop.time) : "Any time"}
+          <span className={`w-18 shrink-0 pt-0.5 text-sm ${stop.time || (stop.part && stop.part !== "tbd") ? "font-semibold" : "text-soft"}`}>
+            {whenLabel(stop)}
           </span>
         )}
         <div className="flex min-w-0 flex-1 flex-col">

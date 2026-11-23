@@ -201,4 +201,35 @@ describeDb("Mosey trips", () => {
     await setDayInfo(hudson, tripId, "2027-06-06", { area: "", tag: "" });
     expect((await admin.query("select count(*)::int as n from mosey_days where trip_id = $1", [tripId])).rows[0].n).toBe(0);
   });
+
+  it("when: typed times, parts of the day and TBD are kept and sorted sensibly", async () => {
+    const day = "2027-06-06";
+    const add = (title: string, time: string) => addStop(hudson, tripId, { title, day, time });
+    await add("Anytime snack", "");
+    await add("Dinner", "7pm");
+    await add("Ferry", "time TBD");
+    await add("Hike", "morning");
+    await add("Coffee", "8:30a");
+    await add("Sunset", "evening");
+    await add("Lunch", "12:30p");
+    const stops = (await getTrip(hudson, tripId)).stops.filter((s) => s.day === day);
+    expect(stops.map((s) => [s.title, s.time, s.part])).toEqual([
+      ["Hike", null, "morning"],
+      ["Coffee", "08:30", null],
+      ["Lunch", "12:30", null],
+      ["Sunset", null, "evening"],
+      ["Dinner", "19:00", null],
+      ["Ferry", null, "tbd"],
+      ["Anytime snack", null, null],
+    ]);
+    await expect(add("Bad", "soonish")).rejects.toThrow(/isn't a time we recognize/);
+    // Changing an exact time to a part of the day clears the time, and back.
+    const dinner = stops.find((s) => s.title === "Dinner")!;
+    await updateStop(hudson, dinner.id, { title: "Dinner", time: "evening" });
+    let d = (await getTrip(hudson, tripId)).stops.find((s) => s.id === dinner.id)!;
+    expect([d.time, d.part]).toEqual([null, "evening"]);
+    await updateStop(hudson, dinner.id, { title: "Dinner", time: "19:15" });
+    d = (await getTrip(hudson, tripId)).stops.find((s) => s.id === dinner.id)!;
+    expect([d.time, d.part]).toEqual(["19:15", null]);
+  });
 });

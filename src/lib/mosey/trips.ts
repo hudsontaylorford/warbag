@@ -1,4 +1,5 @@
 import "server-only";
+import { parseWhen, type Part, type When } from "./when";
 import { pool } from "../db";
 import { InputError } from "../errors";
 import {
@@ -33,7 +34,6 @@ import {
 export const APP = "mosey";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MAX_DAYS = 60;
 
 type TripRow = {
@@ -50,6 +50,8 @@ export type Stop = {
   day: string | null;
   suggestedDay: string | null;
   time: string | null;
+  /** Part of the day or "tbd" when there's no exact time; both null is any time. */
+  part: Part | null;
   title: string;
   place: string;
   link: string;
@@ -114,11 +116,11 @@ function cleanLink(raw: unknown): string {
   }
 }
 
-function cleanTime(raw: unknown): string | null {
-  const s = String(raw ?? "").trim();
-  if (!s) return null;
-  if (!TIME.test(s)) throw new InputError("Pick a time, or leave it empty for any time.");
-  return s;
+/** The one "When" box: "7pm", "9:30a", "14:30", "morning", "TBD", or empty for any time. */
+function cleanWhen(raw: unknown): When {
+  const w = parseWhen(String(raw ?? ""));
+  if (!w.ok) throw new InputError(w.error);
+  return { time: w.time, part: w.part };
 }
 
 // ------------------------------------------------------------ access
@@ -243,6 +245,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     day: string | null;
     suggested_day: string | null;
     at_time: string | null;
+    time_of_day: Part | null;
     title: string;
     place: string;
     link: string;
@@ -251,9 +254,14 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
     created_by: string | null;
   }>(
     `select id, to_char(day, 'YYYY-MM-DD') as day, to_char(suggested_day, 'YYYY-MM-DD') as suggested_day,
-       to_char(at_time, 'HH24:MI') as at_time, title, place, link, notes, members_only, created_by
+       to_char(at_time, 'HH24:MI') as at_time, time_of_day, title, place, link, notes, members_only, created_by
      from mosey_stops where trip_id = $1
-     order by day nulls last, at_time nulls last, position, created_at`,
+     -- Parts of the day sort at the start of their window, before exact
+     -- times there; time TBD and any time come last.
+     order by day nulls last,
+       coalesce(at_time, case time_of_day when 'morning' then time '05:00' when 'afternoon' then time '12:00'
+         when 'evening' then time '17:00' end) nulls last,
+       at_time is not null, time_of_day = 'tbd' desc nulls last, position, created_at`,
     [tripId],
   );
   return rows.map((r) => {
@@ -264,6 +272,7 @@ async function stopsOf(tripId: string, viewerId: string | null, linkOnly: boolea
       day: r.day,
       suggestedDay: r.suggested_day,
       time: r.at_time,
+      part: r.time_of_day,
       title: r.title,
       place: hide ? "" : r.place,
       link: hide ? "" : r.link,
@@ -350,7 +359,7 @@ function readStop(input: StopInput) {
   if (!title) throw new InputError("Say what it is, even just \"Dinner somewhere\".");
   return {
     title,
-    time: cleanTime(input.time),
+    when: cleanWhen(input.time),
     place: cleanText(input.place, 200, "The place"),
     link: cleanLink(input.link),
     notes: cleanText(input.notes, 2000, "Notes"),
@@ -372,11 +381,11 @@ export async function addStop(actor: Actor, tripId: string, input: StopInput & {
   }
   const planned = role === "manage" && day !== null;
   const { rows } = await pool.query<{ id: string }>(
-    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position)
+    `insert into mosey_stops (trip_id, day, suggested_day, at_time, title, place, link, notes, members_only, created_by, planned_by, position, time_of_day)
      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
-       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0))
+       coalesce((select max(position) + 1 from mosey_stops where trip_id = $1), 0), $12)
      returning id`,
-    [trip.id, planned ? day : null, planned ? null : day, s.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null],
+    [trip.id, planned ? day : null, planned ? null : day, s.when.time, s.title, s.place, s.link, s.notes, s.membersOnly, actor.id, planned ? actor.id : null, s.when.part],
   );
   return { id: rows[0].id, planned };
 }
@@ -398,9 +407,9 @@ export async function updateStop(actor: Actor, stopId: string, input: StopInput)
   if (role !== "manage" && !mine) throw new AccessDenied();
   const s = readStop(input);
   await pool.query(
-    `update mosey_stops set title = $2, at_time = $3, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
+    `update mosey_stops set title = $2, at_time = $3, time_of_day = $8, place = $4, link = $5, notes = $6, members_only = $7, updated_at = now()
      where id = $1`,
-    [stopId, s.title, s.time, s.place, s.link, s.notes, s.membersOnly],
+    [stopId, s.title, s.when.time, s.place, s.link, s.notes, s.membersOnly, s.when.part],
   );
 }
 

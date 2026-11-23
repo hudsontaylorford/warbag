@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: typing when a stop happens
+
+- **One "When" box, typed like Crewmaxxing.** "7pm", "9:30a", "14:30", "930", "noon". A bare hour is read the likely way (7 to 11 morning, 12 to 6 afternoon) and the box says "Read as 9:00 AM. Add a or p to change."; on leaving the box it shows the full reading. The parser is copied from Crewmaxxing (`src/lib/time-input.ts`, same tests) so both apps read times the same; keep them in step.
+- **Parts of the day and TBD:** one tap for Morning, Afternoon, Evening or TBD, or type them. Empty is still any time. Stored as `time_of_day` next to the exact time (never both).
+- **Order in a day:** a part of the day sorts at the start of its window (morning from 5am, afternoon from noon, evening from 5pm), before exact times there; then time TBD, then any time.
+- Not here: ranges ("2-4"), and times typed in the title ("Dinner at 7"); the second is part of the later natural-language quick add.
+
 ## 2026-11-23 · Mosey: day cards and the trip calendar
 
 From Hudson's Christmas-trip test (WRB-20261122-02, sections 2 and 10) and a ticket-calendar screenshot he liked.
