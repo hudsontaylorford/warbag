@@ -11,6 +11,7 @@ import {
   deleteTrip,
   planStop,
   revokeTripLink,
+  setAttendance,
   setDayInfo,
   setTripMembers,
   updateStop,
@@ -41,6 +42,7 @@ const stopFields = (form: FormData) => ({
   link: text(form, "link"),
   notes: text(form, "notes"),
   membersOnly: form.get("membersOnly") === "on",
+  status: text(form, "status"),
 });
 const tripFields = (form: FormData) => ({
   name: text(form, "name"),
@@ -48,6 +50,15 @@ const tripFields = (form: FormData) => ({
   start: text(form, "start"),
   end: text(form, "end"),
 });
+
+/** Going, maybe, or not set, for one person and one stop. */
+export async function setAttendanceAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    const state = text(form, "state");
+    await setAttendance(actor, text(form, "id"), text(form, "person"), state === "going" || state === "maybe" ? state : null);
+    return "Saved";
+  });
+}
 
 /** A day's area and tag. Organizers only. */
 export async function setDayAction(_: FormState, form: FormData): Promise<FormState> {

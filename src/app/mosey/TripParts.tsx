@@ -65,11 +65,18 @@ export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
             suggested={trip.stops.filter((s) => !s.day && s.suggestedDay === day).map((stop) => ({ stop, canEdit: editable(stop) }))}
             canAdd={canAdd && !viewerOnly}
             canPlan={plan}
+            attend={attendFor(trip, viewerOnly)}
           />
         ))}
       </div>
     </div>
   );
+}
+
+/** Who's going, for members only: never for viewers or view links. */
+function attendFor(trip: TripDetail, viewerOnly?: boolean) {
+  if (viewerOnly || !trip.people || !trip.attendance) return undefined;
+  return { tripId: trip.id, people: trip.people, marks: trip.attendance, organizer: trip.organizer };
 }
 
 /** Ideas: everything not on a day yet. */
@@ -82,7 +89,17 @@ export function IdeaList({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
         <ul className="divide-y divide-line border-y border-line">
           {ideas.map((s) => (
             <li key={s.id}>
-              <StopRow stop={s} days={trip.days} canEdit={!viewerOnly && (canPlan || s.mine)} canPlan={canPlan && !viewerOnly} showTime={false} />
+              <StopRow
+                stop={s}
+                days={trip.days}
+                canEdit={!viewerOnly && (canPlan || s.mine)}
+                canPlan={canPlan && !viewerOnly}
+                showTime={false}
+                attend={(() => {
+                  const a = attendFor(trip, viewerOnly);
+                  return a && { ...a, marks: a.marks[s.id] ?? [] };
+                })()}
+              />
             </li>
           ))}
         </ul>

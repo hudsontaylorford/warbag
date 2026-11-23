@@ -62,6 +62,7 @@ export function DayCard({
   suggested,
   canAdd,
   canPlan,
+  attend,
 }: {
   tripId: string;
   day: string;
@@ -72,6 +73,8 @@ export function DayCard({
   suggested: Row[];
   canAdd: boolean;
   canPlan: boolean;
+  /** Members only: the trip's people and who's going to what. */
+  attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: Record<string, { personId: string; state: "going" | "maybe" }[]>; organizer: boolean };
 }) {
   const today = useToday();
   const [openChoice, setOpen] = useState<boolean | null>(null);
@@ -119,7 +122,7 @@ export function DayCard({
             <ul className="divide-y divide-line border-t border-line">
               {planned.map(({ stop, canEdit }) => (
                 <li key={stop.id}>
-                  <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} />
+                  <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} attend={attend && { ...attend, marks: attend.marks[stop.id] ?? [] }} />
                 </li>
               ))}
             </ul>
@@ -132,7 +135,7 @@ export function DayCard({
               <ul className="divide-y divide-line">
                 {suggested.map(({ stop, canEdit }) => (
                   <li key={stop.id}>
-                    <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} hideSuggested />
+                    <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} hideSuggested attend={attend && { ...attend, marks: attend.marks[stop.id] ?? [] }} />
                   </li>
                 ))}
               </ul>
