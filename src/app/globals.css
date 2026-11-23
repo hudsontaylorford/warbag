@@ -21,6 +21,11 @@
   --color-cream: #ffcd82; /* warm cream on navy fields */
   --color-mist: #c9d3dc; /* secondary text on navy fields */
 
+  /* Charts (Room Tuner): lines on paper, each at least 3:1 against page */
+  --color-measured: #b4461a; /* what was recorded (ember) */
+  --color-target: #00508f; /* the target curve (accent) */
+  --color-predicted: #2e7d4f; /* predicted with the suggested EQ */
+
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
 

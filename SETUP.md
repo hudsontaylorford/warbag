@@ -113,6 +113,16 @@ Claude couldn't open vercel.com or console.anthropic.com from its session to con
 
 If the photo saves but says it couldn't be read, the API key is missing or wrong. If it says "Couldn't save the photo", the Blob store isn't connected (or was created as public). Send Claude a screenshot of **Vercel → project `warbag` → Logs** filtered for "receipt".
 
+## Part H · Room Tuner for someone (1 minute each)
+
+Nothing to set up in Vercel: Room Tuner uses the database it already has, and **Fill from a screenshot** uses the Anthropic key from Part G (without it, that button is hidden).
+
+1. 🟢 PRODUCTION · **https://warbag.rodeo → People →** the person.
+2. Under **Apps**, tick **Room Tuner** and tap **Save**.
+3. Check: they sign in and see **Room Tuner** in their launcher. You always have it as an admin.
+
+To bring in your setups from the old page: **Room Tuner → Import setups →** pick `room-tuner-setups.json` → **Import**. You should see "Imported 1 setup ✓" and "Authentics 500 · Living room" in the list.
+
 ## Later
 
 Changing setup? Update this file in the same PR.
