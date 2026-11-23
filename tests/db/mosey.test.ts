@@ -443,4 +443,20 @@ describeDb("Mosey trips", () => {
     await setTripOrganizers(hudson, tripId, []);
     await expect(getTrip(agent, tripId)).rejects.toBeInstanceOf(AccessDenied);
   });
+
+  it("Gyfte's sample family never shows up in Mosey's sharing and can't be added", async () => {
+    const sampleGroup = await createGroup(hudson, "Sample family");
+    await admin.query("insert into gyfte_groups (name, access_group_id, is_sample, created_by) values ('Sample family', $1, true, $2)", [sampleGroup, hudson.id]);
+    const sampleId = crypto.randomUUID();
+    await admin.query(
+      `insert into "user" ("id", "name", "email", "emailVerified", "updatedAt") values ($1, 'Sample Sam', $2, true, now())`,
+      [sampleId, `${sampleId}@sample.invalid`],
+    );
+    const sharing = await tripSharing(hudson, tripId);
+    expect(sharing.groups.map((g) => g.id)).not.toContain(sampleGroup);
+    expect(sharing.people.map((p) => p.id)).not.toContain(sampleId);
+    await expect(setTripMembers(hudson, tripId, { groupIds: [sampleGroup], userIds: [] })).rejects.toBeInstanceOf(InputError);
+    await expect(setTripMembers(hudson, tripId, { groupIds: [], userIds: [sampleId] })).rejects.toBeInstanceOf(InputError);
+    await expect(setTripOrganizers(hudson, tripId, [sampleId])).rejects.toBeInstanceOf(InputError);
+  });
 });
