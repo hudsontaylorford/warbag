@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · Mosey: ask who's going only where it matters
+
+Hudson: "Who's going?" on every stop felt like an extra button. Research: group-trip apps put "who's in" on choices (voting on activities), event apps show a compact tappable summary of who's coming, and family reunions RSVP once for the trip and opt in only to extras.
+
+- **Everyone by default.** A stop shows nothing about attendance unless someone ticks **Ask who's going** in its form (for a split day, limited seats, an optional night out). Marking is refused on stops that don't ask. Stops already marked before this change keep asking.
+- **One tappable summary** on those stops ("Going: Ann, Ben, Cal · Maybe: Dee", or "Who's going?") opens the full list; organizers mark anyone there, everyone else sees it read-only except their own row.
+- **You mark yourself in one tap** on the stop: "I'm going" / "Maybe" (tap again to clear), for anyone linked to a name on Money.
+- Supersedes the per-stop "Who's going?" link in "stop status and who's going" below. Later, maybe: linking competing options ("Monday: ski, hike or spa") as one choice.
+
 ## 2026-11-23 · Mosey: meals
 
 From the Christmas-trip notes (WRB-20261122-02 section 11): meals live inside the plan and Ideas, not a fourth tab or a separate meal planner.
