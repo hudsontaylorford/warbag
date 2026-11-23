@@ -177,7 +177,7 @@ export default async function GroupPage({
         {actor.isAdmin && (
           <div className="flex flex-col gap-6">
             {!page.isSample && <FamilyLink groupId={page.id} url={linkToken ? `${siteUrl()}/j/${linkToken}` : null} />}
-            <Link href={`/admin/groups/${page.accessGroupId}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+            <Link href={`/admin/groups/${page.accessGroupId}?from=${encodeURIComponent(`/gyfte/groups/${page.id}`)}`} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
               Manage who&apos;s in this group ›
             </Link>
             {page.isSample && (

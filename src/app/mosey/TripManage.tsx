@@ -4,6 +4,7 @@ import { TripForm } from "./TripForm";
 import { TripLink } from "./TripLink";
 import { deleteTripAction, setMembersAction, setOrganizersAction } from "./actions";
 import { InviteByEmail, JoinRequests } from "./TripInvite";
+import { ManageDetails } from "./ManageDetails";
 
 /**
  * Organizer tools, closed by default. The owner: who's on the trip,
@@ -32,24 +33,35 @@ export function TripManage({
       ]
     : [];
   const selected = sharing?.members.map((m) => `${m.kind === "group" ? "g" : "p"}:${m.id}`) ?? [];
+  const asking = sharing && (
+    <Section
+      id="asking"
+      title="Asking to join"
+      hint={
+        canInvite
+          ? "From the trip link or the trip's page. Add puts them on the trip and emails them how to sign in."
+          : "From the trip link or the trip's page. An admin adds new people to warbag."
+      }
+    >
+      <JoinRequests requests={requests} />
+    </Section>
+  );
   return (
-    <details>
+    // Open, with requests first, while someone is asking to join.
+    <ManageDetails initiallyOpen={requests.length > 0}>
       <summary className="min-h-11 cursor-pointer content-center font-semibold">
         Manage
         {requests.length > 0 && <span className="font-normal text-soft"> · {requests.length} asking to join</span>}
       </summary>
       <div className="mt-4 flex flex-col gap-8">
+        {requests.length > 0 && asking}
         {sharing && <TripLink tripId={trip.id} tripName={trip.name} links={sharing.links} siteUrl={siteUrl} />}
         {sharing && canInvite && (
           <Section title="Invite by email" hint="Adds them to warbag (if they're new) and to this trip in one step.">
             <InviteByEmail tripId={trip.id} />
           </Section>
         )}
-        {sharing && (
-          <Section title="Asking to join" hint={canInvite ? "From the trip link. Add puts them on the trip and emails them how to sign in." : "From the trip link. An admin adds new people to warbag."}>
-            <JoinRequests requests={requests} />
-          </Section>
-        )}
+        {requests.length === 0 && asking}
         {sharing && (
           <Section title="Who's on the trip" hint="Members can see everything here, add ideas and suggest a day. You put things on the plan.">
             <CheckboxListForm
@@ -88,6 +100,6 @@ export function TripManage({
           </Section>
         )}
       </div>
-    </details>
+    </ManageDetails>
   );
 }

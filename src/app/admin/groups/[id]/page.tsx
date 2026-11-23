@@ -4,15 +4,21 @@ import { notFound } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin-page";
 import { getGroup, listPeople } from "@/lib/people";
 import { APPS } from "@/lib/apps";
+import { backFrom, safeFrom, withFrom } from "@/lib/back";
+import { BackLink } from "@/components/shell/BackLink";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { CheckboxListForm, ConfirmForm, Section, TextForm } from "@/components/ui/forms";
 import { deleteGroupAction, renameGroupAction, setGroupAppsAction, setGroupMembersAction } from "../../actions";
 
 export const metadata: Metadata = { title: "Group · warbag" };
 
-export default async function GroupPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GroupPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ from?: string | string[] }> }) {
   const { id } = await params;
+  const raw = (await searchParams).from;
+  const from = safeFrom(raw);
   const { user, actor } = await requireAdminPage(`/admin/groups/${id}`);
+  // Came from an app page (a trip, a Gyfte family): offer the way back there too.
+  const back = await backFrom(actor, raw);
   const [group, people] = await Promise.all([getGroup(actor, id), listPeople(actor)]);
   if (!group) notFound();
 
@@ -21,10 +27,13 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
       <AppHeader email={user.email} app="People" isAdmin={actor.isAdmin} people />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div>
-          <Link href="/admin" className="text-accent underline-offset-4 hover:underline">
-            ‹ People
-          </Link>
-          <h1 className="mt-2 title break-words">{group.name}</h1>
+          <span className="flex flex-wrap gap-x-5">
+            <Link href={withFrom("/admin", from)} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+              ‹ People
+            </Link>
+            <BackLink back={back} />
+          </span>
+          <h1 className="title break-words">{group.name}</h1>
           <p className="text-soft">
             {group.memberIds.length} {group.memberIds.length === 1 ? "person" : "people"}
           </p>

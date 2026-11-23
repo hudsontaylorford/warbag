@@ -1,6 +1,6 @@
 # Status
 
-**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 65, Mosey newcomer fixes). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
+**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 66, a way back from every page). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
 
 ## Mosey (trip planner)
 
@@ -12,7 +12,7 @@
 - **Ideas:** Food & drink filter; "Move to a day" opens the days as buttons; pasting a link files it as the link.
 - **Money:** expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. **Kids** are on the trip but left out of splits unless ticked in (their share goes to their household); they never pay.
 - **Receipts:** photo → AI draft → a person checks and saves. Paper rules (handwritten tips, card slips), asks when unsure (tip tables, added tips, lines that don't add up), never guesses a date, warns about IDs or cards in the photo, unsaved photos can be discarded. Checked on 8 of Hudson's real receipts: 7/8 (the miss: a handwritten 4 read as a 9; the form asks and "Something else" covers it).
-- **Getting people in:** **Invite by email** from Manage (on warbag and the trip in one step, as Member or Co-organizer, with an email naming the trip). The **trip link** (anyone sees the plan and ideas, never money or names) has **Join this trip**: name and email, now or later; the owner taps Add under Manage → Asking to join. Someone signed in who opens a trip's own address without being on it gets **Ask to join** right there (same answer whether or not the trip exists). Signed out, the sign-in page says the trip is private and points at the trip link; sign-in says plainly that warbag is invite only. The trip link sits at the top of Manage with **Share link** (phone share sheet) and Copy.
+- **Getting people in:** **Invite by email** from Manage (on warbag and the trip in one step, as Member or Co-organizer, with an email naming the trip). The **trip link** (anyone sees the plan and ideas, never money or names) has **Join this trip**: name and email, now or later; the owner taps Add under Manage → Asking to join. Someone signed in who opens a trip's own address without being on it gets **Ask to join** right there (same answer whether or not the trip exists). Signed out, the sign-in page says the trip is private and points at the trip link; sign-in says plainly that warbag is invite only. The trip link sits at the top of Manage with **Share link** (phone share sheet) and Copy. When someone asks to join, the trip shows "1 asking to join · Review" at the top and Manage opens with the request first.
 - **Sharing:** members, **co-organizers** (everything except sharing or deleting the trip), the trip link.
 - **Editing:** one editor open at a time, named ("Editing: Van pickup"); unsaved changes are kept until Save or Cancel; Save closes it with "Saved ✓". Settings (Manage, People, Account) save themselves.
 - **Test trips:** Maine and North Shore entered and compared with the sheets: they match, except the Maine cabins, which the sheet marks as paid directly.
@@ -22,7 +22,7 @@
 2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
 3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
 4. **Go / no-go** before inviting anyone, then send the family the **trip link** (Manage → Trip link) and add people as they ask. Nothing goes to family until Hudson says so.
-5. Agent newcomer test (2026-11-23, WRB-20261123-02) found a dead end for someone holding the trip's app address instead of the trip link; fixed in PR 65. Rerun it with the **trip link** (`warbag.rodeo/m/…`), and check that the test account is ticked under the trip's Manage → Who's on the trip if it should already be on it.
+5. Agent newcomer test (2026-11-23, WRB-20261123-02): dead end on the trip's app address fixed in PR 65 and verified in Instinct's rerun; its two follow-ups (requests hard to find, no way back from People) fixed in PR 66. Not yet checked: a real iPhone, the "No code?" wording, the "you've been added" email.
 
 ### Open questions (from the Christmas trip notes)
 - Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
@@ -49,6 +49,7 @@
 - Its own roadmap is in docs/ROOMTUNE.md; first up is an unprocessed iPhone recorder.
 
 ## Accounts and access
+- **A way back:** People and Account remember the page you came from ("‹ Back to Ford Christmas"), including through a person's or group's page. Room Tuner's setup, layout and new-setup pages have "‹ Setups" links.
 
 - **Assistant (agent) access**, Hudson's decision 2026-11-23: its own non-admin account. It can be a trip's **co-organizer** and a **people manager** (invite people, manage groups and app access; never its own access or an admin's, no removing people or deleting groups). It never gets admin.
 - Setting it up (🟢 PRODUCTION, warbag.rodeo): People → Invite someone (the agent's email) → open it → tick **People manager**; give it **Mosey** under Apps if it should start trips; on each trip, Manage → **Co-organizers** → tick it.
