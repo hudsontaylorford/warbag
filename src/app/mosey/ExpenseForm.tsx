@@ -47,7 +47,7 @@ export function ExpenseForm({
   const [out, setOut] = useState<string[]>(expense ? all.filter((id) => !expense.participants.includes(id)) : []);
   const split = all.filter((id) => !out.includes(id));
   const [pick, setPick] = useState("");
-  const choose = Boolean(totals && totals.length > 1 && !expense);
+  const choose = Boolean(totals && totals.length > 0 && !expense);
   // From a photo, a date that couldn't be read stays empty: never a silent guess.
   const fromPhoto = Boolean(receiptId) && !expense;
   const dateMissing = fromPhoto && !prefill?.spentOn;

@@ -22,6 +22,22 @@ export const ReceiptDraft = z.object({
       }),
     )
     .describe("When more than one amount could be what was charged, every such amount, most likely first. Empty when the total is clear."),
+  totalSource: z
+    .enum(["printed", "written", "tip_table", "added_tip"])
+    .describe(
+      "Where the total comes from: 'printed' (a printed total, no tip written), 'written' (a total written or printed on the card slip after the tip), 'tip_table' (a marked row of a suggested-tip table), 'added_tip' (the slip's amount plus a handwritten tip, because the written total can't be read)",
+    ),
+  checkTotal: z.string().describe("The amount before tip on the card slip or check, digits and a dot only; empty if none"),
+  tipTable: z
+    .array(
+      z.object({
+        percent: z.string().describe("As printed, e.g. '22%'"),
+        tip: z.string().describe("Tip amount as printed, digits and a dot; empty if cut off or unreadable"),
+        total: z.string().describe("Total as printed for this row, digits and a dot; empty if cut off or unreadable"),
+        marked: z.boolean().describe("True if this row is circled, ticked, checked or written in"),
+      }),
+    )
+    .describe("Every row of a printed suggested-tip table, in order, even rows whose amounts are cut off. Empty if there is no such table."),
   confidence: z.enum(["high", "medium", "low"]).describe("How sure you are about the total"),
   note: z.string().describe("One short sentence on anything unclear (tip unclear, two totals, blurry); empty if none"),
   personalDocument: z.boolean().describe("True if the photo also shows an ID, driver's license, payment card or other personal document besides the receipt"),
@@ -37,6 +53,7 @@ The total is what was actually charged to the card or paid in cash, including ta
 - When the itemized check and the signed card slip are both in the photo, the card slip's final amount wins.
 - If a tip is written but the written total is crossed out or unreadable, the total is the slip's amount plus that tip. Say so in the note and use medium confidence at most.
 - If no tip is written anywhere, the printed total is the total. Note that a tip may have been added on a slip not shown.
+- List every row of a printed suggested-tip table in tipTable, marking any row that is circled, ticked or written in, even when that row's amounts are cut off or unreadable. Ticks are easy to misplace by one row: look carefully at which row the mark sits on.
 - When you can't tell which amount was charged, list every plausible amount in candidates (most likely first), put the most likely in total, and use low confidence.
 
 Dates on US receipts are month/day/year; a two-digit year like 23 means 2023. Receipts can be from any past date. If the date is cut off, covered or unreadable, leave date empty. Never guess a date.

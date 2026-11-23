@@ -111,7 +111,7 @@ export function ReceiptAdd({
             {d ? (
               <>
                 <span className="font-semibold">Filled in from the photo. Check it before saving.</span>
-                {totals.length > 1 ? " Pick the total that was charged." : d.confidence !== "high" ? " Check the total against the receipt." : ""} Pick who paid and who it&apos;s split with
+                {totals.length > 0 ? " Pick the total that was charged." : d.confidence !== "high" ? " Check the total against the receipt." : ""} Pick who paid and who it&apos;s split with
                 yourself.
               </>
             ) : (

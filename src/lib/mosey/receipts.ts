@@ -74,7 +74,14 @@ async function remove(pathname: string) {
 function readDraft(raw: unknown): ReceiptDraft | null {
   if (!raw || typeof raw !== "object") return null;
   const d = raw as ReceiptDraft;
-  return { ...d, candidates: Array.isArray(d.candidates) ? d.candidates : [], personalDocument: d.personalDocument === true };
+  return {
+    ...d,
+    candidates: Array.isArray(d.candidates) ? d.candidates : [],
+    personalDocument: d.personalDocument === true,
+    totalSource: d.totalSource ?? "printed",
+    checkTotal: d.checkTotal ?? "",
+    tipTable: Array.isArray(d.tipTable) ? d.tipTable : [],
+  };
 }
 
 // ------------------------------------------------------------ upload and read
