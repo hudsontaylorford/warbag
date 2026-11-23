@@ -30,3 +30,9 @@ export function timeLabel(time: string): string {
 export function mapsUrl(place: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
 }
+
+/** "6:30p", "12p", "9a": short enough for a calendar square on a phone. */
+export function shortTimeLabel(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  return `${h % 12 || 12}${m ? `:${String(m).padStart(2, "0")}` : ""}${h < 12 ? "a" : "p"}`;
+}

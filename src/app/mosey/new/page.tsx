@@ -10,7 +10,7 @@ export default async function NewTripPage() {
   const { user, actor } = await requireMosey("/mosey/new", { needCreate: true });
   return (
     <>
-      <AppHeader email={user.email} app="Mosey" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <div>
           <Link href="/mosey" className="text-accent underline-offset-4 hover:underline">
