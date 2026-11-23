@@ -40,7 +40,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
           />
         </Section>
 
-        <Section title="Apps" hint="Everyone in the group can use these.">
+        <Section title="Apps" hint="Everyone in the group can use these. To put the group on a trip, add it from that trip's Manage.">
           {!actor.isAdmin && group.memberIds.includes(actor.id) ? (
             <p className="text-sm text-soft">You&apos;re in this group, so only an admin can change its apps.</p>
           ) : (

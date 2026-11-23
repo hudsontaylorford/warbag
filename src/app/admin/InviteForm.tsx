@@ -18,7 +18,7 @@ export function InviteForm() {
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <Field label="Email" name="email" type="email" inputMode="email" autoComplete="off" required />
-      <Field label="Name" name="name" hint="Optional. Shown to you, not to them." autoComplete="off" maxLength={80} />
+      <Field label="Name" name="name" hint="Optional. How warbag greets them, and how others see them." autoComplete="off" maxLength={80} />
       <label className="flex min-h-11 items-center gap-3">
         <input type="checkbox" name="sendEmail" defaultChecked className="size-5 accent-ink" />
         <span>Email them how to sign in</span>

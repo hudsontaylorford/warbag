@@ -70,4 +70,15 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   await expect(empty.getByText(nobody)).toBeVisible();
   await empty.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));
   await expect(empty.getByRole("heading", { name: "This trip isn't shared with you" })).toBeVisible();
+  // ...and can ask to join right there, as themselves; the owner sees it under Manage.
+  await empty.getByLabel("Your name").fill("Newcomer");
+  await empty.getByRole("button", { name: "Ask to join" }).click();
+  await expect(empty.getByText(`When the organizer adds you, we'll email ${nobody}`)).toBeVisible();
+  await page.goto(tripUrl);
+  await expect(page.getByText("· 1 asking to join")).toBeVisible();
+
+  // Signed out on a trip's own address: the sign-in page says it's private and points at the trip link.
+  const out = await freshPage(browser);
+  await out.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));
+  await expect(out.getByText("This trip is private.")).toBeVisible();
 });

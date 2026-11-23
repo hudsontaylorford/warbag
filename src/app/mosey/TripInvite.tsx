@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import { approveTripJoinAction, declineTripJoinAction, inviteToTripAction, requestJoinTripAction } from "./actions";
+import { approveTripJoinAction, declineTripJoinAction, inviteToTripAction, requestJoinByIdAction, requestJoinTripAction } from "./actions";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
@@ -105,6 +105,30 @@ export function AskToJoinTrip({ token, name, email }: { token: string; name?: st
       <input type="hidden" name="token" value={token} />
       <Field label="Your name" name="name" required maxLength={80} defaultValue={name} autoComplete="name" />
       <Field label="Your email" name="email" type="email" inputMode="email" required defaultValue={email} autoComplete="email" />
+      {state.error && <Alert>{state.error}</Alert>}
+      <div className="max-w-xs">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Asking…" : "Ask to join"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/** On a trip you're not on (signed in): ask to join as yourself. */
+export function AskToJoinById({ tripId, name, email }: { tripId: string; name: string; email: string }) {
+  const [state, action, pending] = useActionState(requestJoinByIdAction, {});
+  if (state.ok) {
+    return (
+      <p role="status" className="rounded-[var(--radius-control)] bg-wash p-4">
+        Asked. When the organizer adds you, we&apos;ll email {email} and this page will open the trip.
+      </p>
+    );
+  }
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      <input type="hidden" name="id" value={tripId} />
+      <Field label="Your name" name="name" required maxLength={80} defaultValue={name} autoComplete="name" hint="So the organizer knows who's asking." />
       {state.error && <Alert>{state.error}</Alert>}
       <div className="max-w-xs">
         <Button type="submit" disabled={pending}>

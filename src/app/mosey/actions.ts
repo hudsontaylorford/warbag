@@ -34,7 +34,7 @@ import {
   updateExpense,
   updatePerson,
 } from "@/lib/mosey/ledger";
-import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip } from "@/lib/mosey/invites";
+import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip, requestToJoinTripById } from "@/lib/mosey/invites";
 import { discardReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
 import { currentActor } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
@@ -295,6 +295,14 @@ export async function requestJoinTripAction(_: FormState, form: FormData): Promi
     console.error("trip join request failed", err);
     return { error: "Something went wrong and nothing was sent. Try again." };
   }
+}
+
+/** Ask to join from the trip's own address, signed in, as yourself. */
+export async function requestJoinByIdAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await requestToJoinTripById(actor, text(form, "id"), { name: text(form, "name") });
+    return "Asked";
+  });
 }
 
 export async function approveTripJoinAction(_: FormState, form: FormData): Promise<FormState> {

@@ -68,7 +68,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         {!locked && (
         <Section
           title="Apps"
-          hint={person.isAdmin ? "Admins can use every app." : "Apps given to this person directly. Their groups can add more."}
+          hint={person.isAdmin ? "Admins can use every app." : "Apps given to this person directly. Their groups can add more. This doesn't put them on a trip: add them from that trip's Manage."}
         >
           <CheckboxListForm
             action={setPersonAppsAction}
@@ -81,7 +81,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         )}
 
         {!locked && (
-          <Section title="Groups">
+          <Section title="Groups" hint="They also get anything shared with these groups, like a trip shared with the whole group.">
             <CheckboxListForm
               action={setPersonGroupsAction}
               id={person.id}
