@@ -5,6 +5,7 @@ import {
   AccessDenied,
   addToGroup,
   audit,
+  createGroup,
   grantApp,
   removeFromGroup,
   requireAdmin,
@@ -16,9 +17,31 @@ import { sendEmail } from "./email";
 import { siteUrl } from "./site";
 
 /**
- * Admin-only management of people, groups and app access. Every function
- * checks the actor is an admin itself, so screens can't skip the check.
+ * Management of people, groups and app access. Every function checks the
+ * actor itself, so screens can't skip the check.
+ *
+ * Admins can do everything here. A people manager (a non-admin, e.g. an
+ * assistant's account) can invite and rename people, create and edit groups
+ * and who's in them, and give app access, but never: change its own apps
+ * or groups, change an admin, give apps to a group it's in, remove people,
+ * delete groups, or make anyone an admin or a people manager.
  */
+
+/** Admins and people managers; returns the actor the access helpers run as. */
+function manager(actor: Actor): Actor {
+  if (actor.isAdmin) return actor;
+  if (!actor.peopleManager) throw new AccessDenied("Only admins and people managers can do this");
+  // The access helpers are admin-only; the people-manager limits are checked here first.
+  return { id: actor.id, isAdmin: true };
+}
+
+/** A people manager never changes its own access or an admin's. */
+async function checkTarget(actor: Actor, userId: string) {
+  if (actor.isAdmin) return;
+  if (userId === actor.id) throw new AccessDenied("People managers can't change their own access");
+  const { rows } = await pool.query<{ isAdmin: boolean }>(`select "isAdmin" from "user" where id = $1`, [userId]);
+  if (rows[0]?.isAdmin) throw new AccessDenied("Only admins can change an admin");
+}
 
 import { InputError } from "./errors";
 
@@ -53,14 +76,15 @@ export type PersonRow = {
   email: string;
   name: string;
   isAdmin: boolean;
+  peopleManager: boolean;
   groups: string[];
   lastSignIn: Date | null;
 };
 
 export async function listPeople(actor: Actor): Promise<PersonRow[]> {
-  requireAdmin(actor);
+  manager(actor);
   const { rows } = await pool.query(
-    `select u.id, u.email, u.name, u."isAdmin",
+    `select u.id, u.email, u.name, u."isAdmin", u."isPeopleManager" as "peopleManager",
        coalesce(array_agg(distinct g.name) filter (where g.name is not null), '{}') as groups,
        (select max(s."createdAt") from "session" s where s."userId" = u.id) as "lastSignIn"
      from "user" u
@@ -77,15 +101,16 @@ export type Person = {
   email: string;
   name: string;
   isAdmin: boolean;
+  peopleManager: boolean;
   groupIds: string[];
   apps: string[];
 };
 
 /** One person, with their groups and the apps given to them directly. */
 export async function getPerson(actor: Actor, userId: string): Promise<Person | null> {
-  requireAdmin(actor);
+  manager(actor);
   const { rows } = await pool.query(
-    `select u.id, u.email, u.name, u."isAdmin",
+    `select u.id, u.email, u.name, u."isAdmin", u."isPeopleManager" as "peopleManager",
        coalesce((select array_agg(group_id::text) from group_members where user_id = u.id), '{}') as "groupIds",
        coalesce((select array_agg(app) from app_grants where user_id = u.id), '{}') as apps
      from "user" u where u.id = $1`,
@@ -102,7 +127,7 @@ export async function invitePerson(
   actor: Actor,
   input: { email: string; name?: string; sendEmail?: boolean },
 ): Promise<{ id: string; created: boolean; emailed: boolean }> {
-  requireAdmin(actor);
+  manager(actor);
   const email = normalizeEmail(input.email);
   const name = cleanName(input.name);
 
@@ -140,7 +165,8 @@ export function inviteEmail(from: string, email: string): { subject: string; tex
 }
 
 export async function renamePerson(actor: Actor, userId: string, name: string): Promise<void> {
-  requireAdmin(actor);
+  manager(actor);
+  if (userId !== actor.id) await checkTarget(actor, userId);
   const clean = cleanName(name);
   await pool.query(`update "user" set name = $2, "updatedAt" = now() where id = $1`, [userId, clean]);
   await audit(pool, actor.id, "person.rename", `user/${userId}`, { name: clean });
@@ -207,25 +233,27 @@ export async function removalImpact(actor: Actor, userId: string): Promise<{ lis
 
 /** Sets exactly which apps are given to this person directly. */
 export async function setPersonApps(actor: Actor, userId: string, apps: string[]): Promise<void> {
-  requireAdmin(actor);
+  const as = manager(actor);
+  await checkTarget(actor, userId);
   const want = new Set(checkAppIds(apps));
   const person = await getPerson(actor, userId);
   if (!person) throw new InputError("That person isn't on warbag anymore.");
   const have = new Set(person.apps);
-  for (const app of want) if (!have.has(app)) await grantApp(actor, app, { userId });
-  for (const app of have) if (!want.has(app)) await revokeApp(actor, app, { userId });
+  for (const app of want) if (!have.has(app)) await grantApp(as, app, { userId });
+  for (const app of have) if (!want.has(app)) await revokeApp(as, app, { userId });
 }
 
 /** Sets exactly which groups this person is in. */
 export async function setPersonGroups(actor: Actor, userId: string, groupIds: string[]): Promise<void> {
-  requireAdmin(actor);
+  const as = manager(actor);
+  await checkTarget(actor, userId);
   const want = new Set(groupIds);
   for (const id of want) if (!UUID.test(id)) throw new InputError("Unknown group.");
   const person = await getPerson(actor, userId);
   if (!person) throw new InputError("That person isn't on warbag anymore.");
   const have = new Set(person.groupIds);
-  for (const id of want) if (!have.has(id)) await addToGroup(actor, id, userId);
-  for (const id of have) if (!want.has(id)) await removeFromGroup(actor, id, userId);
+  for (const id of want) if (!have.has(id)) await addToGroup(as, id, userId);
+  for (const id of have) if (!want.has(id)) await removeFromGroup(as, id, userId);
 }
 
 // ---------------------------------------------------------------- groups
@@ -233,7 +261,7 @@ export async function setPersonGroups(actor: Actor, userId: string, groupIds: st
 export type GroupRow = { id: string; name: string; members: number };
 
 export async function listGroups(actor: Actor): Promise<GroupRow[]> {
-  requireAdmin(actor);
+  manager(actor);
   const { rows } = await pool.query(
     `select g.id, g.name, count(m.user_id)::int as members
      from groups g left join group_members m on m.group_id = g.id
@@ -245,7 +273,7 @@ export async function listGroups(actor: Actor): Promise<GroupRow[]> {
 export type Group = { id: string; name: string; memberIds: string[]; apps: string[] };
 
 export async function getGroup(actor: Actor, groupId: string): Promise<Group | null> {
-  requireAdmin(actor);
+  manager(actor);
   if (!UUID.test(groupId)) return null;
   const { rows } = await pool.query(
     `select g.id, g.name,
@@ -258,7 +286,7 @@ export async function getGroup(actor: Actor, groupId: string): Promise<Group | n
 }
 
 export async function renameGroup(actor: Actor, groupId: string, name: string): Promise<void> {
-  requireAdmin(actor);
+  manager(actor);
   const clean = cleanName(name);
   if (!clean) throw new InputError("Give the group a name.");
   await pool.query("update groups set name = $2 where id = $1", [groupId, clean]);
@@ -267,24 +295,42 @@ export async function renameGroup(actor: Actor, groupId: string, name: string): 
 
 /** Sets exactly who is in a group. */
 export async function setGroupMembers(actor: Actor, groupId: string, userIds: string[]): Promise<void> {
-  requireAdmin(actor);
+  const as = manager(actor);
   const group = await getGroup(actor, groupId);
   if (!group) throw new InputError("That group doesn't exist anymore.");
   const want = new Set(userIds);
   const have = new Set(group.memberIds);
-  for (const id of want) if (!have.has(id)) await addToGroup(actor, groupId, id);
-  for (const id of have) if (!want.has(id)) await removeFromGroup(actor, groupId, id);
+  const adding = [...want].filter((id) => !have.has(id));
+  const removing = [...have].filter((id) => !want.has(id));
+  for (const id of [...adding, ...removing]) await checkTarget(actor, id);
+  for (const id of adding) await addToGroup(as, groupId, id);
+  for (const id of removing) await removeFromGroup(as, groupId, id);
 }
 
 /** Sets exactly which apps everyone in a group can use. */
 export async function setGroupApps(actor: Actor, groupId: string, apps: string[]): Promise<void> {
-  requireAdmin(actor);
+  const as = manager(actor);
   const group = await getGroup(actor, groupId);
   if (!group) throw new InputError("That group doesn't exist anymore.");
+  if (!actor.isAdmin && group.memberIds.includes(actor.id)) throw new AccessDenied("People managers can't change apps for a group they're in");
   const want = new Set(checkAppIds(apps));
   const have = new Set(group.apps);
-  for (const app of want) if (!have.has(app)) await grantApp(actor, app, { groupId });
-  for (const app of have) if (!want.has(app)) await revokeApp(actor, app, { groupId });
+  for (const app of want) if (!have.has(app)) await grantApp(as, app, { groupId });
+  for (const app of have) if (!want.has(app)) await revokeApp(as, app, { groupId });
+}
+
+/** Creates a group. Admins and people managers. */
+export async function newGroup(actor: Actor, name: string): Promise<string> {
+  const as = manager(actor);
+  return createGroup(as, name);
+}
+
+/** Makes someone a people manager, or not. Admins only, never themselves. */
+export async function setPeopleManager(actor: Actor, userId: string, on: boolean): Promise<void> {
+  requireAdmin(actor);
+  if (userId === actor.id) throw new InputError("You're an admin already.");
+  await pool.query(`update "user" set "isPeopleManager" = $2, "updatedAt" = now() where id = $1`, [userId, on]);
+  await audit(pool, actor.id, on ? "person.peopleManager.on" : "person.peopleManager.off", `user/${userId}`);
 }
 
 export { AccessDenied };

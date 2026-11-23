@@ -10,7 +10,7 @@ import { canOpenGyfte, canUseGyfte } from "./data";
  */
 export async function requireGyfte(path: string, opts: { needCreate?: boolean } = {}) {
   const user = await requireUser(path);
-  const actor = { id: user.id, isAdmin: user.isAdmin === true };
+  const actor = { id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true };
   const canCreate = await canUseGyfte(actor);
   if (opts.needCreate ? !canCreate : !(canCreate || (await canOpenGyfte(actor)))) notFound();
   return { user, actor, canCreate };

@@ -41,6 +41,7 @@
 | Pick this / Your pick | Choosing one option for yourself; tap your pick again to clear it. |
 | Who picked what | Everyone's pick for a set of options. |
 | Ungroup | Turns options back into ordinary stops, keeping picks. |
+| People manager | Can invite people and manage groups and app access, but not their own access, admins, removing people or deleting groups. |
 | Member (trip) | Sees the trip and its money, adds ideas and expenses, suggests a day. |
 | Co-organizer | Does everything the owner can on a trip except share it or delete it. |
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |

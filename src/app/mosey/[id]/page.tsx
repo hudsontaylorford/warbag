@@ -22,7 +22,7 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} />
+      <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="plan" back money={canAdd} />
         <DayCards trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} />

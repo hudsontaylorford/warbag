@@ -16,7 +16,11 @@ import {
   setGroupMembers,
   setPersonApps,
   setPersonGroups,
+  newGroup,
+  setPeopleManager,
+  removalImpact,
 } from "@/lib/people";
+import { deleteGroup } from "@/lib/access";
 import { pool } from "@/lib/db";
 
 let hudson: Actor, molly: Actor;
@@ -129,5 +133,53 @@ describeDb("people and groups (admin)", () => {
   it("treats a malformed group id as not found", async () => {
     expect(await getGroup(hudson, "nope")).toBeNull();
     await expect(setPersonGroups(hudson, molly.id, ["nope"])).rejects.toBeInstanceOf(InputError);
+  });
+
+  it("people managers invite and manage groups and apps, but never their own access or an admin's", async () => {
+    const agentUser = await makeUser();
+    await setPeopleManager(hudson, agentUser.id, true);
+    expect((await getPerson(hudson, agentUser.id))!.peopleManager).toBe(true);
+    const agent: Actor = { id: agentUser.id, isAdmin: false, peopleManager: true };
+    const aunt = await makeUser();
+
+    // What they can do.
+    expect((await listPeople(agent)).length).toBeGreaterThan(2);
+    const { id: cousin } = await invitePerson(agent, { email: "cousin@example.test", sendEmail: false });
+    await renamePerson(agent, cousin, "Cousin");
+    const g = await newGroup(agent, "Cousins");
+    await setGroupMembers(agent, g, [cousin, aunt.id]);
+    await setGroupApps(agent, g, ["gyfte"]);
+    await setPersonApps(agent, aunt.id, ["mosey"]);
+    await setPersonGroups(agent, molly.id, [g]);
+    await renameGroup(agent, g, "Cousins and aunts");
+    expect((await getGroup(agent, g))!.memberIds.sort()).toEqual([cousin, aunt.id, molly.id].sort());
+    expect(await canUseApp(aunt, "mosey")).toBe(true);
+    await renamePerson(agent, agent.id, "Assistant"); // its own name is fine
+
+    // Never its own access.
+    await expect(setPersonApps(agent, agent.id, ["mosey"])).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setPersonGroups(agent, agent.id, [g])).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setGroupMembers(agent, g, [cousin, aunt.id, molly.id, agent.id])).rejects.toBeInstanceOf(AccessDenied);
+    await setGroupMembers(hudson, g, [cousin, agent.id]); // an admin puts it in a group
+    await expect(setGroupApps(agent, g, ["gyfte", "mosey"])).rejects.toBeInstanceOf(AccessDenied);
+
+    // Never an admin.
+    await expect(renamePerson(agent, hudson.id, "Not Hudson")).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setPersonApps(agent, hudson.id, [])).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setPersonGroups(agent, hudson.id, [g])).rejects.toBeInstanceOf(AccessDenied);
+    const family = await createGroup(hudson, "Family");
+    await setGroupMembers(hudson, family, [hudson.id, molly.id]);
+    await expect(setGroupMembers(agent, family, [molly.id])).rejects.toBeInstanceOf(AccessDenied); // removing Hudson
+
+    // Admin-only stays admin-only.
+    await expect(removePerson(agent, molly.id)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(removalImpact(agent, molly.id)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(deleteGroup(agent, g)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setPeopleManager(agent, molly.id, true)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setPeopleManager(hudson, hudson.id, true)).rejects.toBeInstanceOf(InputError);
+
+    // Turned off, nothing works anymore.
+    await setPeopleManager(hudson, agentUser.id, false);
+    await expect(listPeople({ id: agentUser.id, isAdmin: false })).rejects.toBeInstanceOf(AccessDenied);
   });
 });

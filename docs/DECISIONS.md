@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-23 · People managers (the agent can manage people and groups)
+
+Hudson wants the agent to have People and groups access, without admin. Chosen level (asked): **People manager**.
+
+- **Can:** see People and groups, invite people, rename people, create, rename and edit groups and who's in them, give people and groups app access.
+- **Can't:** change its own apps or groups, change an admin (name, apps, groups, or remove an admin from a group), give apps to a group it's in, remove people, delete groups, make anyone an admin or a people manager. All checked in `src/lib/people.ts` on the server; screens hide what it can't do.
+- **Admins set it** on a person's page (People manager), never on themselves. Turning it off applies on the next request.
+- Why the self and admin limits: whoever edits groups could otherwise widen their own access (join the family group, give themselves apps) or take an admin's away.
+
 ## 2026-11-23 · Mosey: co-organizers (and an agent with full control)
 
 Hudson: an agent with basically full control is fine, without admin.
