@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireMosey } from "@/lib/mosey/page";
 import { AccessDenied } from "@/lib/access";
 import { getTrip, tripSharing } from "@/lib/mosey/trips";
+import { tripJoinRequests } from "@/lib/mosey/invites";
 import { siteUrl } from "@/lib/site";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { DayCards, TripHeader } from "../TripParts";
@@ -19,6 +20,7 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
   });
   const canAdd = trip.role === "manage" || trip.role === "contribute";
   const sharing = trip.owner ? await tripSharing(actor, id) : null;
+  const requests = trip.owner ? await tripJoinRequests(actor, id) : [];
 
   return (
     <>
@@ -26,7 +28,9 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="plan" back money={canAdd} />
         <DayCards trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} />
-        {trip.organizer && <TripManage trip={trip} sharing={sharing} siteUrl={siteUrl()} />}
+        {trip.organizer && (
+          <TripManage trip={trip} sharing={sharing} siteUrl={siteUrl()} requests={requests} canInvite={actor.isAdmin || actor.peopleManager === true} />
+        )}
       </main>
     </>
   );

@@ -136,8 +136,8 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await expect(day2.getByText("No picks yet")).toBeVisible(); // under Kayak
 
   await page.locator("summary", { hasText: "Manage" }).click();
-  await page.getByRole("button", { name: "Make a view link" }).click();
-  const link = await page.getByLabel("View link").inputValue();
+  await page.getByRole("button", { name: "Make a trip link" }).click();
+  const link = await page.getByLabel("Trip link").inputValue();
   const guest = await (await browser.newContext({ ...test.info().project.use })).newPage();
   await guest.goto(link);
   await expect(guest.getByRole("heading", { name: `Money ${tag}` })).toBeVisible();

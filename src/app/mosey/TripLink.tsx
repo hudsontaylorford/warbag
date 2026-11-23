@@ -5,7 +5,7 @@ import { createLinkAction, revokeLinkAction } from "./actions";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 
-/** The view-only link: Plan and Ideas for anyone with it, never members-only details. */
+/** The trip link: anyone with it sees Plan and Ideas (never money or members-only details) and can ask to join. */
 export function TripLink({ tripId, links, siteUrl }: { tripId: string; links: { id: string; token: string }[]; siteUrl: string }) {
   const [makeState, makeAction, making] = useActionState(createLinkAction, {});
   const [offState, offAction, turningOff] = useActionState(revokeLinkAction, {});
@@ -15,11 +15,14 @@ export function TripLink({ tripId, links, siteUrl }: { tripId: string; links: { 
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="heading">View link</h2>
-      <p className="text-sm text-soft">Anyone with it sees the plan and ideas without signing in. Never members-only details.</p>
+      <h2 className="heading">Trip link</h2>
+      <p className="text-sm text-soft">
+        Send it to anyone. They see the plan and ideas without signing in (never money or members-only details) and can ask to join with their email,
+        now or later. You add them under Asking to join.
+      </p>
       {link ? (
         <>
-          <input readOnly value={url} aria-label="View link" className="min-h-12 rounded-[var(--radius-control)] border border-line bg-wash px-4 text-base" onFocus={(e) => e.target.select()} />
+          <input readOnly value={url} aria-label="Trip link" className="min-h-12 rounded-[var(--radius-control)] border border-line bg-wash px-4 text-base" onFocus={(e) => e.target.select()} />
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={async () => {
@@ -46,7 +49,7 @@ export function TripLink({ tripId, links, siteUrl }: { tripId: string; links: { 
         <form action={makeAction} className="max-w-xs">
           <input type="hidden" name="id" value={tripId} />
           <Button type="submit" variant="quiet" disabled={making}>
-            {making ? "Making…" : "Make a view link"}
+            {making ? "Making…" : "Make a trip link"}
           </Button>
         </form>
       )}

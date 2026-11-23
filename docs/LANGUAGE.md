@@ -42,6 +42,9 @@
 | Who picked what | Everyone's pick for a set of options. |
 | Ungroup | Turns options back into ordinary stops, keeping picks. |
 | People manager | Can invite people and manage groups and app access, but not their own access, admins, removing people or deleting groups. |
+| Trip link | A link to a trip anyone can open: the plan and ideas, never money or members-only details; they can ask to join. (Was "View link".) |
+| Ask to join / Asking to join | Leaving a name and email on a trip link; the owner adds or declines. |
+| Invite by email | Adding someone to warbag and a trip in one step from Manage. |
 | Member (trip) | Sees the trip and its money, adds ideas and expenses, suggests a day. |
 | Co-organizer | Does everything the owner can on a trip except share it or delete it. |
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |
