@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { HeaderLink } from "./HeaderLink";
 import { Monogram } from "@/components/ui/Monogram";
 
 /**
  * The top bar on every signed-in page: the W mark (back to the launcher),
  * the current app's name in the display serif, then People (admins) and
- * Account. `tone="dark"` is for the navy launcher.
+ * Account (which remember the page you came from). `tone="dark"` is for the navy launcher.
  */
 export function AppHeader({
   email,
@@ -60,13 +62,29 @@ export function AppHeader({
             </Link>
           )}
           {(isAdmin || people) && (
-            <Link href="/admin" className={link}>
-              People
-            </Link>
+            <Suspense
+              fallback={
+                <Link href="/admin" className={link}>
+                  People
+                </Link>
+              }
+            >
+              <HeaderLink href="/admin" className={link}>
+                People
+              </HeaderLink>
+            </Suspense>
           )}
-          <Link href="/account" title={email} className={link}>
-            Account
-          </Link>
+          <Suspense
+            fallback={
+              <Link href="/account" title={email} className={link}>
+                Account
+              </Link>
+            }
+          >
+            <HeaderLink href="/account" title={email} className={link}>
+              Account
+            </HeaderLink>
+          </Suspense>
         </div>
       </div>
     </header>

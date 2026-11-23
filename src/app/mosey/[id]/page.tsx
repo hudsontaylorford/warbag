@@ -28,6 +28,14 @@ export default async function TripPlanPage({ params }: { params: Promise<{ id: s
       <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="plan" back money={canAdd} />
+        {requests.length > 0 && (
+          <a href="#asking" className="flex min-h-12 items-center justify-between gap-3 rounded-[var(--radius-control)] bg-wash px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            <span>
+              {requests.length} asking to join
+            </span>
+            <span className="text-accent">Review ›</span>
+          </a>
+        )}
         <DayCards trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} />
         {trip.organizer && (
           <TripManage trip={trip} sharing={sharing} siteUrl={siteUrl()} requests={requests} canInvite={actor.isAdmin || actor.peopleManager === true} />

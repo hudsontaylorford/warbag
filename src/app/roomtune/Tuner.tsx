@@ -164,6 +164,9 @@ export function Tuner({ initial, links, siteUrl }: { initial: Setup; links: { id
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-2">
+        <Link href="/roomtune" className="min-h-11 content-center self-start text-accent underline-offset-4 hover:underline">
+          ‹ Setups
+        </Link>
         <h1 className="title break-words">{s.name}</h1>
         <p className="text-sm text-soft">
           {s.bands.length}-band EQ{s.bands.some((b) => b.sub) ? " with sub" : ""} ·{" "}

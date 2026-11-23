@@ -54,9 +54,9 @@ export function useAutosave(delay = 500) {
 }
 
 /** A section heading with a short optional hint, used on admin pages. */
-export function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+export function Section({ title, hint, id, children }: { title: string; hint?: string; id?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section id={id} className="flex scroll-mt-4 flex-col gap-3">
       <div>
         <h2 className="heading">{title}</h2>
         {hint && <p className="text-sm text-soft">{hint}</p>}

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin-page";
 import { getPerson, listGroups, removalImpact } from "@/lib/people";
 import { APPS } from "@/lib/apps";
+import { backFrom, safeFrom, withFrom } from "@/lib/back";
+import { BackLink } from "@/components/shell/BackLink";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { CheckboxListForm, ConfirmForm, Section, TextForm } from "@/components/ui/forms";
 import {
@@ -16,9 +18,13 @@ import {
 
 export const metadata: Metadata = { title: "Person · warbag" };
 
-export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PersonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ from?: string | string[] }> }) {
   const { id } = await params;
+  const raw = (await searchParams).from;
+  const from = safeFrom(raw);
   const { user, actor } = await requireAdminPage(`/admin/people/${id}`);
+  // Came from an app page (a trip, a Gyfte family): offer the way back there too.
+  const back = await backFrom(actor, raw);
   const [person, groups] = await Promise.all([getPerson(actor, id), listGroups(actor)]);
   if (!person) notFound();
   const isMe = person.id === user.id;
@@ -47,10 +53,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <AppHeader email={user.email} app="People" isAdmin={actor.isAdmin} people />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div>
-          <Link href="/admin" className="text-accent underline-offset-4 hover:underline">
-            ‹ People
-          </Link>
-          <h1 className="mt-2 title break-words">{person.name || person.email}</h1>
+          <span className="flex flex-wrap gap-x-5">
+            <Link href={withFrom("/admin", from)} className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+              ‹ People
+            </Link>
+            <BackLink back={back} />
+          </span>
+          <h1 className="title break-words">{person.name || person.email}</h1>
           <p className="text-soft break-words">
             {person.email}
             {person.isAdmin && " · Admin"}

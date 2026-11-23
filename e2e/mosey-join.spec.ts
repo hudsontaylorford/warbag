@@ -33,8 +33,10 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   expect(sentTo(email)).toHaveLength(0);
 
   // The owner adds them from Manage; they're emailed how to sign in.
+  // A notice at the top of the trip goes straight to the request (Manage opens by itself).
   await page.reload();
-  await page.locator("summary", { hasText: "1 asking to join" }).click();
+  await page.getByRole("link", { name: /1 asking to join/ }).click();
+  await expect(page.locator("#asking").getByText("Cousin Kay")).toBeInViewport();
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("Nobody yet.")).toBeVisible();
   await expect.poll(() => sentTo(email).some((m) => m.subject.endsWith(`added you to Lake ${tag}`))).toBe(true);
@@ -76,6 +78,16 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   await expect(empty.getByText(`When the organizer adds you, we'll email ${nobody}`)).toBeVisible();
   await page.goto(tripUrl);
   await expect(page.getByText("· 1 asking to join")).toBeVisible();
+
+  // People and Account remember the trip: "‹ Back to" returns to it.
+  await page.getByRole("link", { name: "People", exact: true }).click();
+  await page.getByRole("link", { name: new RegExp(nobody) }).click(); // a person's page keeps it too
+  await expect(page.getByRole("link", { name: "‹ People" })).toBeVisible();
+  await page.getByRole("link", { name: `‹ Back to Lake ${tag}` }).click();
+  await expect(page).toHaveURL(tripUrl);
+  await page.getByRole("link", { name: "Account", exact: true }).click();
+  await page.getByRole("link", { name: `‹ Back to Lake ${tag}` }).click();
+  await expect(page).toHaveURL(tripUrl);
 
   // Signed out on a trip's own address: the sign-in page says it's private and points at the trip link.
   const out = await freshPage(browser);
