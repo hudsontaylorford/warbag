@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SaveStatus, useAutosave } from "@/components/ui/forms";
 import { StopFields } from "./StopFields";
+import { useEditor } from "./editing";
 import { dayLabel, mapsUrl, MEAL_LABEL, STATUS_LABEL } from "./format";
 import { Attendance } from "./Attendance";
 import { whenLabel } from "@/lib/mosey/when";
@@ -112,7 +113,9 @@ export function StopRow({
   /** Choices on this stop's day, for "Part of options" in More (organizers). */
   choicesHere?: { id: string; title: string }[];
 }) {
-  const [open, setOpen] = useState(false);
+  const editor = useEditor(`stop:${stop.id}`);
+  const open = editor.open;
+  const [justSaved, setJustSaved] = useState(false);
   const [planState, planAction, planning] = useActionState(planStopAction, {});
   // A meal with no time shows "Dinner" where the time goes.
   const mealInTime = Boolean(stop.meal && stop.meal !== "food" && !stop.time && !stop.part);
@@ -165,7 +168,13 @@ export function StopRow({
           <button
             type="button"
             aria-expanded={open}
-            onClick={() => setOpen(!open)}
+            onClick={() => {
+              if (open) editor.closeIfClean();
+              else {
+                setJustSaved(false);
+                editor.request();
+              }
+            }}
             className="min-h-11 w-14 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline"
           >
             {open ? "Close" : "More"}
@@ -177,7 +186,25 @@ export function StopRow({
       {planState.error && <Alert>{planState.error}</Alert>}
       {attend && stop.askWho && !open && <Attendance tripId={attend.tripId} stopId={stop.id} people={attend.people} marks={attend.marks} organizer={attend.organizer} indent={showTime} />}
 
-      {canEdit && open && <EditStop stop={stop} canPlan={canPlan} choicesHere={choicesHere ?? []} onDone={() => setOpen(false)} />}
+      {justSaved && !open && (
+        <p role="status" className={`-mt-2 text-sm text-soft ${showTime ? "sm:pl-21" : ""}`}>
+          Saved ✓
+        </p>
+      )}
+      {canEdit && open && (
+        <EditStop
+          stop={stop}
+          canPlan={canPlan}
+          choicesHere={choicesHere ?? []}
+          nudged={editor.nudged}
+          onDirty={editor.setDirty}
+          onSaved={() => {
+            editor.close();
+            setJustSaved(true);
+          }}
+          onDone={editor.close}
+        />
+      )}
     </div>
   );
 }
@@ -210,8 +237,29 @@ function PartOfOptions({ stop, choicesHere }: { stop: Stop; choicesHere: { id: s
   );
 }
 
-function EditStop({ stop, canPlan, choicesHere, onDone }: { stop: Stop; canPlan: boolean; choicesHere: { id: string; title: string }[]; onDone: () => void }) {
-  const [saveState, saveAction, saving] = useActionState(updateStopAction, {});
+function EditStop({
+  stop,
+  canPlan,
+  choicesHere,
+  nudged,
+  onDirty,
+  onSaved,
+  onDone,
+}: {
+  stop: Stop;
+  canPlan: boolean;
+  choicesHere: { id: string; title: string }[];
+  nudged: boolean;
+  onDirty: (dirty: boolean) => void;
+  onSaved: () => void;
+  onDone: () => void;
+}) {
+  // Save closes the editor; the row then says "Saved ✓".
+  const [saveState, saveAction, saving] = useActionState(async (prev: Parameters<typeof updateStopAction>[0], form: FormData) => {
+    const next = await updateStopAction(prev, form);
+    if (next.ok) onSaved();
+    return next;
+  }, {});
   const [moveState, moveAction, moving] = useActionState(planStopAction, {});
   const [delState, delAction, deleting] = useActionState(deleteStopAction, {});
   const [confirm, setConfirm] = useState(false);
@@ -219,23 +267,22 @@ function EditStop({ stop, canPlan, choicesHere, onDone }: { stop: Stop; canPlan:
   const canDelete = canPlan || !stop.day;
 
   return (
-    <div className="flex flex-col gap-4 rounded-[var(--radius-control)] bg-wash p-4">
-      <form action={saveAction} className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 rounded-[var(--radius-control)] border-2 border-ink bg-wash p-4">
+      <form action={saveAction} aria-label={`Editing: ${stop.title}`} onChange={() => onDirty(true)} className="flex flex-col gap-3">
+        <p className="text-sm font-semibold">
+          Editing: <span className="break-words">{stop.title}</span>
+        </p>
+        {nudged && <Alert>Save or cancel these changes first.</Alert>}
         <input type="hidden" name="id" value={stop.id} />
         <Field label="What" name="title" defaultValue={stop.title} required maxLength={200} />
         <StopFields stop={stop} />
         {saveState.error && <Alert>{saveState.error}</Alert>}
-        {saveState.ok && !saving && (
-          <p role="status" className="text-sm text-soft">
-            Saved ✓
-          </p>
-        )}
         <div className="flex gap-3">
           <Button type="submit" disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </Button>
           <Button variant="quiet" onClick={onDone}>
-            Close
+            Cancel
           </Button>
         </div>
       </form>

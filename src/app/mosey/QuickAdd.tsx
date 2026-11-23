@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { addStopAction } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 import { StopFields } from "./StopFields";
+import { useEditor } from "./editing";
 
 /** One box to add a stop or idea; time, place and the rest are optional. */
 export function QuickAdd({
@@ -12,6 +13,7 @@ export function QuickAdd({
   label,
   placeholder,
   autoFocus,
+  trackDetails = false,
 }: {
   tripId: string;
   day?: string;
@@ -19,8 +21,16 @@ export function QuickAdd({
   placeholder: string;
   /** Focus the box when it appears after a tap (the day card's "Add to this day"). */
   autoFocus?: boolean;
+  /** Count the extra details as an open editor (the always-visible add box on Ideas). */
+  trackDetails?: boolean;
 }) {
-  const [more, setMore] = useState(false);
+  // On Ideas the add box is always there, so its extra details (time, place,
+  // notes...) count as an open editor: one at a time on the page. Inside a
+  // day card the add box itself is the editor, so details stay local.
+  const details = useEditor(`details:${day ?? "idea"}`);
+  const [localMore, setLocalMore] = useState(false);
+  const more = trackDetails ? details.open : localMore;
+  const setMore = (on: boolean) => (trackDetails ? (on ? details.request() : details.close()) : setLocalMore(on));
   const formRef = useRef<HTMLFormElement>(null);
   // Pasting a link into the box files it as the link and asks what it is.
   const [pastedLink, setPastedLink] = useState<string | null>(null);

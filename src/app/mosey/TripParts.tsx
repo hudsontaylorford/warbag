@@ -113,7 +113,7 @@ export function IdeaList({
   );
   return (
     <div className="flex flex-col gap-4">
-      {canAdd && <QuickAdd tripId={trip.id} label="Add an idea" placeholder="A place, a restaurant, something to bring…" />}
+      {canAdd && <QuickAdd tripId={trip.id} label="Add an idea" placeholder="A place, a restaurant, something to bring…" trackDetails />}
       {base && (meals.length > 0 || food) && (
         <nav aria-label="Show" className="flex gap-2">
           {filter(!food, `All (${all.length})`, base)}
