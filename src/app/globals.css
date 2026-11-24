@@ -72,6 +72,22 @@ body {
   font-family: var(--font-sans);
 }
 
+/* A quiet action inside a page (More, Reorder, Add options): ink and
+   semibold, so it never looks like a link (links are the accent color). */
+@utility text-button {
+  color: var(--color-ink);
+  font-weight: 600;
+  text-underline-offset: 4px;
+  border-radius: var(--radius-control);
+  &:hover {
+    text-decoration-line: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
 ::selection {
   background: var(--color-cream);
   color: var(--color-ink);

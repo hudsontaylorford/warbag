@@ -40,7 +40,7 @@ function DayDetails({ tripId, day, info, onDone }: { tripId: string; day: string
         ))}
       </datalist>
       <SaveStatus state={state} pending={pending} />
-      <button type="button" onClick={onDone} disabled={pending} className="min-h-11 self-start font-semibold text-accent underline-offset-4 hover:underline disabled:opacity-50">
+      <button type="button" onClick={onDone} disabled={pending} className="min-h-11 self-start font-semibold text-button disabled:opacity-50">
         Done
       </button>
     </form>
@@ -88,6 +88,8 @@ export function DayCard({
   const [editing, setEditing] = useState(false);
   const [addingOptions, setAddingOptions] = useState(false);
   const [reordering, setReordering] = useState(false);
+  // The day's less common tools stay folded so "Add to this day" stands alone.
+  const [tools, setTools] = useState(false);
   // Options of one choice show together, where the first of them falls in the day.
   const choicesHere = [...new Set(planned.map((r) => r.stop.choiceId).filter((c): c is string => Boolean(c && choices[c])))].map((id) => ({ id, title: choices[id].title }));
   const items: ({ kind: "stop"; row: Row } | { kind: "options"; id: string; rows: Row[] })[] = [];
@@ -182,7 +184,7 @@ export function DayCard({
                 placeholder={canPlan ? "What's happening?" : "Suggest something for this day"}
                 autoFocus
               />
-              <button type="button" onClick={() => setAdding(false)} className="min-h-11 self-start px-1 text-sm text-accent underline-offset-4 hover:underline">
+              <button type="button" onClick={() => setAdding(false)} className="min-h-11 self-start px-1 text-sm text-button">
                 Done adding
               </button>
             </div>
@@ -191,24 +193,29 @@ export function DayCard({
           {(canAdd || canPlan) && !adding && !editing && !addingOptions && !reordering && (
             <div className="flex flex-wrap gap-x-5">
               {canAdd && (
-                <button type="button" onClick={() => setAdding(true)} className="min-h-11 px-1 font-semibold text-accent underline-offset-4 hover:underline">
+                <button type="button" onClick={() => setAdding(true)} className="min-h-11 px-1 font-semibold text-button">
                   + {canPlan ? "Add to this day" : "Suggest for this day"}
                 </button>
               )}
-              {canPlan && count > 1 && (
-                <button type="button" onClick={() => setReordering(true)} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
-                  Reorder
+              {canPlan && (
+                <button type="button" aria-expanded={tools} onClick={() => setTools(!tools)} className="min-h-11 px-1 text-sm text-button">
+                  {tools ? "Fewer" : "More for this day"}
                 </button>
               )}
-              {canPlan && (
-                <button type="button" onClick={() => setAddingOptions(true)} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
-                  + Add options
-                </button>
-              )}
-              {canPlan && (
-                <button type="button" onClick={() => setEditing(true)} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
-                  {info?.area || info?.tag ? "Edit area and tag" : "Add area or tag"}
-                </button>
+              {canPlan && tools && (
+                <span className="flex basis-full flex-wrap gap-x-5">
+                  {count > 1 && (
+                    <button type="button" onClick={() => setReordering(true)} className="min-h-11 px-1 text-sm text-button">
+                      Reorder
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setAddingOptions(true)} className="min-h-11 px-1 text-sm text-button">
+                    + Add options
+                  </button>
+                  <button type="button" onClick={() => setEditing(true)} className="min-h-11 px-1 text-sm text-button">
+                    {info?.area || info?.tag ? "Edit area and tag" : "Add area or tag"}
+                  </button>
+                </span>
               )}
             </div>
           )}

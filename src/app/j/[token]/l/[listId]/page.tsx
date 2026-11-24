@@ -16,7 +16,7 @@ export default async function FamilyLinkListPage({ params }: { params: Promise<{
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <div>
-        <Link href={`/j/${token}?from=${listId}`} className="text-accent underline-offset-4 hover:underline">
+        <Link href={`/j/${token}?from=${listId}`} className="inline-flex min-h-11 items-center text-accent underline-offset-4 hover:underline">
           ‹ {list.groupName}
         </Link>
         <ListTitle title={list.title} className="mt-2" />

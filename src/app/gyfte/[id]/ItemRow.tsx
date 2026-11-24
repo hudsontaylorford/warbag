@@ -43,7 +43,7 @@ export function ItemRow({
               href={item.links[0]}
               target="_blank"
               rel="noopener noreferrer nofollow"
-              className="font-semibold break-words text-accent underline-offset-4 hover:underline"
+              className="font-semibold break-words text-button"
             >
               {item.name}
               <span className="sr-only"> (opens {store} in a new tab)</span>
@@ -86,7 +86,7 @@ export function ItemRow({
             type="button"
             aria-expanded={open}
             onClick={() => setOpen(!open)}
-            className="min-h-11 w-14 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline"
+            className="min-h-11 w-14 shrink-0 text-right text-sm text-button"
           >
             {open ? "Close" : "More"}
           </button>

@@ -106,7 +106,7 @@ export default async function SettlePage({ params }: { params: Promise<{ id: str
       <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8">
         <div>
-          <Link href={`/mosey/${trip.id}/money`} className="text-accent underline-offset-4 hover:underline">
+          <Link href={`/mosey/${trip.id}/money`} className="inline-flex min-h-11 items-center text-accent underline-offset-4 hover:underline">
             ‹ Money
           </Link>
           <p className="mt-2 text-sm font-semibold text-soft">{trip.name}</p>

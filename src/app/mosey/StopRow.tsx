@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { Stop } from "@/lib/mosey/trips";
+import { Notes } from "@/components/ui/Notes";
 import { deleteStopAction, planStopAction, setStopChoiceAction, updateStopAction } from "./actions";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -13,7 +14,7 @@ import { dayLabel, mapsUrl, MEAL_LABEL, STATUS_LABEL } from "./format";
 import { Attendance } from "./Attendance";
 import { whenLabel } from "@/lib/mosey/when";
 
-const quiet = "min-h-11 text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50";
+const quiet = "min-h-11 text-sm text-button disabled:opacity-50";
 
 /** "Thu 17": short enough for a row of day buttons on a phone. */
 const chipLabel = (day: string) => {
@@ -157,7 +158,7 @@ export function StopRow({
             </a>
           )}
           {stop.handledBy && <span className="text-sm break-words">Handling it: {stop.handledBy}</span>}
-          {stop.notes && <span className="text-sm break-words whitespace-pre-line">{stop.notes}</span>}
+          {stop.notes && <Notes text={stop.notes} />}
           {(stop.membersOnly || (stop.suggestedDay && !hideSuggested)) && (
             <span className="text-xs text-soft">
               {[stop.suggestedDay && !hideSuggested && `Suggested for ${dayLabel(stop.suggestedDay)}`, stop.membersOnly && "Members only"].filter(Boolean).join(" · ")}
@@ -175,7 +176,8 @@ export function StopRow({
                 editor.request();
               }
             }}
-            className="min-h-11 w-14 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline"
+            aria-label={open ? undefined : `More about ${stop.title}`}
+            className="flex min-h-11 w-14 shrink-0 items-start justify-end pt-0.5 text-sm text-button"
           >
             {open ? "Close" : "More"}
           </button>

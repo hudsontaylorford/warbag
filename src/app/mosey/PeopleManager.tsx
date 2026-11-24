@@ -63,7 +63,7 @@ function PersonRow({ tripId, p, households, accounts }: { tripId: string; p: Per
           <span className="font-semibold break-words">{p.name}</span>
           <span className="text-sm text-soft">{[p.kid ? "Kid" : null, household ? `Household: ${household}` : "On their own", p.userId ? "Has an account" : null].filter(Boolean).join(" · ")}</span>
         </div>
-        <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 w-12 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline">
+        <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 w-12 shrink-0 text-right text-sm text-button">
           {open ? "Close" : "Edit"}
         </button>
       </div>

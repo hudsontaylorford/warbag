@@ -295,7 +295,7 @@ export function SetupBuilder({ setup, canReadScreenshots = false }: { setup?: Se
                   type="button"
                   onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
                   aria-label={`Remove band ${i + 1}`}
-                  className="min-h-11 min-w-11 rounded-[var(--radius-control)] text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+                  className="min-h-11 min-w-11 rounded-[var(--radius-control)] text-button focus-visible:outline-2 focus-visible:outline-accent"
                 >
                   ✕
                 </button>

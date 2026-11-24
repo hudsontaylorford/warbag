@@ -13,7 +13,7 @@ export default async function NewTripPage() {
       <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
         <div>
-          <Link href="/mosey" className="text-accent underline-offset-4 hover:underline">
+          <Link href="/mosey" className="inline-flex min-h-11 items-center text-accent underline-offset-4 hover:underline">
             ‹ Trips
           </Link>
           <h1 className="mt-2 title">New trip</h1>

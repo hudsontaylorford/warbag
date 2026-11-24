@@ -29,12 +29,12 @@ export function GroupTools({ hasSample }: { hasSample: boolean }) {
         </form>
       ) : (
         <div className="flex flex-wrap gap-x-6">
-          <button type="button" onClick={() => setOpen(true)} className="min-h-11 text-accent underline-offset-4 hover:underline">
+          <button type="button" onClick={() => setOpen(true)} className="min-h-11 text-button">
             New group
           </button>
           {!hasSample && (
             <form action={sampleAction}>
-              <button type="submit" disabled={making} className="min-h-11 text-accent underline-offset-4 hover:underline disabled:opacity-50">
+              <button type="submit" disabled={making} className="min-h-11 text-button disabled:opacity-50">
                 {making ? "Making sample family…" : "Try a sample family"}
               </button>
             </form>

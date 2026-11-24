@@ -71,6 +71,8 @@
 |---|---|
 | ‹ Trips, ‹ People, ‹ Setups, ‹ Money | Up one level in the same app. |
 | ‹ Back to … | Back to the page you came from (on People and Account, which you visit on the way). |
+| More for this day / Fewer | A day's less common tools (Reorder, Add options, area and tag), folded under "Add to this day". |
+| Show all / Show less | Unfolds a long note, and folds it again. |
 
 ## Saving
 

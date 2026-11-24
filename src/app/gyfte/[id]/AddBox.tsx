@@ -52,7 +52,7 @@ export function AddBox({ listId, history = false }: { listId: string; history?: 
       <button
         type="button"
         onClick={() => setBulk(true)}
-        className="min-h-11 self-start px-1 text-sm text-accent underline-offset-4 hover:underline"
+        className="min-h-11 self-start px-1 text-sm text-button"
       >
         Add several at once
       </button>

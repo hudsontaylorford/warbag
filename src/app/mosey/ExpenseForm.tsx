@@ -128,7 +128,7 @@ export function ExpenseForm({
               setOut([]);
               setKidsIn([]);
             }}
-            className="min-h-11 text-accent underline-offset-4 hover:underline"
+            className="min-h-11 text-button"
           >
             {kids.length ? "All adults" : "Everyone"}
           </button>
@@ -138,7 +138,7 @@ export function ExpenseForm({
               setOut(adults.map((p) => p.id));
               setKidsIn([]);
             }}
-            className="min-h-11 text-accent underline-offset-4 hover:underline"
+            className="min-h-11 text-button"
           >
             Nobody
           </button>

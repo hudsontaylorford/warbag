@@ -38,7 +38,7 @@ export function ExpenseRow({ e, people, me, canEdit, defaultDay, receiptId }: { 
         </div>
         <span className="shrink-0 font-semibold tabular-nums">{dollars(e.totalCents)}</span>
         {canEdit && (
-          <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 w-12 shrink-0 text-right text-sm text-accent underline-offset-4 hover:underline">
+          <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 w-12 shrink-0 text-right text-sm text-button">
             {open ? "Close" : "More"}
           </button>
         )}
@@ -93,7 +93,7 @@ export function PaymentRow({ p, people, canEdit }: { p: Pay; people: P[]; canEdi
         {canEdit && (
           <form action={action}>
             <input type="hidden" name="id" value={p.id} />
-            <button type="submit" disabled={pending} className="min-h-11 w-12 text-right text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50">
+            <button type="submit" disabled={pending} className="min-h-11 w-12 text-right text-sm text-button disabled:opacity-50">
               {pending ? "…" : "Delete"}
             </button>
           </form>
