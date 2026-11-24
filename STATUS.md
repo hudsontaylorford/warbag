@@ -1,6 +1,6 @@
 # Status
 
-**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
+**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261124-01 (this status and the full roadmap); latest Instinct note: WRB-20261123-02 (newcomer field test and rerun). What's next and later: ROADMAP.md; why: docs/DECISIONS.md.
 
 ## warbag (the hub)
 
@@ -36,7 +36,11 @@
 2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
 3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
 4. **Go / no-go** before inviting anyone, then send the family the **trip link** (Manage → Trip link) and add people as they ask. Nothing goes to family until Hudson says so.
-5. Agent newcomer test (2026-11-23, WRB-20261123-02): dead end on the trip's app address fixed in PR 65 and verified in Instinct's rerun; its two follow-ups (requests hard to find, no way back from People) fixed in PR 66. Not yet checked: a real iPhone, the "No code?" wording, the "you've been added" email.
+5. **Have Instinct repeat the newcomer flow on a real phone:** open the trip link, ask to join, then you tap "Review" at the top of the trip and Add. Not yet checked anywhere: a real iPhone, the "No code?" wording after Send code, the "you've been added" email arriving.
+
+### Field tests so far
+- **Instinct newcomer test, 2026-11-23** (WRB-20261123-02): a dead end on the trip's app address, fixed in PR 65; the rerun verified Ask to join, the trip link signed out, member controls (no organizer tools), edits that persist, Who's going and Delete. Its two follow-ups (requests hard to find, no way back from People) were fixed in PR 66, which hasn't been tried by a person yet.
+- **Hudson's Christmas trip entry, 2026-11-22** (WRB-20261122-02): drove PRs 33 to 50.
 
 ### Open questions (from the Christmas trip notes)
 - Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
@@ -44,6 +48,8 @@
 
 ### Known gaps
 - Inviting new people from a trip needs an admin or people manager (by design; today Hudson and his agent).
+- Nobody is emailed when someone asks to join a trip; the owner sees "N asking to join" at the top of the trip.
+- Asking to join from a trip's page tells whoever floods it with requests that the trip exists ("try again in an hour"); the address is a random id nobody can guess, so this is accepted.
 - Gyfte's sharing still has its own Share / Save step (Gyfte is paused).
 
 ## Room Tuner (room EQ)
@@ -101,7 +107,7 @@
 
 - Turn off the family link once everyone has an account.
 - Request-a-group for non-admins; photos (upload or image link); automatic link previews; list/grid view; drag to reorder; Chirk gift-exchange link; screenshot import.
-- A Claude → ChatGPT note on the latest round, only if Hudson asks. Last ChatGPT review: WRB-20261121-07; last Claude note: WRB-20261121-06 v2.
+- Last Gyfte-specific ChatGPT review: WRB-20261121-07; last Gyfte-specific Claude note: WRB-20261121-06 v2.
 
 ### Where to pick up
 
