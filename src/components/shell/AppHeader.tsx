@@ -6,7 +6,7 @@ import { Monogram } from "@/components/ui/Monogram";
 /**
  * The top bar on every signed-in page: the W letter mark (back to the launcher),
  * the current app's name in the display serif, then People (admins) and
- * Account (which remember the page you came from). `tone="dark"` is for the navy launcher.
+ * Account (which remember the page you came from; each is left out on its own pages, where its letter leads). `tone="dark"` is for the navy launcher.
  */
 export function AppHeader({
   email,
@@ -61,7 +61,7 @@ export function AppHeader({
               warbag
             </Link>
           )}
-          {(isAdmin || people) && (
+          {(isAdmin || people) && appHref !== "/admin" && (
             <Suspense
               fallback={
                 <Link href="/admin" className={link}>
@@ -74,17 +74,19 @@ export function AppHeader({
               </HeaderLink>
             </Suspense>
           )}
-          <Suspense
-            fallback={
-              <Link href="/account" title={email} className={link}>
+          {appHref !== "/account" && (
+            <Suspense
+              fallback={
+                <Link href="/account" title={email} className={link}>
+                  Account
+                </Link>
+              }
+            >
+              <HeaderLink href="/account" title={email} className={link}>
                 Account
-              </Link>
-            }
-          >
-            <HeaderLink href="/account" title={email} className={link}>
-              Account
-            </HeaderLink>
-          </Suspense>
+              </HeaderLink>
+            </Suspense>
+          )}
         </div>
       </div>
     </header>

@@ -40,7 +40,7 @@ Contrast (WCAG): ink on page 13.1:1, soft on page 5.4:1 (4.9:1 on wash), accent 
 
 ## Monograms
 
-One serif letter straight on the background, with no tile, square or frame (`src/components/ui/Monogram.tsx`; Hudson 2026-11-24, on every page). Letters are assigned in `src/lib/apps.ts`, so no two apps share one.
+One serif letter straight on the background, with no tile, square or frame (`src/components/ui/Monogram.tsx`; Hudson 2026-11-24, on every page). Letters are assigned in `src/lib/apps.ts`, so no two apps share one. Every signed-in page's header shows the letter of the place it's in (its name's first letter) in ember, linking to that place's start, with "warbag" as a quiet link home; only the launcher shows the W. W is ink on paper and cream on navy; every other letter is ember, on every page.
 
 | Letter | For | Tone |
 |---|---|---|
@@ -48,6 +48,8 @@ One serif letter straight on the background, with no tile, square or frame (`src
 | G | Gyfte | ember |
 | M | Mosey | ember |
 | R | Room Tuner | ember |
+| P | People (admin pages) | ember |
+| A | Account | ember |
 
 External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag. The launcher shows no monograms at all (text only, Hudson 2026-11-24); letters still mark the header, sign-in, share pages and favicon.
 

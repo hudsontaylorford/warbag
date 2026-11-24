@@ -10,6 +10,7 @@ From a design study of two directions (bold typographic "Masthead" and a tactile
 - **"Apps" and "Other sites"** split warbag's own apps from external products, so Chirk and Crewmaxxing no longer look like warbag apps.
 - **No lines under the header or the group labels;** dividers only between rows. No setting to switch styles: text only is the one launcher.
 - **Letter marks lose their square** on every page (Hudson: "the letter mark on the background"): the `Monogram` component is now just the serif letter in its tone's color. Header links keep a 44px tap area. The favicon keeps its navy square so it shows in browser tabs.
+- **Every page's header shows its own letter** (Hudson: Gyfte should be a G): G for Gyfte, M, R, plus P for People and A for Account. Page letters are ember everywhere; W (ink on paper, cream on navy) is warbag itself.
 
 ## 2026-11-23 · Room Tuner moves into warbag
 

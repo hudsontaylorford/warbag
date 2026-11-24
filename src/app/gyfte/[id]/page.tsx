@@ -66,7 +66,7 @@ export default async function ListPage({
 
   return (
     <>
-      <AppHeader email={user.email} app="Gyfte" isAdmin={me.isAdmin} people={user.isPeopleManager === true} />
+      <AppHeader email={user.email} app="Gyfte" letter="G" appHref="/gyfte" isAdmin={me.isAdmin} people={user.isPeopleManager === true} />
       <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8">
         {previewName && <ViewAsBanner name={previewName} exitHref={`/gyfte/${list.id}`} />}
         <div>
