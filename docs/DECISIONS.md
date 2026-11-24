@@ -9,7 +9,7 @@ From a design study of two directions (bold typographic "Masthead" and a tactile
 - **Bigger greeting** (`masthead` utility) and the apps as **names only**: no monograms or descriptions in the launcher (Hudson: he doesn't like the logos there). Supersedes "ember monograms" on the launcher from 2026-11-21.
 - **"Apps" and "Other sites"** split warbag's own apps from external products, so Chirk and Crewmaxxing no longer look like warbag apps.
 - **No lines under the header or the group labels;** dividers only between rows. No setting to switch styles: text only is the one launcher.
-- Monograms stay elsewhere (header, sign-in, share pages, favicon) for now.
+- **Letter marks lose their square** on every page (Hudson: "the letter mark on the background"): the `Monogram` component is now just the serif letter in its tone's color. Header links keep a 44px tap area. The favicon keeps its navy square so it shows in browser tabs.
 
 ## 2026-11-23 · Room Tuner moves into warbag
 

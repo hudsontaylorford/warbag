@@ -1,6 +1,6 @@
 # Design
 
-**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter monograms carry identity for now.
+**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter marks (a bare serif letter) carry identity for now.
 
 ## Rules that hold regardless of the look
 
@@ -35,16 +35,16 @@ All colors and fonts come from the `@theme` block in `src/app/globals.css`. Comp
 Contrast (WCAG): ink on page 13.1:1, soft on page 5.4:1 (4.9:1 on wash), accent on page 7.3:1, cream on ink 10.2:1, mist on ink 9.8:1, paper letter on ember 4.8:1. Every text pairing passes AA.
 
 - **Type:** `title` (Instrument Serif, 36 to 52px, for page titles), `heading` (the serif at 30px, for section headings: short, a word or two) and `display` (the serif at any size: app names, monograms) and `masthead` (the serif at 56 to 120px, only for the launcher greeting). Body and controls use the system sans. No serif below 20px.
-- **Corners:** one radius, `--radius-control` (6px), on buttons, fields, panels and monograms.
+- **Corners:** one radius, `--radius-control` (6px), on buttons, fields and panels.
 - **Dark mode:** not designed yet. The launcher's navy field is a deliberate dark surface, not dark mode.
 
 ## Monograms
 
-One serif letter in a square (`src/components/ui/Monogram.tsx`). Letters are assigned in `src/lib/apps.ts`, so no two apps share one.
+One serif letter straight on the background, with no tile, square or frame (`src/components/ui/Monogram.tsx`; Hudson 2026-11-24, on every page). Letters are assigned in `src/lib/apps.ts`, so no two apps share one.
 
 | Letter | For | Tone |
 |---|---|---|
-| W | warbag (header, sign-in, favicon) | ink, cream letter |
+| W | warbag (header, sign-in, favicon) | ink on paper, cream on navy |
 | G | Gyfte | ember |
 | M | Mosey | ember |
 | R | Room Tuner | ember |

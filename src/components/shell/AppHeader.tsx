@@ -4,7 +4,7 @@ import { HeaderLink } from "./HeaderLink";
 import { Monogram } from "@/components/ui/Monogram";
 
 /**
- * The top bar on every signed-in page: the W mark (back to the launcher),
+ * The top bar on every signed-in page: the W letter mark (back to the launcher),
  * the current app's name in the display serif, then People (admins) and
  * Account (which remember the page you came from). `tone="dark"` is for the navy launcher.
  */
@@ -37,7 +37,7 @@ export function AppHeader({
           {own ? (
             <Link
               href={appHref!}
-              className="flex items-center gap-3 rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex min-h-11 items-center gap-2.5 rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <Monogram letter={letter!} size="sm" tone="ember" />
               <span className="display text-2xl text-ink">{app}</span>
@@ -47,7 +47,7 @@ export function AppHeader({
               <Link
                 href="/home"
                 aria-label="warbag home"
-                className="rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 <Monogram letter="W" size="sm" tone={dark ? "cream" : "ink"} />
               </Link>
