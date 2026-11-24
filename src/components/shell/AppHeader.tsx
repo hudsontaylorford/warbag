@@ -28,7 +28,9 @@ export function AppHeader({
   appHref?: string;
 }) {
   const dark = tone === "dark";
-  const link = `min-h-11 content-center px-1 text-sm underline-offset-4 hover:underline ${dark ? "text-cream" : "text-accent"}`;
+  // Focus rings in cream on the navy field, where the accent blue wouldn't show.
+  const ring = `focus-visible:outline-2 focus-visible:outline-offset-2 ${dark ? "focus-visible:outline-cream" : "focus-visible:outline-accent"}`;
+  const link = `min-h-11 content-center rounded-[var(--radius-control)] px-1 text-sm underline-offset-4 hover:underline ${ring} ${dark ? "text-cream" : "text-accent"}`;
   const own = Boolean(letter && appHref);
   return (
     <header className={dark ? "" : "border-b border-line"}>
@@ -47,7 +49,7 @@ export function AppHeader({
               <Link
                 href="/home"
                 aria-label="warbag home"
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className={`flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] ${ring}`}
               >
                 <Monogram letter="W" size="sm" tone={dark ? "cream" : "ink"} />
               </Link>

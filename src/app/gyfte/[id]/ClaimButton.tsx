@@ -43,7 +43,7 @@ export function ClaimButton({
       <form action={undoFormAction} className="flex items-center gap-3">
         <input type="hidden" name="id" value={itemId} />
         <span className="text-sm font-semibold">You&apos;re getting this ✓</span>
-        <button type="submit" disabled={undoing} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline">
+        <button type="submit" disabled={undoing} className="min-h-11 px-1 text-sm text-button">
           {undoing ? "Undoing…" : "Undo"}
         </button>
       </form>

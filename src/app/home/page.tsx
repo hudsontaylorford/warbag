@@ -16,7 +16,7 @@ export default async function HomePage() {
     <div className="min-h-dvh bg-ink text-page">
       <AppHeader email={user.email} isAdmin={user.isAdmin === true} people={user.isPeopleManager === true} tone="dark" />
       <main className="mx-auto grid max-w-2xl gap-10 px-4 pt-10 pb-16 md:max-w-5xl md:grid-cols-[5fr_7fr] md:items-start md:gap-16 md:pt-20">
-        <h1 className="masthead text-cream">{first ? `Hi, ${first}` : "Home"}</h1>
+        <h1 className="masthead text-cream">{first ? `Hi, ${first}` : "Hi"}</h1>
         {apps.length > 0 ? (
           <AppList apps={apps} />
         ) : (

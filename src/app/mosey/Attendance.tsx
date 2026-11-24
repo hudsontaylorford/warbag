@@ -86,7 +86,7 @@ export function Attendance({
           type="button"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
-          className="min-h-11 text-left break-words text-accent underline-offset-4 hover:underline"
+          className="min-h-11 text-left break-words text-button"
         >
           {open ? "Done" : summary}
         </button>

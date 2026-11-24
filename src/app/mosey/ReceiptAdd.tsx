@@ -35,7 +35,7 @@ function DiscardButton({ receiptId, onGone, label = "Discard photo" }: { receipt
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="receiptId" value={receiptId} />
-      <button type="submit" disabled={pending} className="min-h-11 self-start text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50">
+      <button type="submit" disabled={pending} className="min-h-11 self-start text-sm text-button disabled:opacity-50">
         {pending ? "Discarding…" : label}
       </button>
       {state.error && <Alert>{state.error}</Alert>}
@@ -174,7 +174,7 @@ export function ReceiptAdd({
                         setStatus(null);
                         show({ receiptId: u.receiptId, draft: u.draft, draftError: u.draftError, warnings: u.draft?.personalDocument ? [PERSONAL_DOCUMENT_WARNING] : [], canDiscard: u.canDiscard });
                       }}
-                      className="min-h-11 text-accent underline-offset-4 hover:underline"
+                      className="min-h-11 text-button"
                     >
                       Use it
                     </button>

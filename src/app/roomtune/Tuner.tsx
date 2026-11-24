@@ -267,7 +267,7 @@ export function Tuner({ initial, links, siteUrl }: { initial: Setup; links: { id
             ))}
           </div>
           <div>
-            <button type="button" onClick={() => setDuring(s.bands.map(() => 0))} className="min-h-11 text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+            <button type="button" onClick={() => setDuring(s.bands.map(() => 0))} className="min-h-11 text-button focus-visible:outline-2 focus-visible:outline-accent">
               Set all to 0
             </button>
           </div>
@@ -583,7 +583,7 @@ function TwoTap({ label, confirm, hint, onConfirm }: { label: string; confirm: s
           {armed ? confirm : label}
         </button>
         {armed && (
-          <button type="button" onClick={() => setArmed(false)} className="min-h-11 text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+          <button type="button" onClick={() => setArmed(false)} className="min-h-11 text-button focus-visible:outline-2 focus-visible:outline-accent">
             Cancel
           </button>
         )}

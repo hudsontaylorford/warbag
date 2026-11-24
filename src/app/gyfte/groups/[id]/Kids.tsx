@@ -88,7 +88,7 @@ export function YourKids({
           </div>
         </form>
       ) : (
-        <button type="button" onClick={() => setAdding(true)} className="min-h-11 self-start text-accent underline-offset-4 hover:underline">
+        <button type="button" onClick={() => setAdding(true)} className="min-h-11 self-start text-button">
           Add a kid
         </button>
       )}
@@ -115,7 +115,7 @@ function AddParent({ kidId, options }: { kidId: string; options: { id: string; n
           </option>
         ))}
       </select>
-      <button type="submit" disabled={pending} className="min-h-11 px-1 text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50">
+      <button type="submit" disabled={pending} className="min-h-11 px-1 text-sm text-button disabled:opacity-50">
         {pending ? "Adding…" : "Add"}
       </button>
       {state.error && <Alert>{state.error}</Alert>}

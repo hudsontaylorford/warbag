@@ -10,7 +10,7 @@
 - Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
 
 ### Next (each needs Hudson's go)
-1. **Polish pass findings** (2026-11-24 critique of the launcher and Mosey): read and pick what to adopt; nothing has changed yet.
+1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"). Left from the critique: a Manage link beside Plan / Ideas / Money, and a one-row calendar for short trips.
 2. **Contrast and tap-target check** on the pages the family will use, before December 1.
 3. **Launcher, next round:** show, hide and reorder your own apps; personal bookmarks.
 4. **Sign-in and accounts:** signed-in devices, passkeys, a dedicated assistant identity (see ROADMAP.md).

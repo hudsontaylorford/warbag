@@ -45,7 +45,7 @@ export function Reorder({ stops, onDone }: { stops: Stop[]; onDone: () => void }
           <Row key={s.id} stop={s} first={i === 0} last={i === stops.length - 1} />
         ))}
       </ol>
-      <button type="button" onClick={onDone} className="min-h-11 self-start font-semibold text-accent underline-offset-4 hover:underline">
+      <button type="button" onClick={onDone} className="min-h-11 self-start font-semibold text-button">
         Done
       </button>
     </div>

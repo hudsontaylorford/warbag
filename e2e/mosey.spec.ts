@@ -47,6 +47,7 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
 
   // An optional area and tag for the day, shown quietly under its date.
   await day2.getByRole("button", { name: "Done adding" }).click();
+  await day2.getByRole("button", { name: "More for this day" }).click();
   await day2.getByRole("button", { name: "Add area or tag" }).click();
   await day2.getByLabel("Area").fill("Bar Harbor → Acadia");
   await day2.getByLabel("Tag").fill("Travel day");

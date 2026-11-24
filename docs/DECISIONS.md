@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-24 · Polish fixes from the critique (Hudson: "fix in the order of importance")
+
+- **Back links** ("‹ Trips", "‹ Lists", "‹ Money"…) get a 44px tap area everywhere.
+- **Text buttons stop looking like links:** one `text-button` utility (ink, semibold, hover underline, accent focus ring) replaces the accent color on in-page buttons across Mosey, Gyfte, Room Tuner and sign-in. Links keep the accent color.
+- **Day cards show one action:** "+ Add to this day", plus "More for this day" for organizers, which unfolds Reorder, + Add options and Add area or tag.
+- **Focus rings on the navy launcher** are cream, not the accent blue (about 1.5:1 there).
+- **Notes formatting** (Hudson: no large blocks of text): lines starting with "- ", "* " or "•" show as a bulleted list, a blank line starts a paragraph, and notes over about 220 characters or 4 lines fold to 3 lines with "Show all". Notes are stored as typed; only the display changed.
+- Also: each stop's "More" is named for screen readers ("More about Drive up") and sits level with the stop's name; the launcher says "Hi" when an account has no name (it said "Home").
+- Not done yet: a Manage link beside Plan / Ideas / Money, and a one-row calendar for short trips (from the same critique).
+
 ## 2026-11-24 · How visual changes are reviewed (Hudson)
 
 After the launcher study, Hudson kept the working habits that made his choices quick.

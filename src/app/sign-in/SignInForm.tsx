@@ -106,7 +106,7 @@ export function SignInForm({ next }: { next: string }) {
       </Button>
       <button
         type="button"
-        className="min-h-11 text-accent underline-offset-4 hover:underline"
+        className="min-h-11 text-button"
         onClick={() => {
           setStep("email");
           setCode("");

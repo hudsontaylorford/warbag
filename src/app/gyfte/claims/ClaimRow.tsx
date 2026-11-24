@@ -6,7 +6,7 @@ import type { MyClaim } from "@/lib/gyfte/claims";
 import { dismissClaimAction, unclaimAction } from "../actions";
 import { Alert } from "@/components/ui/Alert";
 
-const textButton = "min-h-11 shrink-0 px-1 text-sm text-accent underline-offset-4 hover:underline disabled:opacity-50";
+const textButton = "min-h-11 shrink-0 px-1 text-sm text-button disabled:opacity-50";
 
 export function ClaimRow({ claim }: { claim: MyClaim }) {
   const [undoState, undoAction, undoing] = useActionState(unclaimAction, {});

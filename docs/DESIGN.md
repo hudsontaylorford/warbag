@@ -7,7 +7,8 @@
 - Phone first: designed at 390px wide, then desktop. No horizontal scroll, nothing hover-only.
 - Tap targets at least 44px (48px for primary buttons and list rows).
 - Text-first and high contrast. Information over decoration.
-- Links (accent color, never a fill) look different from buttons (solid ink, or outlined for quiet ones).
+- Links (accent color, never a fill) look different from buttons (solid ink, or outlined for quiet ones). A small action inside a page (More, Reorder, Show all) is a **text button**: the `text-button` utility, ink and semibold, never the accent color.
+- Notes read as short paragraphs and bullet lists (a line starting with "- "), and long notes fold to three lines with "Show all" (`Notes`, `src/lib/notes.ts`).
 - Visible focus on everything interactive. Respect `prefers-reduced-motion`.
 - One shared component for each pattern. Before making a new one, check whether an existing one fits.
 - Every action shows it worked, after the server confirms.

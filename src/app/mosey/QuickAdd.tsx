@@ -90,7 +90,7 @@ export function QuickAdd({
       {more ? (
         <StopFields link={pastedLink ?? undefined} />
       ) : (
-        <button type="button" onClick={() => setMore(true)} className="min-h-11 self-start px-1 text-sm text-accent underline-offset-4 hover:underline">
+        <button type="button" onClick={() => setMore(true)} className="min-h-11 self-start px-1 text-sm text-button">
           Add a time, place, meal or link
         </button>
       )}

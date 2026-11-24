@@ -27,7 +27,7 @@ export function AskToJoin({ token }: { token: string }) {
     return (
       <p className="text-sm text-soft">
         Not on here?{" "}
-        <button type="button" onClick={() => setOpen(true)} className="min-h-11 font-semibold text-accent underline-offset-4 hover:underline">
+        <button type="button" onClick={() => setOpen(true)} className="min-h-11 font-semibold text-button">
           Ask to join
         </button>
       </p>

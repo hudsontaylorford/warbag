@@ -66,11 +66,15 @@ export function StopFields({ stop, link }: { stop?: Stop; /** A link pasted into
         <textarea
           id={notesId}
           name="notes"
-          rows={2}
+          rows={3}
+          aria-describedby={`${notesId}-hint`}
           maxLength={2000}
           defaultValue={stop?.notes ?? ""}
           className="rounded-[var(--radius-control)] border border-line bg-field px-4 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
         />
+        <p id={`${notesId}-hint`} className="text-sm text-soft">
+          Start a line with - for a list. A blank line starts a new paragraph.
+        </p>
       </div>
       <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
         <input type="checkbox" name="askWho" defaultChecked={stop?.askWho} className="mt-0.5 size-5 shrink-0 accent-ink" />

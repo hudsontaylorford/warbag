@@ -95,14 +95,14 @@ export function OptionsBlock({
       </ul>
       {attend && (
         <div className="flex flex-wrap items-center gap-x-5 border-t border-line pt-1 text-sm">
-          <button type="button" aria-expanded={table} onClick={() => setTable(!table)} className="min-h-11 text-accent underline-offset-4 hover:underline">
+          <button type="button" aria-expanded={table} onClick={() => setTable(!table)} className="min-h-11 text-button">
             {table ? "Done" : undecided.length && attend.people.length ? `Who picked what (${undecided.length} not yet)` : "Who picked what"}
           </button>
           {canPlan && !table && (
             <form action={ungroup}>
               <input type="hidden" name="id" value={attend.tripId} />
               <input type="hidden" name="choice" value={choiceId} />
-              <button type="submit" disabled={ungrouping} className="min-h-11 text-accent underline-offset-4 hover:underline disabled:opacity-50">
+              <button type="submit" disabled={ungrouping} className="min-h-11 text-button disabled:opacity-50">
                 {ungrouping ? "Ungrouping…" : "Ungroup"}
               </button>
             </form>
@@ -153,7 +153,7 @@ export function AddOptions({ tripId, day, onDone }: { tripId: string; day: strin
         <Field key={i} label={`Option ${i + 1}`} name="option" maxLength={200} placeholder={["Ski day", "Hike", "Spa"][i] ?? ""} required={i < 2} />
       ))}
       {count < 8 && (
-        <button type="button" onClick={() => setCount(count + 1)} className="min-h-11 self-start text-sm text-accent underline-offset-4 hover:underline">
+        <button type="button" onClick={() => setCount(count + 1)} className="min-h-11 self-start text-sm text-button">
           + Another option
         </button>
       )}

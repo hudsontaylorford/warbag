@@ -25,11 +25,11 @@ export function TripHeader({ trip, base, current, back, money }: { trip: TripDet
     <div className="flex flex-col gap-4">
       <div>
         {back && (
-          <Link href="/mosey" className="text-accent underline-offset-4 hover:underline">
+          <Link href="/mosey" className="inline-flex min-h-11 items-center text-accent underline-offset-4 hover:underline">
             ‹ Trips
           </Link>
         )}
-        <p className="mt-2 text-sm font-semibold text-soft">{[rangeLabel(trip.startDate, trip.endDate), trip.place].filter(Boolean).join(" · ")}</p>
+        <p className="text-sm font-semibold text-soft">{[rangeLabel(trip.startDate, trip.endDate), trip.place].filter(Boolean).join(" · ")}</p>
         <h1 className="title break-words">{trip.name}</h1>
       </div>
       <nav aria-label="Trip" className="-mx-1 flex gap-1 border-b border-line">

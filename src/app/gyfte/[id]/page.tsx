@@ -72,7 +72,7 @@ export default async function ListPage({
         <div>
           <Link
             href={list.groupId ? `/gyfte/groups/${list.groupId}${asQ}` : "/gyfte"}
-            className="text-accent underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center text-accent underline-offset-4 hover:underline"
           >
             {list.groupId ? "‹ Family" : "‹ My list"}
           </Link>
