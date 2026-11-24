@@ -10,7 +10,7 @@
 - Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
 
 ### Next (each needs Hudson's go)
-1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"). Left from the critique: a Manage link beside Plan / Ideas / Money, and a one-row calendar for short trips.
+1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"). Then a one-row calendar for trips of a week or less. Left from the critique: a Manage link beside Plan / Ideas / Money.
 2. **Contrast and tap-target check** on the pages the family will use, before December 1.
 3. **Launcher, next round:** show, hide and reorder your own apps; personal bookmarks.
 4. **Sign-in and accounts:** signed-in devices, passkeys, a dedicated assistant identity (see ROADMAP.md).
@@ -19,7 +19,7 @@
 ## Mosey (trip planner)
 
 ### Live
-- **Plan:** a calendar of the trip on top (tap a day to jump to it), then one card per day with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
+- **Plan:** a calendar of the trip on top (one row for trips of a week or less; tap a day to jump to it), then one card per day with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
 - **Stops:** typed "When" the Crewmaxxing way (7pm, 9:30a, Morning, TBD); status (Tentative, Inquiry sent, Confirmed, Booked); meals (Breakfast, Lunch, Dinner, Food & drink) with "Who's handling it"; members-only details hidden on view links.
 - **Who's going:** only on stops that ask ("Ask who's going"), from the trip's people list; one tap "I'm going" / "Maybe".
 - **Options:** "Monday afternoon: ski, hike or spa" as one block; each person picks one; "Who picked what".

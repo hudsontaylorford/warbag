@@ -32,7 +32,7 @@ External links in the launcher from day one: **Chirk** (chirk.fyi) and **Crewmax
 - Each person can show, hide and reorder their own apps.
 - Personal bookmarks: anyone can add any site or URL to their launcher.
 - The look is settled (see docs/DESIGN.md): the text-only Masthead, bare letters with no tiles, no slogans or decorative marks.
-- **Polish pass** (2026-11-24): top fixes shipped; left are a Manage link beside Plan / Ideas / Money and a one-row calendar for short trips.
+- **Polish pass** (2026-11-24): top fixes shipped; short trips now get a one-row calendar; left is a Manage link beside Plan / Ideas / Money.
 - **Contrast and tap-target check** before the December 1 family trial.
 - Back pocket: "press and arrive" motion (a tapped launcher row settles into the app's header), off under reduced motion.
 
