@@ -12,6 +12,25 @@ From a design study of two directions (bold typographic "Masthead" and a tactile
 - **Letter marks lose their square** on every page (Hudson: "the letter mark on the background"): the `Monogram` component is now just the serif letter in its tone's color. Header links keep a 44px tap area. The favicon keeps its navy square so it shows in browser tabs.
 - **Every page's header shows its own letter** (Hudson: Gyfte should be a G): G for Gyfte, M, R, plus P for People and A for Account. Page letters are ember everywhere; W (ink on paper, cream on navy) is warbag itself.
 
+## 2026-11-23 · A way back from every page (PR 66)
+
+From Instinct's newcomer rerun and Hudson ("make sure people can get back to the previous pages easily").
+
+- **People and Account remember where you came from.** The header links carry `?from=` (same-site paths only: never `//host`, a scheme or a backslash; checked on the server). Those pages show "‹ Back to <trip name / Trips / Room Tuner / Gyfte / Family / warbag home>", kept through a person's or group's page. A trip's name shows only to someone who can open that trip; otherwise "the trip".
+- **Gyfte's "Manage who's in this group"** returns to the family page. **Room Tuner's** setup, EQ layout and New setup pages get "‹ Setups" / "‹ <setup>".
+- **Asking to join is hard to miss:** the trip's owner sees "N asking to join · Review ›" at the top of the trip. Manage opens with the requests first, and stays open after Add (it opens on page load only, then stays as the person leaves it).
+
+## 2026-11-23 · Mosey: newcomer fixes (PR 65)
+
+From Instinct's newcomer field test (WRB-20261123-02). The test used the trip's app address (`/mosey/<id>`), copied from the owner's browser bar, not the trip link (`/m/<token>`), and hit a dead end.
+
+- **Ask to join from a trip's own address.** Someone signed in who isn't on the trip gets an Ask to join form on "This trip isn't shared with you", as themselves (their sign-in email; they give a name). The reply is the same whether or not the trip exists; the request lands under Manage → Asking to join like one from the trip link. Hudson chose this over limiting asks to trip-link holders.
+- **Sign-in says what's going on.** On a trip address: "This trip is private. Sign in with the email it was shared with. Got a trip link instead? Open it…". After Send code: warbag is invite only, ask whoever sent you here. The "If … has access" wording stays so sign-in never reveals who has an account.
+- **App access isn't trip access.** The person and group pages say so; a trip's people come only from its Manage.
+- **The trip link is the link to send:** top of Manage, with Share link (the phone's share sheet) and Copy.
+- The People invite's Name hint now matches behavior ("How warbag greets them, and how others see them").
+- **Instinct joins the AI handoff protocol** (CLAUDE.md): only when Hudson asks, versioned notes, findings never permission.
+
 ## 2026-11-23 · Room Tuner moves into warbag
 
 Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are his). It was a standalone page published from another Claude session; its code came back from that page and his downloads (`roomtune.zip`, `room-tuner-setups.json`).

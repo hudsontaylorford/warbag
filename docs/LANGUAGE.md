@@ -43,7 +43,8 @@
 | Ungroup | Turns options back into ordinary stops, keeping picks. |
 | People manager | Can invite people and manage groups and app access, but not their own access, admins, removing people or deleting groups. |
 | Trip link | A link to a trip anyone can open: the plan and ideas, never money or members-only details; they can ask to join. (Was "View link".) |
-| Ask to join / Asking to join | Leaving a name and email on a trip link; the owner adds or declines. |
+| Ask to join / Asking to join | Leaving a name and email on a trip link, or (signed in) asking from a trip's own page; the owner adds or declines. |
+| Share link / Copy link | Sending the trip link: Share opens the phone's share sheet; Copy puts it on the clipboard. |
 | Invite by email | Adding someone to warbag and a trip in one step from Manage. |
 | Member (trip) | Sees the trip and its money, adds ideas and expenses, suggests a day. |
 | Co-organizer | Does everything the owner can on a trip except share it or delete it. |
@@ -63,6 +64,13 @@
 | Off target | How far the sound is from the target curve, in dB (lower is better). |
 | Good fit | The latest round needs no change worth making: keep what's on the speaker. |
 | View link | Anyone with it sees one setup without signing in; can't change anything. |
+
+## Getting around
+
+| Label | Means |
+|---|---|
+| ‹ Trips, ‹ People, ‹ Setups, ‹ Money | Up one level in the same app. |
+| ‹ Back to … | Back to the page you came from (on People and Account, which you visit on the way). |
 
 ## Saving
 

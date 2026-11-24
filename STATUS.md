@@ -1,6 +1,8 @@
 # Status
 
-**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 66, a way back from every page). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
+**2026-11-24.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live for Hudson. Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letter marks). What's next and later: ROADMAP.md. Why: docs/DECISIONS.md.
+
+Drive "Warbag — AI Handoffs": latest Claude note WRB-20261124-01 (this status and the full roadmap); latest Instinct note WRB-20261123-02 (newcomer field test and rerun); Mosey screenshots in "Mosey · All pages · current (after PR 55, 2026-11-23)" (made-up data; the launcher and headers have changed since).
 
 ## Mosey (trip planner)
 
@@ -22,7 +24,11 @@
 2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
 3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
 4. **Go / no-go** before inviting anyone, then send the family the **trip link** (Manage → Trip link) and add people as they ask. Nothing goes to family until Hudson says so.
-5. Agent newcomer test (2026-11-23, WRB-20261123-02): dead end on the trip's app address fixed in PR 65 and verified in Instinct's rerun; its two follow-ups (requests hard to find, no way back from People) fixed in PR 66. Not yet checked: a real iPhone, the "No code?" wording, the "you've been added" email.
+5. **Have Instinct repeat the newcomer flow on a real phone:** open the trip link, ask to join, then you tap "Review" at the top of the trip and Add. Not yet checked anywhere: a real iPhone, the "No code?" wording after Send code, the "you've been added" email arriving.
+
+### Field tests so far
+- **Instinct newcomer test, 2026-11-23** (WRB-20261123-02): a dead end on the trip's app address, fixed in PR 65; the rerun verified Ask to join, the trip link signed out, member controls (no organizer tools), edits that persist, Who's going and Delete. Its two follow-ups (requests hard to find, no way back from People) were fixed in PR 66, which hasn't been tried by a person yet.
+- **Hudson's Christmas trip entry, 2026-11-22** (WRB-20261122-02): drove PRs 33 to 50.
 
 ### Open questions (from the Christmas trip notes)
 - Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
@@ -30,6 +36,8 @@
 
 ### Known gaps
 - Inviting new people from a trip needs an admin or people manager (by design; today Hudson and his agent).
+- Nobody is emailed when someone asks to join a trip; the owner sees "N asking to join" at the top of the trip.
+- Asking to join from a trip's page tells whoever floods it with requests that the trip exists ("try again in an hour"); the address is a random id nobody can guess, so this is accepted.
 - Gyfte's sharing still has its own Share / Save step (Gyfte is paused).
 
 ## Room Tuner (room EQ)
@@ -48,9 +56,10 @@
 ### Next (needs Hudson's go)
 - Its own roadmap is in docs/ROOMTUNE.md; first up is an unprocessed iPhone recorder.
 
-## Accounts and access
+## Accounts, access and the launcher
+- **Launcher:** a big "Hi, Hudson" and the apps as names only, split into "Apps" (Gyfte, Mosey, Room Tuner, for whoever has them) and "Other sites" (Chirk, Crewmaxxing ↗). Page headers show the place's own letter (G, M, R, P for People, A for Account) with no square around it.
 - **A way back:** People and Account remember the page you came from ("‹ Back to Ford Christmas"), including through a person's or group's page. Room Tuner's setup, layout and new-setup pages have "‹ Setups" links.
-
+- **Sign-in:** invite only, email code or link; it says so plainly when no code arrives.
 - **Assistant (agent) access**, Hudson's decision 2026-11-23: its own non-admin account. It can be a trip's **co-organizer** and a **people manager** (invite people, manage groups and app access; never its own access or an admin's, no removing people or deleting groups). It never gets admin.
 - Setting it up (🟢 PRODUCTION, warbag.rodeo): People → Invite someone (the agent's email) → open it → tick **People manager**; give it **Mosey** under Apps if it should start trips; on each trip, Manage → **Co-organizers** → tick it.
 - An agent's browser starts fresh each run, so it signs in with an email code every time. For read-only review, a trip's view link needs no sign-in.
@@ -62,8 +71,8 @@
 
 ### What's live
 
-- **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher ("Hi, Hudson" on navy; Gyfte plus Chirk and Crewmaxxing as external links), a public page with only the name and Sign in.
-- **Look:** paper and navy palette, serif titles, W and G monograms, no slogans or decorative marks (personal app). See docs/DESIGN.md.
+- **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher (see "Accounts, access and the launcher"), a public page with only the name and Sign in.
+- **Look:** paper and navy palette, serif titles, bare letter marks (W for warbag, G for Gyfte), no slogans or decorative marks (personal app). See docs/DESIGN.md.
 - **Gyfte, everyday:** three tabs: My list (yours and your kids'), Family (opens your family group), I'm getting (your claims). Lists for Christmas and birthdays; one add box, bulk add, star, Got it, History (read-only after the date plus 14 days, "Edit history" to change), copy to this year (owner or a co-parent).
 - **Gyfte, family:** family groups (year › people › lists, kids nested under parents, joint kids' lists); names open their list, or their latest earlier one. Claims are never shown to the person a list is for. Organizer tools are under Manage on each page.
 - **Getting people in:** a family link for the group chat (all years, names and wanted gifts, never claims). "This is me" emails that person a one-tap sign-in link back to the list they had open. "Ask to join" takes a name and email; Hudson taps Add or Decline under Manage (a count shows beside Manage).
@@ -87,7 +96,7 @@
 
 - Turn off the family link once everyone has an account.
 - Request-a-group for non-admins; photos (upload or image link); automatic link previews; list/grid view; drag to reorder; Chirk gift-exchange link; screenshot import.
-- A Claude → ChatGPT note on the latest round, only if Hudson asks. Last ChatGPT review: WRB-20261121-07; last Claude note: WRB-20261121-06 v2.
+- Last Gyfte-specific ChatGPT review: WRB-20261121-07; last Gyfte-specific Claude note: WRB-20261121-06 v2.
 
 ### Where to pick up
 
