@@ -14,7 +14,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const back = await backFrom({ id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true }, (await searchParams).from);
   return (
     <>
-      <AppHeader email={user.email} app="Account" isAdmin={user.isAdmin === true} people={user.isPeopleManager === true} />
+      <AppHeader email={user.email} app="Account" letter="A" appHref="/account" isAdmin={user.isAdmin === true} people={user.isPeopleManager === true} />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div className="flex flex-col">
           <BackLink back={back} />

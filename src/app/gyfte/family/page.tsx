@@ -16,7 +16,7 @@ export default async function FamilyPage() {
 
   return (
     <>
-      <AppHeader email={user.email} app="Gyfte" isAdmin={actor.isAdmin} people={actor.peopleManager} />
+      <AppHeader email={user.email} app="Gyfte" letter="G" appHref="/gyfte" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">
         <GyfteNav current="family" />
         <h1 className="title">Family</h1>

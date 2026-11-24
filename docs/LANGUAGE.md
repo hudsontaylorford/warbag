@@ -3,7 +3,7 @@
 ## Names
 
 - The site is **warbag**, lowercase in running text.
-- **App names** come from western / cowboy slang or lineage. They should be short, easy to say and spell, and a little funny. Each app's name sits beside a plain description in the launcher (e.g. "Gyfte · Gift lists") so nobody has to decode it.
+- **App names** come from western / cowboy slang or lineage. They should be short, easy to say and spell, and a little funny. The launcher shows names only; the plain description (e.g. "Gyfte · Gift lists") appears where access is granted (People), so nobody has to decode a name there.
 - **Interface labels are plain.** The slang stops at the app name. Buttons and messages use ordinary words.
 
 ## Access words (same meaning everywhere)

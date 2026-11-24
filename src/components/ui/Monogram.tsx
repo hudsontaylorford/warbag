@@ -1,19 +1,20 @@
 /**
- * A one-letter mark for warbag's own pages and apps (W, G, P, A...), set in
- * the display serif. Letters come from the app registry or the page, never
- * made up per screen. External apps (Chirk, Crewmaxxing) don't get one.
+ * A one-letter mark for warbag's own pages and apps (W, G, M, R), set in
+ * the display serif straight on the background: no tile or frame. Letters
+ * come from the app registry or the page, never made up per screen.
+ * External apps (Chirk, Crewmaxxing) don't get one.
  */
 const sizes = {
-  sm: "size-8 text-[1.35rem]",
-  md: "size-11 text-[1.9rem]",
-  lg: "size-14 text-[2.4rem]",
+  sm: "text-[2rem]",
+  md: "text-[2.75rem]",
+  lg: "text-[3.5rem]",
 };
 
 const tones = {
-  ink: "bg-ink text-cream",
-  ember: "bg-ember text-page",
-  cream: "bg-cream text-ink",
-  outline: "border border-ink text-ink",
+  ink: "text-ink",
+  ember: "text-ember",
+  cream: "text-cream",
+  outline: "text-ink",
 };
 
 export function Monogram({
@@ -33,9 +34,9 @@ export function Monogram({
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
-      className={`display inline-flex shrink-0 items-center justify-center rounded-[var(--radius-control)] leading-none select-none ${sizes[size]} ${tones[tone]}`}
+      className={`display inline-block shrink-0 leading-none select-none ${sizes[size]} ${tones[tone]}`}
     >
-      <span className="translate-y-[0.06em]">{letter.slice(0, 1).toUpperCase()}</span>
+      {letter.slice(0, 1).toUpperCase()}
     </span>
   );
 }

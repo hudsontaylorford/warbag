@@ -24,7 +24,7 @@ export default async function GroupPage({ params, searchParams }: { params: Prom
 
   return (
     <>
-      <AppHeader email={user.email} app="People" isAdmin={actor.isAdmin} people />
+      <AppHeader email={user.email} app="People" letter="P" appHref="/admin" isAdmin={actor.isAdmin} people />
       <main className="mx-auto flex max-w-2xl flex-col gap-10 px-4 py-8">
         <div>
           <span className="flex flex-wrap gap-x-5">

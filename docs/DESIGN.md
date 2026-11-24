@@ -1,6 +1,6 @@
 # Design
 
-**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter monograms carry identity for now.
+**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter marks (a bare serif letter) carry identity for now.
 
 ## Rules that hold regardless of the look
 
@@ -34,25 +34,27 @@ All colors and fonts come from the `@theme` block in `src/app/globals.css`. Comp
 
 Contrast (WCAG): ink on page 13.1:1, soft on page 5.4:1 (4.9:1 on wash), accent on page 7.3:1, cream on ink 10.2:1, mist on ink 9.8:1, paper letter on ember 4.8:1. Every text pairing passes AA.
 
-- **Type:** `title` (Instrument Serif, 36 to 52px, for page titles), `heading` (the serif at 30px, for section headings: short, a word or two) and `display` (the serif at any size: app names, monograms). Body and controls use the system sans. No serif below 20px.
-- **Corners:** one radius, `--radius-control` (6px), on buttons, fields, panels and monograms.
+- **Type:** `title` (Instrument Serif, 36 to 52px, for page titles), `heading` (the serif at 30px, for section headings: short, a word or two) and `display` (the serif at any size: app names, monograms) and `masthead` (the serif at 56 to 120px, only for the launcher greeting). Body and controls use the system sans. No serif below 20px.
+- **Corners:** one radius, `--radius-control` (6px), on buttons, fields and panels.
 - **Dark mode:** not designed yet. The launcher's navy field is a deliberate dark surface, not dark mode.
 
 ## Monograms
 
-One serif letter in a square (`src/components/ui/Monogram.tsx`). Letters are assigned in `src/lib/apps.ts`, so no two apps share one.
+One serif letter straight on the background, with no tile, square or frame (`src/components/ui/Monogram.tsx`; Hudson 2026-11-24, on every page). Letters are assigned in `src/lib/apps.ts`, so no two apps share one. Every signed-in page's header shows the letter of the place it's in (its name's first letter) in ember, linking to that place's start, with "warbag" as a quiet link home; only the launcher shows the W. W is ink on paper and cream on navy; every other letter is ember, on every page.
 
 | Letter | For | Tone |
 |---|---|---|
-| W | warbag (header, sign-in, favicon) | ink, cream letter |
+| W | warbag (header, sign-in, favicon) | ink on paper, cream on navy |
 | G | Gyfte | ember |
 | M | Mosey | ember |
 | R | Room Tuner | ember |
+| P | People (admin pages) | ember |
+| A | Account | ember |
 
-External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag.
+External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag. The launcher shows no monograms at all (text only, Hudson 2026-11-24); letters still mark the header, sign-in, share pages and favicon.
 
 ## Per-app stance
 
-- **Launcher and public home:** the bold surface. Navy field, cream serif headline, ember monograms. The launcher's heading is a plain greeting ("Hi, Hudson"): warbag is a personal app, not a product with a tagline. No decorative marks. On desktop the launcher is two columns (headline left, apps right) with the header widened to match.
+- **Launcher and public home:** the bold surface ("Masthead", 2026-11-24). Navy field and a big cream serif greeting (`masthead` utility, 56 to 120px): a plain "Hi, Hudson", since warbag is a personal app, not a product with a tagline. The apps are **text only**: each name in the serif at 40px, no monogram and no description, split into "Apps" (warbag's own, ›) and "Other sites" (Chirk, Crewmaxxing, ↗ and a new tab). Small sans labels, no lines under the header or the labels; thin dividers only between rows. No decorative marks. On desktop the launcher is two columns (greeting left, apps right) with the header widened to match.
 - **Gyfte:** calm. Paper background, serif page titles, everything else plain sans. Lists are rows divided by hairlines, not cards. A list page leads with the person's name in the serif, the occasion as a small line above (`ListTitle`); screen readers hear the full title once. Family link pages carry a "G · Gyfte · warbag" eyebrow so people know where they've landed.
 - **Room Tuner:** calm, like Gyfte, and a long page on purpose: steps 1 to 4 top to bottom, then Rounds, Presets and Manage. Instructions are folded into bordered sections ("How the rounds work") so the steps stay short. Numbers use tabular figures. The chart uses the three chart tokens (each at least 3:1 on paper) plus soft for the previous round; the suggested values are drawn as sliders so they're easy to copy into a speaker's app.
