@@ -2,6 +2,17 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-24 · How visual changes are reviewed (Hudson)
+
+After the launcher study, Hudson kept the working habits that made his choices quick.
+
+- **Compare against what's live.** Every visual change is reviewed side by side with the current version, not on its own.
+- **Phone first.** Each page is checked at phone width (390px) before desktop.
+- **Write design decisions down** in DESIGN.md and here, so a later change doesn't quietly undo them (for example, bringing back tiles behind letters).
+- **Polish passes are critique only.** An outside design checklist (pbakaus/impeccable, read as guidance, not installed) may be used to review a page; it reports findings, and nothing in the shared styles or tokens changes until Hudson approves.
+- **Before the family trial:** a contrast and tap-target check. Kept for later, not approved: an optional "press and arrive" motion (a tapped launcher row settles into the app's header), off under reduced motion.
+- Skipped: Dembrandt, the Awwwards inspiration feed and Genjutsu (they pull toward other people's sites; plain local mockups worked).
+
 ## 2026-11-24 · Launcher: text-only Masthead
 
 From a design study of two directions (bold typographic "Masthead" and a tactile "Paper and press"), Hudson chose Masthead and then text only.
@@ -11,6 +22,8 @@ From a design study of two directions (bold typographic "Masthead" and a tactile
 - **No lines under the header or the group labels;** dividers only between rows. No setting to switch styles: text only is the one launcher.
 - **Letter marks lose their square** on every page (Hudson: "the letter mark on the background"): the `Monogram` component is now just the serif letter in its tone's color. Header links keep a 44px tap area. The favicon keeps its navy square so it shows in browser tabs.
 - **Every page's header shows its own letter** (Hudson: Gyfte should be a G): G for Gyfte, M, R, plus P for People and A for Account. Page letters are ember everywhere; W (ink on paper, cream on navy) is warbag itself.
+- **Not adopted:** letter tiles for every launcher link (including C for Chirk and X for Crewmaxxing) and a text-only admin setting were proposed the same evening and dropped. External sites still get no letter.
+- Shipped in PR 67.
 
 ## 2026-11-23 · Room Tuner moves into warbag
 
@@ -274,7 +287,7 @@ Hudson's first real tests were paper restaurant receipts, not app receipts. One 
 
 ## 2026-11-21 · Look and open answers (Hudson)
 
-- **Visual direction: "Editorial OS"** (see DESIGN.md). Paper and navy palette, Instrument Serif titles, one-letter monograms (W, G). The illustrated logo is paused. Hudson chose to do the look before the next round of Gyfte fixes.
+- **Visual direction: "Editorial OS"** (see DESIGN.md). Paper and navy palette, Instrument Serif titles, one-letter monograms (W, G). The illustrated logo is paused. *(Monograms on the launcher and the square behind letters superseded 2026-11-24: launcher is text only; letters are bare.)* Hudson chose to do the look before the next round of Gyfte fixes.
 - **Imported history is shared** with the group it's imported into (already how the import works; the review will say so plainly).
 - **Request to join:** someone without an account can ask to join a group by giving their name and email; Hudson approves before any account exists. Not built yet.
 - **Family link scope:** stays as built: anyone with the link sees every year's lists for the group (names and wanted gifts, never claims). It's a bridge until everyone has an account, then Hudson turns it off.
@@ -396,7 +409,7 @@ Build order: PR A lists and items, PR B sharing and claims, PR C import and hist
 
 - **One app registry** (`src/lib/apps.ts`): id, name, short description, native or external, link, live or coming soon. The launcher shows the apps `canUseApp` allows: admins see all, others only what's been shared with them.
 - **External apps** (Chirk, Crewmaxxing) open in a new tab and show where they go (e.g. "chirk.fyi ↗"). Warbag shares no login or data with them.
-- **Shared header** (`AppHeader`) on every signed-in page: warbag (back to the launcher), the app name, Sign out.
+- **Shared header** (`AppHeader`) on every signed-in page: warbag (back to the launcher), the app name, Sign out. *(Since 2026-11-24 it also shows the page's own letter.)*
 - The public homepage stays a placeholder (and `noindex`) until Hudson decides what it shows.
 
 ## 2026-11-20 · Access model (PR 2)

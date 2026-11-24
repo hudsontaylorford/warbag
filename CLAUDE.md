@@ -41,7 +41,9 @@ Clarity over cleverness. Correctness over speed. Privacy over convenience. One c
 
 ## Design and copy
 
-- Phone first, excellent on desktop. Minimal, text-first, high contrast. The look isn't decided yet; it lives in tokens in `src/app/globals.css` so a direction is a contained change. See `docs/DESIGN.md`.
+- Phone first, excellent on desktop. Minimal, text-first, high contrast. The look is "Editorial OS" with a text-only "Masthead" launcher; it lives in tokens in `src/app/globals.css` so a change of direction is contained. See `docs/DESIGN.md`.
+- Letter marks are a bare serif letter, never in a tile or square (the favicon is the only exception). The launcher shows app names only.
+- Review any visual change side by side with what's live, at phone width first, and record a changed design rule in `docs/DESIGN.md` and `docs/DECISIONS.md`. Polish or critique passes report findings; tokens and shared styles change only with Hudson's go.
 - One set of shared primitives (buttons, fields, menus, cards, dialogs, alerts, headers, nav). Don't create near-duplicate patterns.
 - Links look different from buttons. Big tap targets, keyboard and focus support, readable contrast, respect reduced motion. Test on mobile Safari.
 - Plain, accurate labels ("Save", "Share", "Archive"). Same words mean the same thing everywhere (`docs/LANGUAGE.md`). App names may be playful; interface wording is not.

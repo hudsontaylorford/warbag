@@ -1,6 +1,6 @@
 # Design
 
-**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter marks (a bare serif letter) carry identity for now.
+**Direction: "Editorial OS"** (adopted 2026-11-21). Warm paper, navy ink, a display serif for titles, plain system sans for everything you read or tap. Bold on the launcher, calm inside apps. The illustrated logo is paused; one-letter marks (a bare serif letter, never in a tile) carry identity for now. The launcher is the text-only "Masthead" (2026-11-24, PR 67).
 
 ## Rules that hold regardless of the look
 
@@ -11,6 +11,14 @@
 - Visible focus on everything interactive. Respect `prefers-reduced-motion`.
 - One shared component for each pattern. Before making a new one, check whether an existing one fits.
 - Every action shows it worked, after the server confirms.
+
+## Reviewing a visual change
+
+1. **Phone first:** look at 390px wide, then desktop.
+2. **Side by side with what's live:** screenshots or a local mockup of the current page next to each idea. Hudson picks from the comparison.
+3. **Write it down:** a rule that changes goes in this file and in DECISIONS.md the same day, with what it replaces.
+4. **Polish passes report, they don't edit.** A critique (for example against pbakaus/impeccable's checklist) lists findings; tokens and shared styles change only after Hudson approves.
+5. **Before any family trial:** check contrast and tap-target sizes on the pages people will use.
 
 ## Tokens
 
@@ -51,10 +59,14 @@ One serif letter straight on the background, with no tile, square or frame (`src
 | P | People (admin pages) | ember |
 | A | Account | ember |
 
-External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag. The launcher shows no monograms at all (text only, Hudson 2026-11-24); letters still mark the header, sign-in, share pages and favicon.
+External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag. The launcher shows no monograms at all (text only, Hudson 2026-11-24); letters still mark the header, sign-in and share pages.
+
+- **No tile, square or frame behind a letter, anywhere.** This replaces the squares from 2026-11-21. Don't bring them back without Hudson.
+- **The one exception is the favicon** (`src/app/icon.svg`): a cream W on a navy square, so it reads in a browser tab.
+- Letter tiles in the launcher (C for Chirk, X for Crewmaxxing) and a text-only setting were considered on 2026-11-24 and not adopted.
 
 ## Per-app stance
 
-- **Launcher and public home:** the bold surface ("Masthead", 2026-11-24). Navy field and a big cream serif greeting (`masthead` utility, 56 to 120px): a plain "Hi, Hudson", since warbag is a personal app, not a product with a tagline. The apps are **text only**: each name in the serif at 40px, no monogram and no description, split into "Apps" (warbag's own, ›) and "Other sites" (Chirk, Crewmaxxing, ↗ and a new tab). Small sans labels, no lines under the header or the labels; thin dividers only between rows. No decorative marks. On desktop the launcher is two columns (greeting left, apps right) with the header widened to match.
+- **Launcher and public home:** the bold surface ("Masthead", 2026-11-24, PR 67). Navy field and a big cream serif greeting (`masthead` utility, 56 to 120px): a plain "Hi, Hudson", since warbag is a personal app, not a product with a tagline. The apps are **text only**: each name in the serif at 40px, no monogram and no description, split into "Apps" (warbag's own, ›) and "Other sites" (Chirk, Crewmaxxing, ↗ and a new tab). Small sans labels, no lines under the header or the labels; thin dividers only between rows. No decorative marks and no admin setting for another style. On desktop the launcher is two columns (greeting left, apps right) with the header widened to match.
 - **Gyfte:** calm. Paper background, serif page titles, everything else plain sans. Lists are rows divided by hairlines, not cards. A list page leads with the person's name in the serif, the occasion as a small line above (`ListTitle`); screen readers hear the full title once. Family link pages carry a "G · Gyfte · warbag" eyebrow so people know where they've landed.
 - **Room Tuner:** calm, like Gyfte, and a long page on purpose: steps 1 to 4 top to bottom, then Rounds, Presets and Manage. Instructions are folded into bordered sections ("How the rounds work") so the steps stay short. Numbers use tabular figures. The chart uses the three chart tokens (each at least 3:1 on paper) plus soft for the previous round; the suggested values are drawn as sliders so they're easy to copy into a speaker's app.

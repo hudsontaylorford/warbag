@@ -1,6 +1,20 @@
 # Status
 
-**2026-11-23.** Mosey is the priority, aiming at a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Everything below is live at https://warbag.rodeo (last change: PR 66, a way back from every page). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
+**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261123-01; latest Instinct note: WRB-20261123-02 (newcomer field test).
+
+## warbag (the hub)
+
+### Live
+- **Launcher, "Masthead"** (PR 67, 2026-11-24): navy field, a big cream "Hi, Hudson", then app names only (no letters, no descriptions) under **Apps** (warbag's own, ›) and **Other sites** (Chirk, Crewmaxxing, ↗). No lines under the header or labels; no setting for another style. Two columns on desktop.
+- **Letters:** every page's header shows its place's letter as a bare ember serif letter with no square (G Gyfte, M Mosey, R Room Tuner, P People, A Account); W is warbag itself. Only the favicon keeps a square.
+- Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
+
+### Next (each needs Hudson's go)
+1. **Polish pass findings** (2026-11-24 critique of the launcher and Mosey): read and pick what to adopt; nothing has changed yet.
+2. **Contrast and tap-target check** on the pages the family will use, before December 1.
+3. **Launcher, next round:** show, hide and reorder your own apps; personal bookmarks.
+4. **Sign-in and accounts:** signed-in devices, passkeys, a dedicated assistant identity (see ROADMAP.md).
+5. Kept for later, not approved: "press and arrive" motion from a launcher row into the app's header (off for reduced motion).
 
 ## Mosey (trip planner)
 
@@ -35,7 +49,7 @@
 ## Room Tuner (room EQ)
 
 ### Live
-- **Native app at /roomtune**, for Hudson and anyone he ticks it for under People → Apps. One setup per speaker and room; each is private to its owner.
+- **Native app at /roomtune** (PR 57; docs PRs 58 and 59), for Hudson and anyone he ticks it for under People → Apps. One setup per speaker and room; each is private to its owner.
 - **The same tool as the old page, in warbag's look:** play pink noise, record rounds at 3 spots, upload, see the room against the target, copy the suggested slider values, save presets, measure band width. Recordings are analyzed in the browser (Lossless included); only 55 numbers per recording are saved.
 - **Saved to your account** after each change, confirmed by the server. **Import setups** reads the old page's export file. **View link** per setup for anyone without an account.
 - **Fill from a screenshot** on a new setup reads the speaker app's EQ screen, using Mosey's Anthropic key.
@@ -62,8 +76,8 @@
 
 ### What's live
 
-- **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher ("Hi, Hudson" on navy; Gyfte plus Chirk and Crewmaxxing as external links), a public page with only the name and Sign in.
-- **Look:** paper and navy palette, serif titles, W and G monograms, no slogans or decorative marks (personal app). See docs/DESIGN.md.
+- **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher (now the text-only Masthead, see "warbag (the hub)" above), a public page with only the name and Sign in.
+- **Look:** paper and navy palette, serif titles, bare W and G letters (no squares since 2026-11-24), no slogans or decorative marks (personal app). See docs/DESIGN.md.
 - **Gyfte, everyday:** three tabs: My list (yours and your kids'), Family (opens your family group), I'm getting (your claims). Lists for Christmas and birthdays; one add box, bulk add, star, Got it, History (read-only after the date plus 14 days, "Edit history" to change), copy to this year (owner or a co-parent).
 - **Gyfte, family:** family groups (year › people › lists, kids nested under parents, joint kids' lists); names open their list, or their latest earlier one. Claims are never shown to the person a list is for. Organizer tools are under Manage on each page.
 - **Getting people in:** a family link for the group chat (all years, names and wanted gifts, never claims). "This is me" emails that person a one-tap sign-in link back to the list they had open. "Ask to join" takes a name and email; Hudson taps Add or Decline under Manage (a count shows beside Manage).
