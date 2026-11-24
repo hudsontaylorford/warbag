@@ -36,8 +36,18 @@ export function noteBlocks(text: string): NoteBlock[] {
   return blocks;
 }
 
-/** Long enough to fold to a few lines until someone taps Show all. */
-export function isLongNote(text: string): boolean {
+/**
+ * Long enough to fold until someone taps Show all. Folded to 3 lines (Ideas,
+ * the default) a note is long past about 220 characters or 4 lines; folded to
+ * 1 line (the Plan's day cards) past about 80 characters or one line.
+ */
+export function isLongNote(text: string, fold: 1 | 3 = 3): boolean {
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "").length;
-  return text.length > 220 || lines > 4;
+  return fold === 1 ? text.trim().length > 80 || lines > 1 : text.length > 220 || lines > 4;
+}
+
+/** The first line with text, without a bullet mark: a folded note's one-line summary. */
+export function firstLine(text: string): string {
+  const line = text.split(/\r?\n/).find((l) => l.trim() !== "") ?? "";
+  return (BULLET.exec(line)?.[1] ?? line).trim();
 }

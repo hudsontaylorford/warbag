@@ -2,6 +2,13 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-24 · Day cards tell you the plan (Hudson)
+
+After the Christmas-trip check: a day with long titles and caveats "reads like three assignments instead of a relaxed day with options."
+
+- **On the Plan's day cards, a stop's notes show only their first line** (cut with "…") until "Show all". Ideas keeps three lines. Nothing stored changes.
+- **Writing a day:** one item per real plan with a short title (e.g. "Free day: skiing, spa or stay in"), a one-line first line of notes as the summary, and the practical research in Ideas, one tap away.
+
 ## 2026-11-24 · Polish fixes from the critique (Hudson: "fix in the order of importance")
 
 - **Back links** ("‹ Trips", "‹ Lists", "‹ Money"…) get a 44px tap area everywhere.

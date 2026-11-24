@@ -150,6 +150,7 @@ export function DayCard({
                       canPlan={canPlan}
                       choicesHere={choicesHere}
                       attend={attend && { ...attend, marks: attend.marks[it.row.stop.id] ?? [] }}
+                      brief
                     />
                   </li>
                 ) : (
@@ -168,7 +169,7 @@ export function DayCard({
               <ul className="divide-y divide-line">
                 {suggested.map(({ stop, canEdit }) => (
                   <li key={stop.id}>
-                    <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} hideSuggested attend={attend && { ...attend, marks: attend.marks[stop.id] ?? [] }} />
+                    <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} hideSuggested brief attend={attend && { ...attend, marks: attend.marks[stop.id] ?? [] }} />
                   </li>
                 ))}
               </ul>
