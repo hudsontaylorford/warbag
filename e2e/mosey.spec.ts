@@ -22,6 +22,8 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(page.getByRole("link", { name: "warbag" })).toHaveAttribute("href", "/home");
   // The calendar jumps to a day's card.
   await expect(page.getByRole("navigation", { name: "Trip days" }).getByRole("link")).toHaveCount(3);
+  // A trip of a week or less is one row of just its days (no faded days around it).
+  await expect(page.getByRole("navigation", { name: "Trip days" }).getByRole("listitem")).toHaveCount(3);
   await page.getByRole("link", { name: /Sunday, June 6/ }).click();
   await expect(page).toHaveURL(/#day-2027-06-06$/);
 

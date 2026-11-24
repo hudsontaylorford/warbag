@@ -16,9 +16,11 @@ function monthsLabel(start: string, end: string) {
 }
 
 /**
- * The whole trip at a glance: a week grid with the trip's days solid and
- * the days around them faded. Each day shows its first time and how many
- * more things are planned; tapping a day jumps to its card below.
+ * The whole trip at a glance. A trip of a week or less is one row of just
+ * its days, each with its weekday; a longer trip is a week grid with the
+ * trip's days solid and the days around them faded. Each day shows its
+ * first time and how many more things are planned; tapping a day jumps to
+ * its card below.
  */
 export function TripCalendar({ days, stops }: { days: string[]; stops: DayStops }) {
   const today = useToday();
@@ -29,21 +31,25 @@ export function TripCalendar({ days, stops }: { days: string[]; stops: DayStops 
   from.setUTCDate(from.getUTCDate() - from.getUTCDay());
   const to = new Date(last);
   to.setUTCDate(to.getUTCDate() + (6 - to.getUTCDay()));
+  const oneRow = days.length <= 7;
   const cells: string[] = [];
-  for (const d = new Date(from); d <= to; d.setUTCDate(d.getUTCDate() + 1)) cells.push(iso(d));
+  if (oneRow) cells.push(...days);
+  else for (const d = new Date(from); d <= to; d.setUTCDate(d.getUTCDate() + 1)) cells.push(iso(d));
   const inTrip = new Set(days);
+  const weekdays = oneRow ? days.map((day) => WEEKDAYS[utc(day).getUTCDay()]) : WEEKDAYS;
+  const columns = { gridTemplateColumns: oneRow ? `repeat(${days.length}, minmax(0, 5rem))` : "repeat(7, minmax(0, 1fr))" };
 
   return (
     <nav aria-label="Trip days" className="flex flex-col gap-2">
       <p className="text-sm font-semibold">{monthsLabel(days[0], days[days.length - 1])}</p>
-      <div className="grid grid-cols-7 gap-1 text-center" aria-hidden="true">
-        {WEEKDAYS.map((w) => (
-          <span key={w} className="text-xs text-soft">
+      <div className="grid gap-1 text-center" style={columns} aria-hidden="true">
+        {weekdays.map((w, i) => (
+          <span key={i} className="text-xs text-soft">
             {w}
           </span>
         ))}
       </div>
-      <ol className="grid grid-cols-7 gap-1">
+      <ol className="grid gap-1" style={columns}>
         {cells.map((day) => {
           const date = utc(day).getUTCDate();
           if (!inTrip.has(day)) {

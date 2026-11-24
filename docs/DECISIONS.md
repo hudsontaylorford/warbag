@@ -10,7 +10,8 @@ Durable decisions, newest first. Each one says what was decided and why. When a 
 - **Focus rings on the navy launcher** are cream, not the accent blue (about 1.5:1 there).
 - **Notes formatting** (Hudson: no large blocks of text): lines starting with "- ", "* " or "•" show as a bulleted list, a blank line starts a paragraph, and notes over about 220 characters or 4 lines fold to 3 lines with "Show all". Notes are stored as typed; only the display changed.
 - Also: each stop's "More" is named for screen readers ("More about Drive up") and sits level with the stop's name; the launcher says "Hi" when an account has no name (it said "Home").
-- Not done yet: a Manage link beside Plan / Ideas / Money, and a one-row calendar for short trips (from the same critique).
+- **One-row calendar for short trips** (Hudson: "you pick next"): a trip of a week or less shows one row of just its days, each with its weekday, instead of two partly faded weeks. Longer trips keep the week grid.
+- Not done yet: a Manage link beside Plan / Ideas / Money (from the same critique).
 
 ## 2026-11-24 · How visual changes are reviewed (Hudson)
 
@@ -203,7 +204,7 @@ Hudson's choice (asked, Nov 23): **adults only by default.**
 From Hudson's Christmas-trip test (WRB-20261122-02, sections 2 and 10) and a ticket-calendar screenshot he liked.
 
 - **Mosey's own header:** an M mark (burnt orange) and "Mosey" link to the trip list; "warbag" is a quiet link home on the right. Other apps keep the W for now.
-- **A calendar on top of Plan:** the trip's weeks with its days solid and the days around them faded. Each day shows its first time ("6:30p") and "+2" for more, or dots for any-time plans; today is filled navy. Tapping a day jumps to its card. Shown for trips longer than a day.
+- **A calendar on top of Plan:** the trip's weeks with its days solid and the days around them faded. Each day shows its first time ("6:30p") and "+2" for more, or dots for any-time plans; today is filled navy. Tapping a day jumps to its card. Shown for trips longer than a day. (2026-11-24: trips of a week or less show one row of just their days.)
 - **One card per day:** a raised card with the date, "Day 3", and an optional area and tag ("Brooklyn → Hillsdale · Travel day"). Today gets a "Today" mark and a darker border. Once a trip is under way, days already over start collapsed with a count; any day can be collapsed or opened.
 - **One add action per day:** "+ Add to this day" opens the add box (and focuses it) instead of a box always open on every day. Members see "Suggest for this day".
 - **Area and tag:** free text, both optional, organizers only, set from the card ("Add area or tag"); tag suggestions are Travel day, Flexible, Rest day, Free day. Stored per trip day (`mosey_days`); a day outside the trip's dates isn't shown. View links show them.
