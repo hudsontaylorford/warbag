@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-24 · Launcher: text-only Masthead
+
+From a design study of two directions (bold typographic "Masthead" and a tactile "Paper and press"), Hudson chose Masthead and then text only.
+
+- **Bigger greeting** (`masthead` utility) and the apps as **names only**: no monograms or descriptions in the launcher (Hudson: he doesn't like the logos there). Supersedes "ember monograms" on the launcher from 2026-11-21.
+- **"Apps" and "Other sites"** split warbag's own apps from external products, so Chirk and Crewmaxxing no longer look like warbag apps.
+- **No lines under the header or the group labels;** dividers only between rows. No setting to switch styles: text only is the one launcher.
+- Monograms stay elsewhere (header, sign-in, share pages, favicon) for now.
+
 ## 2026-11-23 · Room Tuner moves into warbag
 
 Hudson resumed Room Tuner after Mosey's build work (Mosey's remaining steps are his). It was a standalone page published from another Claude session; its code came back from that page and his downloads (`roomtune.zip`, `room-tuner-setups.json`).

@@ -6,7 +6,7 @@ import { AppList } from "@/components/shell/AppList";
 
 export const metadata: Metadata = { title: "Home · warbag" };
 
-/** The signed-in launcher: the apps this person may use, on the navy field. */
+/** The signed-in launcher: the apps this person may use, by name, on the navy field. */
 export default async function HomePage() {
   const user = await requireUser("/home");
   const apps = await appsFor({ id: user.id, isAdmin: user.isAdmin === true });
@@ -15,8 +15,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-dvh bg-ink text-page">
       <AppHeader email={user.email} isAdmin={user.isAdmin === true} people={user.isPeopleManager === true} tone="dark" />
-      <main className="mx-auto grid max-w-2xl gap-8 px-4 pt-10 pb-16 md:max-w-5xl md:grid-cols-[5fr_7fr] md:gap-16 md:pt-20">
-        <h1 className="title text-cream">{first ? `Hi, ${first}` : "Home"}</h1>
+      <main className="mx-auto grid max-w-2xl gap-10 px-4 pt-10 pb-16 md:max-w-5xl md:grid-cols-[5fr_7fr] md:items-start md:gap-16 md:pt-20">
+        <h1 className="masthead text-cream">{first ? `Hi, ${first}` : "Home"}</h1>
         {apps.length > 0 ? (
           <AppList apps={apps} />
         ) : (

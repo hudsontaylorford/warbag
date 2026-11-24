@@ -37,7 +37,7 @@ test("the owner invites someone, gives them Gyfte through a group, then takes it
   // They sign in and see Gyfte, nothing else, and no People page.
   const theirs = await freshPage(browser);
   await signIn(theirs, email);
-  await expect(theirs.getByRole("list").getByText("Gyfte")).toBeVisible();
+  await expect(theirs.getByRole("region", { name: "Apps" }).getByText("Gyfte")).toBeVisible();
   await expect(theirs.getByText("Chirk")).toHaveCount(0);
   await expect(theirs.getByRole("link", { name: "People" })).toHaveCount(0);
   const res = await theirs.goto("/admin");

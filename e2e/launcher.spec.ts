@@ -6,14 +6,14 @@ import { signIn } from "./helpers";
 
 test("the owner sees every app, with external ones opening in a new tab", async ({ page }) => {
   await signIn(page, OWNER);
-  const apps = page.getByRole("list");
-  await expect(apps.getByText("Gyfte")).toBeVisible();
+  // warbag's own apps under Apps, external products under Other sites.
+  await expect(page.getByRole("region", { name: "Apps" }).getByRole("link", { name: "Gyfte" })).toBeVisible();
+  const other = page.getByRole("region", { name: "Other sites" });
 
-
-  const chirk = page.getByRole("link", { name: /Chirk/ });
+  const chirk = other.getByRole("link", { name: /Chirk/ });
   await expect(chirk).toHaveAttribute("href", "https://chirk.fyi");
   await expect(chirk).toHaveAttribute("target", "_blank");
-  await expect(page.getByRole("link", { name: /Crewmaxxing/ })).toHaveAttribute(
+  await expect(other.getByRole("link", { name: /Crewmaxxing/ })).toHaveAttribute(
     "href",
     "https://app.crewmaxxing.com",
   );
@@ -33,7 +33,8 @@ test("a member sees only the apps shared with them", async ({ page }) => {
   await db.end();
 
   await signIn(page, email);
-  await expect(page.getByRole("list").getByText("Gyfte")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Apps" }).getByText("Gyfte")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Other sites" })).toHaveCount(0);
   await expect(page.getByText("Chirk")).toHaveCount(0);
   await expect(page.getByText("Crewmaxxing")).toHaveCount(0);
 });
