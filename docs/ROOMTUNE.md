@@ -115,7 +115,7 @@ Each item needs Hudson's go. Roughly in order of value; each says what it fixes.
 
 - Standalone (Nov 2026): rounds, fixed spots, level standard (75 dB), Lossless decoding in any browser, setup builder
   with sub support, measured band width, screenshot import, collapsible instructions.
-- In warbag (2026-11-23, PR 57): native app at /roomtune with warbag's sign-in and look; setups saved on the server per
+- In warbag (2026-11-23, PR 57; status and docs PRs 58 and 59): native app at /roomtune with warbag's sign-in and look; setups saved on the server per
   person; access per person under People → Apps; a view-only link per setup; import of the standalone export file;
   "Fill from a screenshot" through warbag's own Claude key.
 
