@@ -75,8 +75,7 @@
 - **Reminders by email** from a GitHub Actions schedule every 5 minutes (`CRON_SECRET` in Vercel and GitHub; first good run 2026-11-25, PR 78). Texting kept for later.
 
 ### Left (Hudson)
-1. **Import your old notes:** Jot → Import from Stickies → the old box's `data/notes.json` (and `trash.json`).
-2. **Try it on your phone in Safari**, including a reminder a few minutes ahead.
+1. **Try it on your phone in Safari**, including a reminder a few minutes ahead (Hudson, 2026-11-25: later). There are no old Stickies notes to import.
 
 ### Next (needs Hudson's go)
 - Its own roadmap is in docs/JOT.md; first up is texting reminders.
