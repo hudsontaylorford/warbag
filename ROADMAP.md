@@ -21,7 +21,7 @@ Order of work. Each step is approved by Hudson before it starts.
      - Email the owner when someone asks to join (today: the notice on the trip).
 4. **Room Tuner** (room EQ from phone recordings): **live** at /roomtune since 2026-11-23 (PRs 57 to 59; see STATUS.md). Hudson still imports his setup, tries it in Safari and makes the old page private. Its own next steps are in docs/ROOMTUNE.md; the first is the quick test (a guided measurement track), then an unprocessed iPhone recorder. Each needs Hudson's go.
 5. **Microsites and presentations:** hosted pages at stable URLs, private, group-shared or public link, listed in the launcher.
-6. **Sticky notes:** rebuild of the lovewillwin version (handover pack pending).
+6. **Jot** (sticky notes; the old Stickies, renamed by Hudson 2026-11-25): rebuilt at /jot with notes, colours, labels, reminders by email, Trash and import from the old app (PR pending review). Its own next steps are in docs/JOT.md; first is texting reminders. Each needs Hudson's go.
 7. **Songwriting:** rebuild, multi-user. Owned songs, collaborators, version history; no live co-editing until there's a real need.
 8. **Fitness** and **nutrition:** replace Fitbod and calorie tracking. Private by default, exportable.
 9. **Apartment watcher:** rebuild with a separate scheduled worker.

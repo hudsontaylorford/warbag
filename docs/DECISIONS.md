@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-25 · Stickies comes in as Jot
+
+Hudson: "let's start with stickies, we can bring it in. I would like to rename it to Jot." Source: the handover pack `stickies.zip` (Drive, "Warbag — Project Archive").
+
+- **Native app at `/jot`, letter J**, named Jot everywhere a person sees it. Screens rebuilt in warbag's look and shared primitives (as with Room Tuner), not the corkboard.
+- **Who can use it:** anyone Hudson turns it on for under People → Apps; admins always. Notes are private to their owner (admins included); no sharing yet.
+- **Reminders by email now; texting kept for later** (Hudson: "retain the path for text messages but let's build out email as well"). `remind_by` holds email, none (show on the note only) or text (not offered yet). A scheduler calls `/api/jot/reminders` every few minutes with `CRON_SECRET`; each reminder goes out once, never from the Trash, never more than a day late.
+- **Trash keeps notes 30 days** and is emptied only by its owner's two-tap Empty trash (the old app lost notes to a test that emptied it).
+- **Kept simple:** one font, one size, no free grid; "By label" replaces the kanban view. Details and Jot's roadmap: `docs/JOT.md`.
+
 ## 2026-11-24 · Day cards tell you the plan (Hudson)
 
 After the Christmas-trip check: a day with long titles and caveats "reads like three assignments instead of a relaxed day with options."

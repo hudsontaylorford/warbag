@@ -26,6 +26,14 @@
   --color-target: #00508f; /* the target curve (accent) */
   --color-predicted: #2e7d4f; /* predicted with the suggested EQ */
 
+  /* Jot: note colours. Pale tints so ink, soft and accent text keep AA. */
+  --color-jot-yellow: #f8eab2;
+  --color-jot-pink: #f6dcdc;
+  --color-jot-blue: #dbe7f1;
+  --color-jot-green: #dcead5;
+  --color-jot-orange: #f7dfc4;
+  --color-jot-lilac: #e7def0;
+
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
 

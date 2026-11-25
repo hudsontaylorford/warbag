@@ -65,6 +65,16 @@
 | Good fit | The latest round needs no change worth making: keep what's on the speaker. |
 | View link | Anyone with it sees one setup without signing in; can't change anything. |
 
+## Jot words
+
+| Label | Means |
+|---|---|
+| Note | One sticky note. |
+| Label | Important, Urgent or Later (or None). "By label" groups notes by it; it never changes your order. |
+| Reminder | A time on a note. **Email me** sends one email then; **Only show it on the note** just turns the note red. "Due" once the time has passed. |
+| Trash | Where a note goes when you move it there. Kept 30 days; Restore puts it back on top. **Empty trash** deletes everything in it for good. |
+| Import from Stickies | Adds notes from the old Stickies app's notes.json or trash.json, as new notes. |
+
 ## Getting around
 
 | Label | Means |
