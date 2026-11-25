@@ -1,12 +1,12 @@
 # Status
 
-**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261124-01 (this status and the full roadmap); latest Instinct note: WRB-20261123-02 (newcomer field test and rerun). What's next and later: ROADMAP.md; why: docs/DECISIONS.md.
+**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Jot (sticky notes, the old Stickies) is live at /jot since 2026-11-25 (PR 76). Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261124-01 (this status and the full roadmap); latest Instinct note: WRB-20261123-02 (newcomer field test and rerun). What's next and later: ROADMAP.md; why: docs/DECISIONS.md.
 
 ## warbag (the hub)
 
 ### Live
 - **Launcher, "Masthead"** (PR 67, 2026-11-24): navy field, a big cream "Hi, Hudson", then app names only (no letters, no descriptions) under **Apps** (warbag's own, ›) and **Other sites** (Chirk, Crewmaxxing, ↗). No lines under the header or labels; no setting for another style. Two columns on desktop.
-- **Letters:** every page's header shows its place's letter as a bare ember serif letter with no square (G Gyfte, M Mosey, R Room Tuner, P People, A Account); W is warbag itself. Only the favicon keeps a square.
+- **Letters:** every page's header shows its place's letter as a bare ember serif letter with no square (G Gyfte, M Mosey, R Room Tuner, J Jot, P People, A Account); W is warbag itself. Only the favicon keeps a square.
 - Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
 
 ### Next (each needs Hudson's go)
@@ -67,6 +67,20 @@
 
 ### Next (needs Hudson's go)
 - Its own roadmap is in docs/ROOMTUNE.md; first up is an unprocessed iPhone recorder.
+
+## Jot (sticky notes)
+
+### Live
+- **Native app at /jot** (PR 76, 2026-11-25): the old Stickies, renamed. Notes with colours and labels (Important, Urgent, Later), your own order or By label, a 30-day Trash, Import from Stickies. For Hudson and anyone he ticks it for under People → Apps; notes are private to their owner.
+- **Reminders by email** from a GitHub Actions schedule every 5 minutes (`CRON_SECRET` in Vercel and GitHub). Texting kept for later.
+
+### Left (Hudson)
+1. **Make the two `CRON_SECRET` values match** (first manual run, 2026-11-25, got "Not allowed"): SETUP.md Part I.
+2. **Import your old notes:** Jot → Import from Stickies → the old box's `data/notes.json` (and `trash.json`).
+3. **Try it on your phone in Safari**, including a reminder a few minutes ahead.
+
+### Next (needs Hudson's go)
+- Its own roadmap is in docs/JOT.md; first up is texting reminders.
 
 ## Accounts and access
 - **A way back:** People and Account remember the page you came from ("‹ Back to Ford Christmas"), including through a person's or group's page. Room Tuner's setup, layout and new-setup pages have "‹ Setups" links.
