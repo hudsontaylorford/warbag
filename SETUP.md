@@ -123,6 +123,24 @@ Nothing to set up in Vercel: Room Tuner uses the database it already has, and **
 
 To bring in your setups from the old page: **Room Tuner → Import setups →** pick `room-tuner-setups.json` → **Import**. You should see "Imported 1 setup ✓" and "Authentics 500 · Living room" in the list.
 
+## Part I · Jot (5 minutes once, then 1 minute per person)
+
+Jot uses the database it already has and sends reminders through the Resend email from Part C. A GitHub Actions schedule ("Jot reminders", every 5 minutes, often a few minutes late) asks warbag to send due reminders. One secret, saved in both Vercel and GitHub, makes sure only that schedule can.
+
+1. 🟢 PRODUCTION · make a secret: on a Mac, open Terminal and run `openssl rand -hex 32`. Copy the 64 letters and numbers it prints.
+2. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Environment Variables → Add**. Key: `CRON_SECRET`. Value: the secret from step 1. Environments: **Production** only. **Save**.
+3. 🟢 PRODUCTION · **GitHub → hudsontaylorford/warbag → Settings → Secrets and variables → Actions → New repository secret**. Name: `CRON_SECRET`. Secret: the same value. **Add secret**.
+4. Tell Claude both are saved; the PR is merged after that (merging deploys, so Vercel picks up the secret).
+5. Check, after the merge: **GitHub → hudsontaylorford/warbag → Actions → Jot reminders → Run workflow → Run workflow**. You should see a green run whose "Send due reminders" step prints `{"sent":0,"skipped":0,"failed":0}` (or a count, if a reminder was due).
+
+Jot for someone:
+
+1. 🟢 PRODUCTION · **https://warbag.rodeo → People →** the person.
+2. Under **Apps**, tick **Jot** and tap **Save**.
+3. Check: they sign in and see **Jot** in their launcher. You always have it as an admin.
+
+To bring in your notes from the old Stickies: copy `data/notes.json` (and `data/trash.json`, if you want its Trash) from the old box, then **Jot → Import from Stickies →** pick the file **→ Import**. You should see "Imported N notes ✓" and your notes on the board, newest of the old order first.
+
 ## Later
 
 Changing setup? Update this file in the same PR.

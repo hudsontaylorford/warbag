@@ -54,6 +54,15 @@ export const APPS: readonly App[] = [
     letter: "R",
   },
   {
+    id: "jot",
+    name: "Jot",
+    description: "Sticky notes",
+    kind: "native",
+    href: "/jot",
+    status: "live",
+    letter: "J",
+  },
+  {
     id: "chirk",
     name: "Chirk",
     description: "Invites and plans",

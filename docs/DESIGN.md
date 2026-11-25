@@ -57,6 +57,7 @@ One serif letter straight on the background, with no tile, square or frame (`src
 | G | Gyfte | ember |
 | M | Mosey | ember |
 | R | Room Tuner | ember |
+| J | Jot | ember |
 | P | People (admin pages) | ember |
 | A | Account | ember |
 
@@ -71,3 +72,4 @@ External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, a
 - **Launcher and public home:** the bold surface ("Masthead", 2026-11-24, PR 67). Navy field and a big cream serif greeting (`masthead` utility, 56 to 120px): a plain "Hi, Hudson", since warbag is a personal app, not a product with a tagline. The apps are **text only**: each name in the serif at 40px, no monogram and no description, split into "Apps" (warbag's own, ›) and "Other sites" (Chirk, Crewmaxxing, ↗ and a new tab). Small sans labels, no lines under the header or the labels; thin dividers only between rows. No decorative marks and no admin setting for another style. On desktop the launcher is two columns (greeting left, apps right) with the header widened to match.
 - **Gyfte:** calm. Paper background, serif page titles, everything else plain sans. Lists are rows divided by hairlines, not cards. A list page leads with the person's name in the serif, the occasion as a small line above (`ListTitle`); screen readers hear the full title once. Family link pages carry a "G · Gyfte · warbag" eyebrow so people know where they've landed.
 - **Room Tuner:** calm, like Gyfte, and a long page on purpose: steps 1 to 4 top to bottom, then Rounds, Presets and Manage. Instructions are folded into bordered sections ("How the rounds work") so the steps stay short. Numbers use tabular figures. The chart uses the three chart tokens (each at least 3:1 on paper) plus soft for the previous round; the suggested values are drawn as sliders so they're easy to copy into a speaker's app.
+- **Jot:** the board is a grid of notes (2 columns on a phone, 3 from tablet up) on paper, each a pale colour tint (`--color-jot-*` tokens: yellow, pink, blue, green, orange, lilac; each passes AA with ink, soft and accent) with ink text, the label as a small uppercase line, and the reminder at the bottom; a due note gets a red outline and red reminder line. No tape, tilt, shadows or handwriting fonts. A note opens on its own page: the text box in the note's colour, then Colour (round swatches), Label (choice buttons), Reminder.
