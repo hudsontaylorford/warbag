@@ -72,12 +72,11 @@
 
 ### Live
 - **Native app at /jot** (PR 76, 2026-11-25): the old Stickies, renamed. Notes with colours and labels (Important, Urgent, Later), your own order or By label, a 30-day Trash, Import from Stickies. For Hudson and anyone he ticks it for under People → Apps; notes are private to their owner.
-- **Reminders by email** from a GitHub Actions schedule every 5 minutes (`CRON_SECRET` in Vercel and GitHub). Texting kept for later.
+- **Reminders by email** from a GitHub Actions schedule every 5 minutes (`CRON_SECRET` in Vercel and GitHub; first good run 2026-11-25, PR 78). Texting kept for later.
 
 ### Left (Hudson)
-1. **Make the two `CRON_SECRET` values match** (first manual run, 2026-11-25, got "Not allowed"): SETUP.md Part I.
-2. **Import your old notes:** Jot → Import from Stickies → the old box's `data/notes.json` (and `trash.json`).
-3. **Try it on your phone in Safari**, including a reminder a few minutes ahead.
+1. **Import your old notes:** Jot → Import from Stickies → the old box's `data/notes.json` (and `trash.json`).
+2. **Try it on your phone in Safari**, including a reminder a few minutes ahead.
 
 ### Next (needs Hudson's go)
 - Its own roadmap is in docs/JOT.md; first up is texting reminders.
