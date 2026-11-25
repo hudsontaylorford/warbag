@@ -12,6 +12,7 @@ Jot is the old **Stickies** app (lovewillwin, November 2026), rebuilt in warbag 
 | `src/lib/jot/notes.ts` | Server: who may see, write, move, trash, restore, empty and import notes. |
 | `src/lib/jot/reminders.ts` | Server: sends due reminders by email. |
 | `src/app/api/jot/reminders/route.ts` | What the scheduler calls every few minutes (needs `CRON_SECRET`). |
+| `.github/workflows/jot-reminders.yml` | The scheduler: a GitHub Actions schedule every 5 minutes (Hudson's choice, 2026-11-25). |
 | `src/app/jot/` | The pages: `/jot` (notes), `/jot/new`, `/jot/[id]` (one note), `/jot/trash`. |
 | `tests/unit/jot-note.test.ts`, `tests/db/jot.test.ts`, `e2e/jot.spec.ts` | Tests. |
 
@@ -31,7 +32,7 @@ One row per note in `jot_notes`: text (up to 20,000 characters), colour (yellow,
 ## Reminders
 
 - A note's reminder has a time (in the viewer's own time zone) and a **How**: **Email me** (to the account's email) or **Only show it on the note**. A due note turns red on the board either way.
-- Sent once: the scheduler calls `/api/jot/reminders` every few minutes; each due reminder is claimed, then emailed. A failed email is tried again on the next run. Changing the time means a new reminder; editing the text doesn't resend.
+- Sent once: a GitHub Actions schedule calls `/api/jot/reminders` every 5 minutes (GitHub often runs it a few minutes late, so an email can arrive up to about 20 minutes after the time); each due reminder is claimed, then emailed. A failed email is tried again on the next run. Changing the time means a new reminder; editing the text doesn't resend.
 - Not sent: notes in the Trash, show-only reminders, reminders already past when set, imported or restored, and anything more than a day late (so a scheduler outage never brings a flood).
 - **Texting (kept for later, Hudson 2026-11-25):** the old app texted the phone through lovewillwin's texting service, which warbag doesn't have. `remind_by` already allows `text`, so adding it later is a new sender and a choice in How, not a change to notes. Needs: a texting provider (e.g. Twilio), a verified phone number per person, and Hudson's go.
 

@@ -125,12 +125,13 @@ To bring in your setups from the old page: **Room Tuner → Import setups →** 
 
 ## Part I · Jot (5 minutes once, then 1 minute per person)
 
-Jot uses the database it already has and sends reminders through the Resend email from Part C. Reminder emails need one secret, so only the scheduler can ask warbag to send them.
+Jot uses the database it already has and sends reminders through the Resend email from Part C. A GitHub Actions schedule ("Jot reminders", every 5 minutes, often a few minutes late) asks warbag to send due reminders. One secret, saved in both Vercel and GitHub, makes sure only that schedule can.
 
 1. 🟢 PRODUCTION · make a secret: on a Mac, open Terminal and run `openssl rand -hex 32`. Copy the 64 letters and numbers it prints.
 2. 🟢 PRODUCTION · **Vercel → project `warbag` → Settings → Environment Variables → Add**. Key: `CRON_SECRET`. Value: the secret from step 1. Environments: **Production** only. **Save**.
-3. 🟢 PRODUCTION · **Vercel → project `warbag` → Deployments →** the latest Production deployment **→ ⋯ → Redeploy**, so it picks up the secret.
-4. Check: **Vercel → project `warbag` → Settings → Cron Jobs**. You should see `/api/jot/reminders` every 5 minutes. (Without the secret, the job answers "CRON_SECRET is not set" and sends nothing.)
+3. 🟢 PRODUCTION · **GitHub → hudsontaylorford/warbag → Settings → Secrets and variables → Actions → New repository secret**. Name: `CRON_SECRET`. Secret: the same value. **Add secret**.
+4. Tell Claude both are saved; the PR is merged after that (merging deploys, so Vercel picks up the secret).
+5. Check, after the merge: **GitHub → hudsontaylorford/warbag → Actions → Jot reminders → Run workflow → Run workflow**. You should see a green run whose "Send due reminders" step prints `{"sent":0,"skipped":0,"failed":0}` (or a count, if a reminder was due).
 
 Jot for someone:
 
