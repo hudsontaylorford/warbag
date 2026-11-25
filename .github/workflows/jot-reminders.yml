@@ -19,6 +19,8 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
+          # Drop any space or line break picked up when the secret was pasted.
+          CRON_SECRET=$(printf '%s' "$CRON_SECRET" | tr -d '[:space:]')
           if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET is not set in GitHub; nothing sent."; exit 1; fi
           curl --fail-with-body --silent --show-error --max-time 60 \
             -H "Authorization: Bearer $CRON_SECRET" \
