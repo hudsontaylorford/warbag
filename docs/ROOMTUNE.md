@@ -121,6 +121,8 @@ Each item needs Hudson's go. Roughly in order of value; each says what it fixes.
 
 ### Next
 
+0. **Quick test (replaces today's Round 1 / Round 2 routine).** See "Measurement tests" below. Small build, fixes the
+   biggest weakness found so far: EQ effects were never measured with the mic standing still.
 1. **Unprocessed iPhone recorder.** See the section below. Biggest accuracy win left for phone-only users.
 2. **Phone mic correction from one calibrated session.** Record the same pink noise at the same spot with the iPhone
    and with a calibrated USB mic (UMIK-1/2) once. The difference, smoothed, is that phone's correction curve; save it per
@@ -141,6 +143,97 @@ Each item needs Hudson's go. Roughly in order of value; each says what it fixes.
    when rounds move those sliders, and fit width per band instead of one width for all peaks.
 9. **First-run guide.** A short walkthrough (setup → level → 3 spots → upload) for someone who has never measured
    anything, then it gets out of the way. The instructions are already in collapsible panels to build from.
+
+### Measurement tests
+
+Added 2026-11-24 in the original Room Tuner thread.
+
+**Why.** Every recording is speaker + EQ + room, and the room part changes with mic position (bass by 5–10 dB over a few
+inches, reflection dips higher up). Two recordings from the *same, untouched* spot differ only by what changed on the
+speaker, so the room cancels. Our JBL band-width estimate didn't have that: 5–7 sliders changed at once, one
+recording per round, and the tripod may have moved between rounds. Pink noise itself was fine (±0.4 dB over 30 s).
+
+Both tests use a **measurement track**: one generated audio file the page plays from Phone A while Phone B is
+already recording. The track carries its own timing, so the analyzer can line everything up after the fact.
+
+**Shared building blocks**
+- **Sync markers:** a short, distinctive chirp at the start of every segment. The analyzer finds each marker in the
+  recording (cross-correlation), so it doesn't matter when recording started, how much Bluetooth/AirPlay delayed the
+  audio, or whether the track was paused. Two markers far apart also measure clock drift between the phones.
+- **Segments:** pink noise (spectrum), log sine sweep (cleaner spectrum, more noise-resistant, and an impulse response
+  so the speaker's direct sound can be separated from room reflections above a few hundred Hz), silence (room noise
+  floor), clicks (latency and timing).
+- **Timeline JSON** describing the track (segment type, length, what the speaker should be set to), so the same
+  analyzer handles any track.
+- Recordings shorter than the track, or with a missing marker, are rejected with a clear message.
+
+**Quick test (build this)**
+Phone B starts recording first; Phone A plays a ~65 s track: count-in clicks → marker → 30 s pink noise → 2 s silence →
+marker → sweeps for ~30 s → end marker. Run it 4 times:
+
+| Take | Phone position | Speaker EQ |
+|---|---|---|
+| 1 | Center, on tripod | Flat |
+| 2 | Center, **not moved** | Test EQ (below) |
+| 3 | Left spot | Same as take 2 |
+| 4 | Right spot | Same as take 2 |
+
+- **Takes 1 vs 2** measure what the EQ really does (room cancels): real gain per band, width, shelf corners, whether
+  ±max is honest. This calibrates the band model for this speaker on the first run.
+- **Takes 2–4**, with the now-measured EQ removed, average into the room response across spots → suggested sliders.
+- **Test EQ options:** (a) a fixed probe pattern with alternating signs, e.g. 0, +6, −6, +6, −6, +6, −6 on the JBL, so
+  neighbouring bands' overlap can be told apart; or (b) the first suggestion from a flat take, which is more useful
+  for listening but harder to untangle. Default to (a) for a new speaker, (b) once the speaker's bands are known.
+- **Keep probe settings to ±6 dB.** Big boosts can hit the speaker's own limiter, and then the test measures the
+  limiter, not the EQ.
+- **Keep both pink noise and the sweep.** Two signals measuring the same thing are a built-in cross-check: if they
+  disagree, something moved or changed.
+- **Optional drift check:** repeat the flat take at center at the very end (one more minute). If it doesn't match
+  take 1, something changed (the speaker's auto-tuning, a bumped tripod) and the run is flagged.
+- **More spots when there's time:** 3 spots works; 5 (center, left, right, front, back) is noticeably steadier in the
+  bass. Professional systems use 5–17. Let the person pick 3 or 5 per setup and keep it the same every run.
+- **Or a moving-mic take for the room average** (see "Repeatable moving mic" below) instead of takes 3–4.
+
+**The band model learns from every quick test.** Takes 1 and 2 measure the EQ with the mic standing still every time.
+Store each of those measurements per setup and refit the band model (centre, width, gain per band, shelf corners)
+from all of them together. After a few quick tests the speaker is well characterized with no separate session.
+This is the main reason the full test may never be needed.
+
+**Repeatable moving mic**
+Slowly moving the mic during one long recording (the moving-mic method) is a respected way to get a room *average*:
+it smooths out the position-dependent booms and dips that a few fixed spots can miss. It's wrong for measuring what
+the EQ does (the room doesn't cancel). The problem in practice was repeatability; ways to fix it:
+- **Fixed-radius rig:** phone on a short arm (selfie stick or a 12–18 in board) on a tripod with a rotating head, or a
+  lazy Susan on a stool. Rotate slowly through full turns: same circle, same height, every time.
+- **Paced by the track:** Phone A plays soft ticks every 2.5 s (a quarter turn per tick, one turn per 10 s, three turns
+  per take), so speed is consistent without counting.
+- **Taped path** on the floor (a circle or figure eight around the seat) for walking it by hand, with the same ticks.
+- The analyzer already averages long recordings and drops level jumps; for moving takes it would also skip the first
+  and last few seconds and warn if the level wanders more than expected (a sign the phone passed behind something).
+- Record the rig in the setup (radius, height, turns) like the fixed positions, so later runs match.
+- Use it for: the room average (replaces takes 3–4). Don't use it for: takes 1–2 (EQ calibration) or quick checks.
+
+**Full test (maybe someday; value unproven)**
+One long session per speaker that walks through every band. **Tap-to-continue** instead of a fixed voice timeline:
+- Phone B records the whole time. Phone A shows the next step on screen ("set 8k to +6"). When the person taps
+  **Done**, Phone A plays a marker chirp and the next measurement (pink noise, then a sweep). No fixed hands-on window,
+  no time pressure, no misheard voice prompts; the markers line everything up afterwards.
+- Sequence per band: flat → +6 → −6 → +3 (step accuracy) → flat; whole-session flat at the start and end for drift.
+- An optional spoken prompt (text-to-speech through the speaker) can read the step aloud for hands-free use; the
+  analyzer skips it like any other non-measurement audio.
+- Earlier idea, kept for reference: a fully pre-timed track with two beeps, a voice prompt and a fixed window per change.
+  It works, but someone who takes longer than the window or mishears a value silently corrupts that segment.
+- Optional segments: the same flat measurement at two volumes (the speaker's own volume-dependent EQ), click train
+  (Bluetooth latency, useful for future speaker + sub alignment), long sweep for decay time (RT60).
+- Output: a full model of the speaker's EQ (every band's real centre, width, gain linearity, step accuracy, symmetry,
+  limiter behaviour at big boosts) plus the room at every spot.
+- Cost: long (several minutes), and a lot to build. Only worth it if the quick test's self-learning band model can't
+  pin a speaker down (sliders that behave oddly, or interact).
+
+**Bring your own measurements (REW import)**
+Room EQ Wizard (free, desktop) with a USB measurement mic is more capable than a phone. Its text export (frequency,
+SPL) could be imported as a round: resample onto `GRID` (in `dsp.ts`), mark the mic as calibrated (no bass caps), and let Room
+Tuner do what REW can't: translate the result into one app's fixed sliders. Small build, big accuracy option.
 
 ### Unprocessed iPhone recorder
 
