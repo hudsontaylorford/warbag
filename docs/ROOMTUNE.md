@@ -277,6 +277,20 @@ isn't flat. A one-time calibration against a UMIK turns that phone into a usable
 - **Multiple speakers per room**: stereo pairs or speaker + sub as linked setups, with level matching.
 - **Target library**: save and reuse target curves (room curve, flat, bass-heavy, vocal).
 - **Undo for deletes** of rounds and presets.
+- **Car setups** (Hudson, 2026-11-25). Tune a car's audio the same way, measured at the seats instead of room spots.
+  What would change from a room setup:
+  - *Positions:* driver, passenger, and optionally rear, with the phone at ear height on or near the headrest. The
+    driver's seat is the main target; "whole car" averages the seats.
+  - *Target:* cars add a lot of bass on their own (cabin gain below ~80 Hz), and preferred in-car curves have more bass
+    than a room, so offer a car target (stronger bass shelf, softer treble) as a preset beside the room target.
+  - *Controls:* most head units have bass / mid / treble or a 5–9 band EQ, plus fader and balance. Add car templates,
+    and treat fader and balance as settings to record (and maybe suggest), not EQ bands.
+  - *Car settings to note or turn off while measuring:* speed-dependent volume, surround or "stage" modes
+    (Bose Centerpoint, B&O and similar), driver-focus or seat-position modes, and loudness. Record which were on.
+  - *Conditions:* parked, engine on (the head unit's normal state), windows and doors closed. Road noise makes
+    driving measurements unreliable; a later option is a separate "while driving" noise check.
+  - *Playback:* pink noise from the phone over CarPlay, Android Auto or Bluetooth. Latency doesn't matter.
+  - Out of scope: time alignment and per-speaker crossovers (aftermarket DSPs); these need per-speaker measurements.
 
 ## Product decisions to revisit
 
