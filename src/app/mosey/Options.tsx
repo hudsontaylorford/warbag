@@ -82,7 +82,7 @@ export function OptionsBlock({
           const picked = (attend?.marks[stop.id] ?? []).filter((m) => m.state === "going").map((m) => name.get(m.personId) ?? "");
           return (
             <li key={stop.id} className="flex flex-col">
-              <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} choicesHere={choicesHere} showTime={timed} />
+              <StopRow stop={stop} days={days} canEdit={canEdit} canPlan={canPlan} choicesHere={choicesHere} showTime={timed} brief />
               {attend && (
                 <div className={`-mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pb-3 text-sm ${timed ? "sm:pl-21" : ""}`}>
                   <span className="break-words text-soft">{picked.length ? picked.join(", ") : "No picks yet"}</span>

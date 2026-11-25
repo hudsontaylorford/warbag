@@ -39,9 +39,11 @@ test("Mosey notes: bullets and paragraphs, long notes fold; day tools stay folde
     );
   await page.getByRole("button", { name: "Save", exact: true }).click();
 
-  await expect(row.getByRole("listitem").filter({ hasText: "Rentals" })).toHaveCount(1);
-  await expect(row.getByRole("button", { name: "Show all" })).toBeVisible();
+  // On a day card a long note shows only its first line until Show all.
+  await expect(row.getByText("Optional, subject to snow.", { exact: true })).toBeVisible();
+  await expect(row.getByRole("listitem").filter({ hasText: "Rentals" })).toHaveCount(0);
   await row.getByRole("button", { name: "Show all" }).click();
+  await expect(row.getByRole("listitem").filter({ hasText: "Rentals" })).toHaveCount(1);
   await expect(row.getByText("Recheck before booking", { exact: false })).toBeVisible();
   await expect(row.getByRole("button", { name: "Show less" })).toBeVisible();
 });

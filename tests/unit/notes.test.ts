@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isLongNote, noteBlocks } from "@/lib/notes";
+import { firstLine, isLongNote, noteBlocks } from "@/lib/notes";
 
 describe("noteBlocks", () => {
   it("keeps plain text as one paragraph with its line breaks", () => {
@@ -36,5 +36,19 @@ describe("isLongNote", () => {
     expect(isLongNote("x".repeat(221))).toBe(true);
     expect(isLongNote("a\nb\nc\nd\ne")).toBe(true);
     expect(isLongNote("a\nb\nc\nd")).toBe(false);
+  });
+
+  it("folds sooner on day cards (one line)", () => {
+    expect(isLongNote("Meet at the van, 4pm", 1)).toBe(false);
+    expect(isLongNote("Meet at the van\nBring car seats", 1)).toBe(true);
+    expect(isLongNote("x".repeat(81), 1)).toBe(true);
+  });
+});
+
+describe("firstLine", () => {
+  it("gives the first line with text, without a bullet mark", () => {
+    expect(firstLine("\n  Easy pizza night.\n- Flight 5:49pm")).toBe("Easy pizza night.");
+    expect(firstLine("- Tickets\n- Rentals")).toBe("Tickets");
+    expect(firstLine("")).toBe("");
   });
 });

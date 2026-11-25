@@ -101,6 +101,7 @@ export function StopRow({
   hideSuggested = false,
   attend,
   choicesHere,
+  brief = false,
 }: {
   stop: Stop;
   days: string[];
@@ -113,6 +114,8 @@ export function StopRow({
   attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: { personId: string; state: "going" | "maybe" }[]; organizer: boolean };
   /** Choices on this stop's day, for "Part of options" in More (organizers). */
   choicesHere?: { id: string; title: string }[];
+  /** On the Plan's day cards: notes fold to one line, so the day reads as a plan. */
+  brief?: boolean;
 }) {
   const editor = useEditor(`stop:${stop.id}`);
   const open = editor.open;
@@ -158,7 +161,7 @@ export function StopRow({
             </a>
           )}
           {stop.handledBy && <span className="text-sm break-words">Handling it: {stop.handledBy}</span>}
-          {stop.notes && <Notes text={stop.notes} />}
+          {stop.notes && <Notes text={stop.notes} fold={brief ? 1 : 3} />}
           {(stop.membersOnly || (stop.suggestedDay && !hideSuggested)) && (
             <span className="text-xs text-soft">
               {[stop.suggestedDay && !hideSuggested && `Suggested for ${dayLabel(stop.suggestedDay)}`, stop.membersOnly && "Members only"].filter(Boolean).join(" · ")}
