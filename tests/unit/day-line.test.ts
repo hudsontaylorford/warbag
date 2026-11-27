@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayHeadings, dayLine, dayPartOf } from "@/lib/mosey/day-line";
+import { dayHeadings, dayLine, dayPartOf, stayingChanges } from "@/lib/mosey/day-line";
 import type { Stop } from "@/lib/mosey/trips";
 
 const stop = (s: Partial<Stop>): Stop => ({
@@ -62,5 +62,16 @@ describe("headings inside a day card", () => {
   it("adds no headings to a day that's all one part", () => {
     expect(dayHeadings(["evening", "evening", null])).toEqual([null, null, null]);
     expect(dayHeadings([])).toEqual([]);
+  });
+});
+
+describe("where people stay, shown when it changes", () => {
+  it("shows the first night and each change, not repeats", () => {
+    const days = ["d1", "d2", "d3", "d4", "d5"];
+    const info = { d1: { staying: "City apartment" }, d2: { staying: "House upstate" }, d3: { staying: "House upstate" }, d5: { staying: "City apartment" } };
+    expect(stayingChanges(days, info)).toEqual({ d1: "City apartment", d2: "House upstate", d5: "City apartment" });
+  });
+  it("shows nothing when nobody set it", () => {
+    expect(stayingChanges(["d1"], {})).toEqual({});
   });
 });

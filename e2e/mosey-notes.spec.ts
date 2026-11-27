@@ -26,7 +26,7 @@ test("Mosey notes: bullets and paragraphs, long notes fold; day tools stay folde
   await expect(day.getByRole("button", { name: "+ Add options" })).toHaveCount(0);
   await day.getByRole("button", { name: "More for this day" }).click();
   await expect(day.getByRole("button", { name: "+ Add options" })).toBeVisible();
-  await expect(day.getByRole("button", { name: "Add area or tag" })).toBeVisible();
+  await expect(day.getByRole("button", { name: "Add area, tag or staying" })).toBeVisible();
   await day.getByRole("button", { name: "Fewer" }).click();
   await expect(day.getByRole("button", { name: "+ Add options" })).toHaveCount(0);
 

@@ -61,13 +61,17 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   // An optional area and tag for the day, shown quietly under its date.
   await day2.getByRole("button", { name: "Done adding" }).click();
   await day2.getByRole("button", { name: "More for this day" }).click();
-  await day2.getByRole("button", { name: "Add area or tag" }).click();
+  await day2.getByRole("button", { name: "Add area, tag or staying" }).click();
   await day2.getByLabel("Area").fill("Bar Harbor → Acadia");
   await day2.getByLabel("Tag").fill("Travel day");
+  await day2.getByLabel("Staying").fill("Cabin on Ocean Drive");
   await day2.getByLabel("Area").focus(); // leaving a field saves it
   await expect(day2.getByText("Saved ✓")).toBeVisible();
   await day2.getByRole("button", { name: "Done" }).click();
   await expect(day2.getByText("Day 2 · Bar Harbor → Acadia · Travel day")).toBeVisible();
+  // Where people stay shows on the card and in the day list (members only; the trip link never shows it).
+  await expect(day2.getByText("Staying: Cabin on Ocean Drive")).toBeVisible();
+  await expect(dayList.getByRole("link", { name: /Sunday, June 6/ })).toContainText("Staying: Cabin on Ocean Drive");
 
   // A day collapses and opens again.
   await day2.getByRole("button", { name: /Sun, Jun 6/ }).click();
@@ -155,6 +159,7 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(guest.getByLabel(/^Add to/)).toHaveCount(0);
   await expect(guest.getByRole("button", { name: /Add to this day|area or tag/ })).toHaveCount(0);
   await expect(guest.getByText("Day 2 · Bar Harbor → Acadia · Travel day")).toBeVisible();
+  await expect(guest.getByText(/Cabin on Ocean Drive/)).toHaveCount(0);
 
   // Turned off, the link stops working.
   await page.getByRole("button", { name: "Turn off" }).click();

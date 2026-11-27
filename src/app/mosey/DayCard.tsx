@@ -18,7 +18,7 @@ type Row = { stop: Stop; canEdit: boolean };
 
 const TAGS = ["Travel day", "Flexible", "Rest day", "Free day"];
 
-/** Area and tag for one day: optional, quiet, organizers only. */
+/** Area, tag and where people stay for one day: optional, quiet, organizers only. */
 function DayDetails({ tripId, day, info, onDone }: { tripId: string; day: string; info: DayInfo; onDone: () => void }) {
   const list = useId();
   // Saves itself when you leave a field; Done closes it.
@@ -40,6 +40,14 @@ function DayDetails({ tripId, day, info, onDone }: { tripId: string; day: string
           <option key={t} value={t} />
         ))}
       </datalist>
+      <Field
+        label="Staying"
+        name="staying"
+        maxLength={120}
+        defaultValue={info.staying}
+        placeholder="Lake house, details pending"
+        hint="Optional. Where people sleep that night. Shown when it changes; members only."
+      />
       <SaveStatus state={state} pending={pending} />
       <button type="button" onClick={onDone} disabled={pending} className="min-h-11 self-start font-semibold text-button disabled:opacity-50">
         Done
@@ -65,6 +73,7 @@ export function DayCard({
   canPlan,
   attend,
   choices = {},
+  staying,
 }: {
   tripId: string;
   day: string;
@@ -79,6 +88,8 @@ export function DayCard({
   attend?: { tripId: string; people: { id: string; name: string; me: boolean }[]; marks: Record<string, { personId: string; state: "going" | "maybe" }[]>; organizer: boolean };
   /** The trip's choices between options, by id. */
   choices?: Record<string, { title: string }>;
+  /** Where people stay tonight, when it changed from last night (members only). */
+  staying?: string;
 }) {
   const today = useToday();
   const [openChoice, setOpen] = useState<boolean | null>(null);
@@ -130,6 +141,7 @@ export function DayCard({
               {isToday && <span className="rounded bg-ember px-1.5 text-xs leading-5 font-semibold text-page">Today</span>}
             </span>
             <span className="text-sm break-words text-soft">{meta}</span>
+            {staying && <span className="text-sm break-words text-soft">Staying: {staying}</span>}
           </span>
           <span className="flex shrink-0 items-center gap-2 pt-1 text-sm text-soft">
             {!open && <span>{count === 0 ? "Nothing yet" : `${count} planned`}</span>}
@@ -193,7 +205,7 @@ export function DayCard({
               </ul>
             </div>
           )}
-          {editing && <DayDetails tripId={tripId} day={day} info={info ?? { area: "", tag: "" }} onDone={() => setEditing(false)} />}
+          {editing && <DayDetails tripId={tripId} day={day} info={info ?? { area: "", tag: "", staying: "" }} onDone={() => setEditing(false)} />}
           {adding && (
             <div className="flex flex-col gap-1">
               <QuickAdd
@@ -232,7 +244,7 @@ export function DayCard({
                     + Add options
                   </button>
                   <button type="button" onClick={() => setEditing(true)} className="min-h-11 px-1 text-sm text-button">
-                    {info?.area || info?.tag ? "Edit area and tag" : "Add area or tag"}
+                    {info?.area || info?.tag || info?.staying ? "Edit area, tag and staying" : "Add area, tag or staying"}
                   </button>
                 </span>
               )}

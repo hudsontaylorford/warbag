@@ -66,3 +66,19 @@ export function dayHeadings(parts: (DayPart | null)[]): (DayPart | null)[] {
     return p;
   });
 }
+
+/**
+ * "Staying" to show for each day: only where it changes from the night
+ * before (the first night always, if set), so a three-night stay shows once.
+ * A day with nothing set after a stay shows nothing; the next set day shows again.
+ */
+export function stayingChanges(days: string[], info: Record<string, { staying?: string }>): Record<string, string> {
+  const out: Record<string, string> = {};
+  let last = "";
+  for (const day of days) {
+    const s = info[day]?.staying ?? "";
+    if (s && s !== last) out[day] = s;
+    last = s;
+  }
+  return out;
+}

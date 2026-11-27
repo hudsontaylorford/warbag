@@ -5,6 +5,7 @@ import { QuickAdd } from "./QuickAdd";
 import { rangeLabel } from "./format";
 import { DayCard } from "./DayCard";
 import { DayList } from "./DayList";
+import { stayingChanges } from "@/lib/mosey/day-line";
 
 /** Trip name, dates and place, with Plan / Ideas. */
 export function TripHeader({ trip, base, current, back, money }: { trip: TripDetail; base: string; current: "plan" | "ideas" | "money"; back?: boolean; money?: boolean }) {
@@ -49,9 +50,10 @@ export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
   const editable = (s: Stop) => !viewerOnly && (canPlan || s.mine);
   const plan = canPlan && !viewerOnly;
   const byDay = Object.fromEntries(trip.days.map((d) => [d, trip.stops.filter((s) => s.day === d)]));
+  const staying = stayingChanges(trip.days, trip.dayInfo);
   return (
     <div className="flex flex-col gap-6">
-      {trip.days.length > 1 && <DayList days={trip.days} planned={byDay} info={trip.dayInfo} choices={trip.choices} />}
+      {trip.days.length > 1 && <DayList days={trip.days} planned={byDay} info={trip.dayInfo} choices={trip.choices} staying={staying} />}
       <div className="flex flex-col gap-4">
         {trip.days.map((day, i) => (
           <DayCard
@@ -67,6 +69,7 @@ export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDeta
             canPlan={plan}
             attend={attendFor(trip, viewerOnly)}
             choices={trip.choices}
+            staying={staying[day]}
           />
         ))}
       </div>
