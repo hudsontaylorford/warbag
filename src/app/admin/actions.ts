@@ -7,6 +7,7 @@ import {
   InputError,
   invitePerson,
   newGroup,
+  setAdmin,
   setPeopleManager,
   removePerson,
   renameGroup,
@@ -83,6 +84,14 @@ export async function deleteGroupAction(_: FormState, form: FormData): Promise<F
   const state = await run((actor) => deleteGroup(actor, text(form, "id")));
   if (state.ok) redirect("/admin");
   return state;
+}
+
+export async function setAdminAction(_: FormState, form: FormData): Promise<FormState> {
+  const on = text(form, "value") === "on";
+  return run(async (actor) => {
+    await setAdmin(actor, text(form, "id"), on);
+    return on ? "Made an admin" : "No longer an admin";
+  });
 }
 
 export async function setPeopleManagerAction(_: FormState, form: FormData): Promise<FormState> {

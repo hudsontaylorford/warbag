@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · More than one admin (Hudson)
+
+Hudson asked whether he can make other people admins; he chose an Admin switch "with proper safeguards" over relying on people managers.
+
+- **Where:** People → a person → **Admin** → "Make admin" / "Remove admin", each behind a confirm that says what changes. Only admins see it.
+- **Safeguards, on the server** (`setAdmin`, `src/lib/people.ts`): admins only (never people managers); never on yourself, so nobody demotes or promotes themselves; never a trip guest or a made-up sample person; warbag always keeps at least one admin (admin rows are locked while it checks, so two admins can't remove each other at once); every change is in the audit log; it takes effect on the person's next page load.
+- **Becoming an admin replaces people manager.** Admins still can't open anyone's lists, notes or trips.
+- **The assistant's account is never made an admin** (CLAUDE.md); the switch says so.
+
 ## 2026-11-27 · Share links preview like Chirk's (Hudson)
 
 Hudson: share links should preview the way Chirk's invites do ("you've been invited to the trip").

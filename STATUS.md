@@ -8,6 +8,7 @@
 - **Launcher, "Masthead"** (PR 67, 2026-11-24): navy field, a big cream "Hi, Hudson", then app names only (no letters, no descriptions) under **Apps** (warbag's own, ›) and **Other sites** (Chirk, Crewmaxxing, ↗). No lines under the header or labels; no setting for another style. Two columns on desktop.
 - **Letters:** every page's header shows its place's letter as a bare ember serif letter with no square (G Gyfte, M Mosey, R Room Tuner, J Jot, P People, A Account); W is warbag itself. Only the favicon keeps a square.
 - **App first** (2026-11-27): only admins, people managers and people with two or more apps see warbag (the header link, the launcher). Everyone else sees just their app: signing in lands there, tabs, share pages, the sign-in page and emails name the app, and each app has its own favicon letter.
+- **More than one admin** (2026-11-27): People → a person → Admin → "Make admin" (after a confirm). Never yourself, never a guest or sample person, always at least one admin, logged.
 - **Link previews** (2026-11-27): trip links, guest links, gift list and family links and Room Tuner view links preview like Chirk's ("You're invited: Lake weekend", dates and place, a card in the app's look).
 - Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
 

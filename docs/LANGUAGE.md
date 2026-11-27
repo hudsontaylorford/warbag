@@ -42,6 +42,7 @@
 | Who picked what | Everyone's pick for a set of options. |
 | Ungroup | Turns options back into ordinary stops, keeping picks. |
 | People manager | Can invite people and manage groups and app access, but not their own access, admins, removing people or deleting groups. |
+| Admin | Runs all of warbag: people, groups, app access, removing people, making admins, every app. Never opens anyone's lists, notes or trips. Make admin / Remove admin on a person's page. |
 | Trip link | A link to a trip anyone can open: the plan and ideas, never money or members-only details; they can ask to join. (Was "View link".) |
 | Ask to join / Asking to join | Leaving a name and email on a trip link, or (signed in) asking from a trip's own page; the owner adds or declines. |
 | Share link / Copy link | Sending the trip link: Share opens the phone's share sheet; Copy puts it on the clipboard. |

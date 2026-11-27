@@ -18,6 +18,7 @@ import {
   setPersonGroups,
   newGroup,
   setPeopleManager,
+  setAdmin,
   removalImpact,
 } from "@/lib/people";
 import { deleteGroup } from "@/lib/access";
@@ -133,6 +134,41 @@ describeDb("people and groups (admin)", () => {
   it("treats a malformed group id as not found", async () => {
     expect(await getGroup(hudson, "nope")).toBeNull();
     await expect(setPersonGroups(hudson, molly.id, ["nope"])).rejects.toBeInstanceOf(InputError);
+  });
+
+  it("admins make and remove admins, with safeguards", async () => {
+    const isAdmin = async (id: string) => (await admin.query(`select "isAdmin", "isPeopleManager" from "user" where id = $1`, [id])).rows[0];
+    // Molly is a people manager first: becoming an admin replaces that.
+    await setPeopleManager(hudson, molly.id, true);
+    const pm: Actor = { id: molly.id, isAdmin: false, peopleManager: true };
+    // Only admins, never people managers, never on themselves.
+    await expect(setAdmin(pm, molly.id, true)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setAdmin(pm, hudson.id, false)).rejects.toBeInstanceOf(AccessDenied);
+    await expect(setAdmin(hudson, hudson.id, false)).rejects.toBeInstanceOf(InputError);
+
+    await setAdmin(hudson, molly.id, true);
+    expect(await isAdmin(molly.id)).toEqual({ isAdmin: true, isPeopleManager: false });
+    const mollyAdmin: Actor = { id: molly.id, isAdmin: true };
+    expect((await listPeople(mollyAdmin)).length).toBeGreaterThan(1);
+    const log = await admin.query(`select action from audit_events where actor_id = $1 and target = $2 order by created_at`, [hudson.id, `user/${molly.id}`]);
+    expect(log.rows.map((r) => r.action)).toContain("person.admin.on");
+
+    // Doing it twice changes nothing; another admin can undo it.
+    await setAdmin(hudson, molly.id, true);
+    await setAdmin(mollyAdmin, hudson.id, false);
+    expect((await isAdmin(hudson.id)).isAdmin).toBe(false);
+    await setAdmin(mollyAdmin, hudson.id, true);
+    await setAdmin(hudson, molly.id, false);
+    expect((await isAdmin(molly.id)).isAdmin).toBe(false);
+
+    // Never a made-up sample person or a trip guest; an unknown person says so.
+    const sample = await makeUser();
+    await admin.query(`update "user" set email = $2 where id = $1`, [sample.id, `${sample.id}@sample.invalid`]);
+    await expect(setAdmin(hudson, sample.id, true)).rejects.toBeInstanceOf(InputError);
+    const guest = await makeUser();
+    await admin.query(`update "user" set "isGuest" = true where id = $1`, [guest.id]);
+    await expect(setAdmin(hudson, guest.id, true)).rejects.toBeInstanceOf(InputError);
+    await expect(setAdmin(hudson, crypto.randomUUID(), true)).rejects.toBeInstanceOf(InputError);
   });
 
   it("people managers invite and manage groups and apps, but never their own access or an admin's", async () => {

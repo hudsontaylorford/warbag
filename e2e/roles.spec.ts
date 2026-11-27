@@ -79,3 +79,43 @@ test("a people manager invites and edits others, never their own access or an ad
   await pm.locator("a", { hasText: OWNER }).first().click();
   await expect(pm.getByText("Only admins can change an admin's apps and groups.")).toBeVisible();
 });
+
+test("an admin makes someone an admin after a confirm, and can take it back", async ({ page, browser }) => {
+  const tag = randomUUID().slice(0, 6);
+  const email = `second-admin-${tag}@example.test`;
+  await signIn(page, OWNER);
+  await page.goto("/admin");
+  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByLabel("Name", { exact: true }).fill(`Second ${tag}`);
+  await page.getByLabel("Email them how to sign in").uncheck();
+  await page.getByRole("button", { name: "Invite" }).click();
+  await expect(page.getByText(`Added ${email}`)).toBeVisible();
+  await page.getByRole("link", { name: new RegExp(`Second ${tag}`) }).click();
+  await page.waitForURL(/\/admin\/people\//);
+  const personUrl = page.url();
+
+  // Nothing changes until the confirm.
+  await page.getByRole("button", { name: "Make admin" }).click();
+  await expect(page.getByText(/will be able to invite and remove people/)).toBeVisible();
+  await page.getByRole("button", { name: "Yes, make admin" }).click();
+  await expect(page.getByRole("main").getByText(`${email} · Admin`)).toBeVisible();
+
+  // They now see People and can open it.
+  const them = await freshPage(browser);
+  await signIn(them, email);
+  const res = await them.goto("/admin");
+  expect(res?.status()).toBe(200);
+
+  // Take it back: their next page load is an ordinary member's.
+  await page.goto(personUrl);
+  await page.getByRole("button", { name: "Remove admin" }).click();
+  await page.getByRole("button", { name: "Yes, remove admin" }).click();
+  await expect(page.getByRole("button", { name: "Make admin" })).toBeVisible();
+  const after = await them.goto("/admin");
+  expect(after?.status()).toBe(404);
+
+  // Your own page has no Admin switch.
+  await page.goto("/admin");
+  await page.getByRole("link", { name: /owner@example\.test|Hudson/ }).first().click();
+  await expect(page.getByRole("button", { name: /Make admin|Remove admin/ })).toHaveCount(0);
+});

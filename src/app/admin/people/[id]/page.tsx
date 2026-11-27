@@ -11,6 +11,7 @@ import { CheckboxListForm, ConfirmForm, Section, TextForm } from "@/components/u
 import {
   removePersonAction,
   renamePersonAction,
+  setAdminAction,
   setPeopleManagerAction,
   setPersonAppsAction,
   setPersonGroupsAction,
@@ -113,6 +114,30 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
               legend="People manager"
               options={[{ value: "on", label: "People manager" }]}
               selected={person.peopleManager ? ["on"] : []}
+            />
+          </Section>
+        )}
+
+        {actor.isAdmin && !isMe && !person.email.toLowerCase().endsWith(".invalid") && (
+          <Section
+            title="Admin"
+            hint={
+              person.isAdmin
+                ? "Can do everything you can here. Admins can't open anyone's lists, notes or trips."
+                : "For someone you'd trust with all of warbag. Never for an assistant or agent account."
+            }
+          >
+            <ConfirmForm
+              key={person.isAdmin ? "admin" : "member"}
+              action={setAdminAction}
+              id={person.id}
+              label={person.isAdmin ? "Remove admin" : "Make admin"}
+              hidden={{ value: person.isAdmin ? "off" : "on" }}
+              consequence={
+                person.isAdmin
+                  ? `${who} goes back to what their apps and groups give them, starting on their next page load.`
+                  : `${who} will be able to invite and remove people, delete groups, make or remove admins and use every app. They still can't open anyone's lists, notes or trips. You can undo this here.`
+              }
             />
           </Section>
         )}
