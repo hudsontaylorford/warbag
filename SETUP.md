@@ -37,7 +37,7 @@ Warbag runs on **Vercel** (website + Neon database), with **Cloudflare** for the
 
 ## Part C · Email for sign-in codes (5 minutes)
 
-Your Resend account has no free domain slots, so warbag sends from the already-verified `chirk.fyi` domain for now. Codes arrive from "warbag" at `warbag@chirk.fyi`. Switching to a warbag.rodeo address later only changes two settings.
+Your Resend account has no free domain slots, so warbag sends from the already-verified `chirk.fyi` domain for now. Codes arrive from "Hudson" at `warbag@chirk.fyi` (the name says nothing about warbag, so family see only the app they use; Hudson, 2026-11-27). Switching to a warbag.rodeo address later only changes two settings.
 
 1. 🟢 PRODUCTION · **Resend (resend.com) → API Keys → Create API Key.**
 2. Fill in:
@@ -56,7 +56,7 @@ Your Resend account has no free domain slots, so warbag sends from the already-v
 | `BETTER_AUTH_SECRET` | the secret from step 1 | Production, Preview | On |
 | `OWNER_EMAIL` | the email you'll sign in with | Production, Preview | Off |
 | `RESEND_API_KEY` | the `re_...` key from Part C | Production, Preview | On |
-| `EMAIL_FROM` | `warbag <warbag@chirk.fyi>` | Production, Preview | Off |
+| `EMAIL_FROM` | `Hudson <warbag@chirk.fyi>` (Production; Preview still has `warbag <warbag@chirk.fyi>`, which only preview builds use) | Production, Preview | Off |
 | `BETTER_AUTH_URL` | `https://warbag.rodeo` | Production only | Off |
 
 3. You should now see those five plus `DATABASE_URL` in the list.
@@ -78,7 +78,7 @@ Keep `BETTER_AUTH_SECRET` forever. Changing it signs everyone out.
 
 1. On your phone, open **https://warbag.rodeo**. You should see "warbag · Coming soon" and a **Sign in** link.
 2. Tap **Sign in**, enter your `OWNER_EMAIL`, tap **Send code**.
-3. Within a minute an email arrives from **warbag** (`warbag@chirk.fyi`), subject "123456 is your warbag code". Check spam the first time.
+3. Within a minute an email arrives from **Hudson** (`warbag@chirk.fyi`), subject "123456 is your sign-in code". Check spam the first time.
 4. Enter the code and tap **Sign in**. You should land on your warbag home showing "Signed in as" your email.
 
 If no email arrives: **Vercel → project `warbag` → Logs**, filter for "Email", and send Claude a screenshot.
