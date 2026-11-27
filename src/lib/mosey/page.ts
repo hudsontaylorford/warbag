@@ -1,6 +1,6 @@
 import "server-only";
 import { notFound } from "next/navigation";
-import { requireUser } from "../session";
+import { actorOf, requireUser } from "../session";
 import { canOpenMosey, canUseMosey } from "./trips";
 
 /**
@@ -19,7 +19,7 @@ export async function requireMosey(
   } = {},
 ) {
   const user = await requireUser(path);
-  const actor = { id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true };
+  const actor = actorOf(user);
   const canCreate = await canUseMosey(actor);
   if (opts.list || opts.trip) return { user, actor, canCreate };
   if (opts.needCreate ? !canCreate : !(canCreate || (await canOpenMosey(actor)))) notFound();

@@ -20,5 +20,10 @@ export async function requireUser(next = "/home") {
 /** The signed-in person in the shape the access rules use, or null. */
 export async function currentActor(): Promise<Actor | null> {
   const user = await currentUser();
-  return user ? { id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true } : null;
+  return user ? actorOf(user) : null;
+}
+
+/** The access-rules shape of a signed-in user. */
+export function actorOf(user: { id: string; isAdmin?: boolean | null; isPeopleManager?: boolean | null; isGuest?: boolean | null }): Actor {
+  return { id: user.id, isAdmin: user.isAdmin === true, peopleManager: user.isPeopleManager === true, guest: user.isGuest === true };
 }

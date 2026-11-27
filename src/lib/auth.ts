@@ -2,6 +2,10 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, magicLink } from "better-auth/plugins";
+import { APIError, createAuthEndpoint } from "better-auth/api";
+import { setSessionCookie } from "better-auth/cookies";
+import type { BetterAuthPlugin } from "better-auth";
+import * as z from "zod";
 import { pool } from "./db";
 import { sendEmail, signInCodeEmail, signInLinkEmail } from "./email";
 
@@ -10,6 +14,25 @@ function baseURL(): string | undefined {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return undefined; // local dev: Better Auth uses the request's origin
 }
+
+/**
+ * Signs a guest in on this device (a Mosey trip-link joiner; see
+ * src/lib/mosey/link-join.ts, which checks their link first). Server only:
+ * there is no URL for it. Guest accounts only, never a real one.
+ */
+const guestSignIn = {
+  id: "warbag-guest",
+  endpoints: {
+    signInGuest: createAuthEndpoint.serverOnly({ method: "POST", body: z.object({ userId: z.string().min(1).max(100) }) }, async (ctx) => {
+      const user = await ctx.context.internalAdapter.findUserById(ctx.body.userId);
+      if (!user || (user as { isGuest?: boolean }).isGuest !== true) throw new APIError("NOT_FOUND");
+      const session = await ctx.context.internalAdapter.createSession(user.id);
+      if (!session) throw new APIError("INTERNAL_SERVER_ERROR");
+      await setSessionCookie(ctx, { session, user });
+      return ctx.json({ ok: true });
+    }),
+  },
+} satisfies BetterAuthPlugin;
 
 export const auth = betterAuth({
   appName: "warbag",
@@ -21,6 +44,8 @@ export const auth = betterAuth({
       isAdmin: { type: "boolean", required: false, defaultValue: false, input: false },
       // Invites people and manages groups and app access, never admins or its own access.
       isPeopleManager: { type: "boolean", required: false, defaultValue: false, input: false },
+      // Joined a Mosey trip by its link: no email, member of those trips only.
+      isGuest: { type: "boolean", required: false, defaultValue: false, input: false },
     },
   },
   session: {
@@ -59,6 +84,7 @@ export const auth = betterAuth({
         await sendEmail({ to: email, ...signInLinkEmail(url, group) });
       },
     }),
+    guestSignIn,
     nextCookies(), // must stay last
   ],
 });

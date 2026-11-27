@@ -11,6 +11,8 @@ type Message = { to: string; subject: string; text: string };
  * because silently dropping a sign-in code is worse than an error.
  */
 export async function sendEmail({ to, subject, text }: Message): Promise<void> {
+  // Made-up addresses (sample people, Mosey guests) never get email.
+  if (to.trim().toLowerCase().endsWith(".invalid")) return;
   const key = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
 

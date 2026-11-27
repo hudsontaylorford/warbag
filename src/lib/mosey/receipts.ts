@@ -103,7 +103,13 @@ export type UploadResult = {
   warnings: string[];
 };
 
+/** Receipt photos need a real sign-in: guests who joined by link never see or add them. */
+function noGuests(actor: Actor) {
+  if (actor.guest) throw new AccessDenied();
+}
+
 export async function uploadReceipt(actor: Actor, tripId: string, image: Buffer): Promise<UploadResult> {
+  noGuests(actor);
   const { trip } = await tripWithRole(actor, tripId, "contribute");
   if (!receiptsConfigured()) throw new InputError("Receipt photos aren't set up yet. Add the expense by hand.");
   if (image.length === 0) throw new InputError("Choose a photo of the receipt.");
@@ -140,6 +146,7 @@ export async function uploadReceipt(actor: Actor, tripId: string, image: Buffer)
 
 /** Expense id -> its receipt id, for the trip's expense list. Members only. */
 export async function receiptsByExpense(actor: Actor, tripId: string): Promise<Map<string, string>> {
+  if (actor.guest) return new Map();
   const { trip } = await tripWithRole(actor, tripId, "contribute");
   const { rows } = await pool.query<{ id: string; expense_id: string }>(
     "select id, expense_id from mosey_receipts where trip_id = $1 and expense_id is not null order by created_at",
@@ -160,6 +167,7 @@ export type UnsavedReceipt = {
 
 /** Photos uploaded to the trip but not saved as an expense yet, newest first. Members only. */
 export async function unsavedReceipts(actor: Actor, tripId: string): Promise<UnsavedReceipt[]> {
+  if (actor.guest) return [];
   const { trip, role } = await tripWithRole(actor, tripId, "contribute");
   const { rows } = await pool.query<{ id: string; draft: unknown; draft_error: string | null; uploaded_by: string | null; name: string | null; created_at: Date }>(
     `select r.id, r.draft, r.draft_error, r.uploaded_by, u.name, r.created_at
@@ -184,6 +192,7 @@ export async function unsavedReceipts(actor: Actor, tripId: string): Promise<Uns
  * stays with it.
  */
 export async function discardReceipt(actor: Actor, receiptId: string): Promise<void> {
+  noGuests(actor);
   if (!UUID.test(receiptId)) throw new AccessDenied();
   const { rows } = await pool.query<{ trip_id: string; blob_path: string; uploaded_by: string | null; expense_id: string | null }>(
     "select trip_id, blob_path, uploaded_by, expense_id from mosey_receipts where id = $1",
@@ -202,7 +211,7 @@ export async function discardReceipt(actor: Actor, receiptId: string): Promise<v
 
 /** The image, for the receipt route. Members of the trip only. */
 export async function openReceipt(actor: Actor | null, receiptId: string): Promise<{ body: ReadableStream<Uint8Array> | Buffer; contentType: string }> {
-  if (!actor || !UUID.test(receiptId)) throw new AccessDenied();
+  if (!actor || actor.guest || !UUID.test(receiptId)) throw new AccessDenied();
   const { rows } = await pool.query<{ trip_id: string; blob_path: string; content_type: string }>(
     "select trip_id, blob_path, content_type from mosey_receipts where id = $1",
     [receiptId],
