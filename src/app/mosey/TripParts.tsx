@@ -4,7 +4,7 @@ import { StopRow } from "./StopRow";
 import { QuickAdd } from "./QuickAdd";
 import { rangeLabel } from "./format";
 import { DayCard } from "./DayCard";
-import { TripCalendar } from "./TripCalendar";
+import { DayList } from "./DayList";
 
 /** Trip name, dates and place, with Plan / Ideas. */
 export function TripHeader({ trip, base, current, back, money }: { trip: TripDetail; base: string; current: "plan" | "ideas" | "money"; back?: boolean; money?: boolean }) {
@@ -42,16 +42,16 @@ export function TripHeader({ trip, base, current, back, money }: { trip: TripDet
 }
 
 /**
- * The plan: a calendar of the trip, then one card per day with stops in
+ * The plan: the trip one line per day, then one card per day with stops in
  * time order (any time last) and ideas suggested for that day.
  */
 export function DayCards({ trip, canAdd, canPlan, viewerOnly }: { trip: TripDetail; canAdd: boolean; canPlan: boolean; viewerOnly?: boolean }) {
   const editable = (s: Stop) => !viewerOnly && (canPlan || s.mine);
   const plan = canPlan && !viewerOnly;
-  const byDay = Object.fromEntries(trip.days.map((d) => [d, trip.stops.filter((s) => s.day === d).map((s) => s.time)]));
+  const byDay = Object.fromEntries(trip.days.map((d) => [d, trip.stops.filter((s) => s.day === d)]));
   return (
     <div className="flex flex-col gap-6">
-      {trip.days.length > 1 && <TripCalendar days={trip.days} stops={byDay} />}
+      {trip.days.length > 1 && <DayList days={trip.days} planned={byDay} info={trip.dayInfo} choices={trip.choices} />}
       <div className="flex flex-col gap-4">
         {trip.days.map((day, i) => (
           <DayCard

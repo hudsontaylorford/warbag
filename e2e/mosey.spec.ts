@@ -20,11 +20,11 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   // The M header, with warbag as a quiet link home.
   await expect(page.getByRole("link", { name: "Mosey" })).toHaveAttribute("href", "/mosey");
   await expect(page.getByRole("link", { name: "warbag" })).toHaveAttribute("href", "/home");
-  // The calendar jumps to a day's card.
-  await expect(page.getByRole("navigation", { name: "Trip days" }).getByRole("link")).toHaveCount(3);
-  // A trip of a week or less is one row of just its days (no faded days around it).
-  await expect(page.getByRole("navigation", { name: "Trip days" }).getByRole("listitem")).toHaveCount(3);
-  await page.getByRole("link", { name: /Sunday, June 6/ }).click();
+  // One line per day on top; a row jumps to the day's card.
+  const dayList = page.getByRole("navigation", { name: "Trip days" });
+  await expect(dayList.getByRole("link")).toHaveCount(3);
+  await expect(dayList.getByRole("link", { name: /Sunday, June 6/ })).toContainText("Nothing planned yet");
+  await dayList.getByRole("link", { name: /Sunday, June 6/ }).click();
   await expect(page).toHaveURL(/#day-2027-06-06$/);
 
   // Plan a dinner on day 2 with a time and a members-only place.
@@ -44,8 +44,9 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await day2.getByRole("button", { name: "Add", exact: true }).click();
   await expect(day2.getByText("Lobster dinner")).toBeVisible();
   await expect(day2.getByText("6:30 PM")).toBeVisible();
+  // The day's line on top says it too.
+  await expect(dayList.getByRole("link", { name: /Sunday, June 6/ })).toContainText("6:30p Lobster dinner");
   await expect(day2.getByRole("link", { name: /Thurston's Lobster Pound/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
-  await expect(page.getByRole("link", { name: /Sunday, June 6.*1 planned/ })).toContainText("6:30p");
 
   // An optional area and tag for the day, shown quietly under its date.
   await day2.getByRole("button", { name: "Done adding" }).click();
@@ -137,8 +138,8 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   const guest = await (await browser.newContext({ ...test.info().project.use })).newPage();
   await guest.goto(link);
   await expect(guest.getByRole("heading", { name: `Maine ${tag}` })).toBeVisible();
-  await expect(guest.getByText("Lobster dinner")).toBeVisible();
-  await expect(guest.getByText("Check in")).toBeVisible();
+  await expect(guest.getByRole("region", { name: /Sun, Jun 6/ }).getByText("Lobster dinner")).toBeVisible();
+  await expect(guest.getByRole("region", { name: /Sat, Jun 5/ }).getByText("Check in")).toBeVisible();
   await expect(guest.getByText("12 Private Road")).toHaveCount(0);
   await expect(guest.getByRole("button", { name: "More" })).toHaveCount(0);
   await expect(guest.getByLabel(/^Add to/)).toHaveCount(0);

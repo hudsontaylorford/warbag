@@ -22,7 +22,7 @@
 ## Mosey (trip planner)
 
 ### Live
-- **Plan:** a calendar of the trip on top (one row for trips of a week or less; tap a day to jump to it), then one card per day with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
+- **Plan:** the trip one line per day on top (what's planned, flags for Tentative, Inquiry sent and Pick one, the day's area; tap a row to jump to it), then one card per day with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
 - **Stops:** typed "When" the Crewmaxxing way (7pm, 9:30a, Morning, TBD); status (Tentative, Inquiry sent, Confirmed, Booked); meals (Breakfast, Lunch, Dinner, Food & drink) with "Who's handling it"; members-only details hidden on view links.
 - **Who's going:** only on stops that ask ("Ask who's going"), from the trip's people list; one tap "I'm going" / "Maybe".
 - **Options:** "Monday afternoon: ski, hike or spa" as one block; each person picks one; "Who picked what".
@@ -48,7 +48,7 @@
 
 ### Open questions (from the Christmas trip notes)
 - Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
-- Christmas dates: Mosey has Dec 17 to 23; another planner says Dec 17 to 24.
+- Christmas dates: settled, Dec 17 to 24 (Hudson, 2026-11-27).
 
 ### Known gaps
 - Inviting new people from a trip needs an admin or people manager (by design; today Hudson and his agent).
