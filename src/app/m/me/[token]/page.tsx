@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
+import { previewMetadata } from "@/lib/preview";
 import { redirect } from "next/navigation";
 import { Monogram } from "@/components/ui/Monogram";
 import { openGuestLink } from "@/lib/mosey/link-join";
 import { currentUser } from "@/lib/session";
 import { OpenGuestLink } from "@/app/mosey/LinkJoin";
 
-export const metadata: Metadata = { title: "Trip · Mosey", robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const token = (await params).token;
+  const link = await openGuestLink(token);
+  if (!link) return { title: "Trip · Mosey", robots: { index: false, follow: false } };
+  return previewMetadata({
+    title: `${link.tripName} · Mosey`,
+    headline: `Your link to ${link.tripName}`,
+    description: `For ${link.name}. Tap to open the trip.`,
+    image: `/m/me/${token}/og`,
+  });
+}
 
 /**
  * Someone's own link to a trip they joined by the trip link. One tap signs

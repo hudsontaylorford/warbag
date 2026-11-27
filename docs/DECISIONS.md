@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · Share links preview like Chirk's (Hudson)
+
+Hudson: share links should preview the way Chirk's invites do ("you've been invited to the trip").
+
+- **Every share link sets a preview** (`previewMetadata`, `src/lib/preview.tsx`): a bold line, a line of details, and a 1200×630 card in the app's look (paper, navy serif title, the app's letter in ember and its name). Never warbag.
+- **Mosey trip link:** "You're invited: <trip>", then dates and place, and "See the plan and ask to join" (or "Tap to join the trip" when joining from the link is on). **Own guest link:** "Your link to <trip>", for <name>. **Gyfte list link:** the list's title and how many gifts (never claims). **Family link:** "<family>: gift lists". **Room Tuner view link:** the setup's name.
+- **Previews show only what the link's page already shows** to anyone holding it; the pages stay noindex, and a link that's off gets a plain 404 picture. The card uses Instrument Serif (OFL), kept in `src/assets`.
+- The site-wide description "warbag.rodeo" is gone, so no preview falls back to naming warbag.
+
 ## 2026-11-27 · App first: warbag only for people who use more than one app (Hudson)
 
 Hudson: on Mosey, Gyfte and the rest, no warbag branding or mention of warbag beyond the address, unless you're the owner or use other apps.
