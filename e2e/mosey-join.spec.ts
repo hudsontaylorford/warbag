@@ -22,6 +22,15 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   await page.getByRole("button", { name: "Make a trip link" }).click();
   const link = await page.getByLabel("Trip link").inputValue();
 
+  // Pasted into Messages, the link previews like Chirk's: "You're invited", the trip, its dates; a card picture; no warbag.
+  const html = await (await page.request.get(link)).text();
+  expect(html).toContain(`<meta property="og:title" content="You&#x27;re invited: Lake ${tag}"/>`);
+  expect(html).toMatch(/og:description" content="Jul 1 to 3, 2027/);
+  expect(html).not.toMatch(/og:[a-z]+" content="[^"]*warbag/i);
+  const card = await page.request.get(`${link}/og`);
+  expect(card.status()).toBe(200);
+  expect(card.headers()["content-type"]).toContain("image/png");
+
   // Someone with the link asks to join; nothing is created yet.
   const cousin = await freshPage(browser);
   await cousin.goto(link);

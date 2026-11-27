@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { previewMetadata } from "@/lib/preview";
+import { giftCount } from "@/lib/gyfte/preview";
 import { ListTitle } from "@/app/gyfte/ListTitle";
 import Link from "next/link";
 import { Monogram } from "@/components/ui/Monogram";
@@ -6,7 +8,12 @@ import { notFound } from "next/navigation";
 import { listByLink } from "@/lib/gyfte/sharing";
 import { storeName } from "@/lib/gyfte/links";
 
-export const metadata: Metadata = { title: "Gift list · Gyfte", robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const token = (await params).token;
+  const list = await listByLink(token);
+  if (!list) return { title: "Gift list · Gyfte", robots: { index: false, follow: false } };
+  return previewMetadata({ title: `${list.title} · Gyfte`, headline: list.title, description: `Gift list · ${giftCount(list.items.length)}`, image: `/g/${token}/og` });
+}
 
 /**
  * A Gyfte list opened from a share link: the wanted gifts only. No claim

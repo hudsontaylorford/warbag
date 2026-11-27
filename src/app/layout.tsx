@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { siteUrl } from "@/lib/site";
 
 // The display serif for page titles and marks. Self-hosted by Next at build time.
 const display = Instrument_Serif({
@@ -11,8 +12,9 @@ const display = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  // Link-preview pictures resolve against the site's address.
+  metadataBase: new URL(siteUrl()),
   title: "warbag",
-  description: "warbag.rodeo",
   robots: { index: false, follow: false },
 };
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { previewMetadata } from "@/lib/preview";
 import Link from "next/link";
 import { Monogram } from "@/components/ui/Monogram";
 import { notFound, redirect } from "next/navigation";
@@ -7,7 +8,12 @@ import { memberGroupIdForLink, publicGroupPage, returnPath, type GroupRowView } 
 import { ThisIsMe } from "../ThisIsMe";
 import { AskToJoin } from "../AskToJoin";
 
-export const metadata: Metadata = { title: "Gift lists · Gyfte", robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const token = (await params).token;
+  const page = await publicGroupPage(token);
+  if (!page) return { title: "Gift lists · Gyfte", robots: { index: false, follow: false } };
+  return previewMetadata({ title: `${page.name} · Gyfte`, headline: `${page.name}: gift lists`, description: "See everyone's lists. Sign in to say what you'll get.", image: `/j/${token}/og` });
+}
 
 /**
  * A family link: the group's people, years and wanted gifts, with no claims

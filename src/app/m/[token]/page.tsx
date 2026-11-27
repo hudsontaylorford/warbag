@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { previewMetadata } from "@/lib/preview";
+import { tripPreview } from "@/lib/mosey/preview";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Monogram } from "@/components/ui/Monogram";
@@ -9,7 +11,12 @@ import { AskToJoinTrip } from "@/app/mosey/TripInvite";
 import { JoinByLink } from "@/app/mosey/LinkJoin";
 import { joinableNames } from "@/lib/mosey/link-join";
 
-export const metadata: Metadata = { title: "Trip · Mosey", robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const trip = await tripByLink(token);
+  if (!trip) return { title: "Trip · Mosey", robots: { index: false, follow: false } };
+  return previewMetadata({ title: `${trip.name} · Mosey`, ...tripPreview(trip, token) });
+}
 
 /**
  * A trip link: the plan, no sign-in, no money or members-only details, and
