@@ -1,7 +1,7 @@
 import type { TripDetail, TripSharing } from "@/lib/mosey/trips";
 import { CheckboxListForm, ConfirmForm, Section } from "@/components/ui/forms";
 import { TripForm } from "./TripForm";
-import { TripLink } from "./TripLink";
+import { Joiners, TripLink } from "./TripLink";
 import { deleteTripAction, setMembersAction, setOrganizersAction } from "./actions";
 import { InviteByEmail, JoinRequests } from "./TripInvite";
 import { ManageDetails } from "./ManageDetails";
@@ -55,7 +55,22 @@ export function TripManage({
       </summary>
       <div className="mt-4 flex flex-col gap-8">
         {requests.length > 0 && asking}
-        {sharing && <TripLink tripId={trip.id} tripName={trip.name} links={sharing.links} siteUrl={siteUrl} />}
+        {sharing && (
+          <TripLink
+            tripId={trip.id}
+            tripName={trip.name}
+            links={sharing.links}
+            siteUrl={siteUrl}
+            linkJoin={sharing.linkJoin}
+            linkMoney={sharing.linkMoney}
+            joiners={sharing.joiners}
+          />
+        )}
+        {sharing && (sharing.linkJoin || sharing.joiners.length > 0) && (
+          <Section title="Joined by link" hint="People who picked their name on the trip link. Each has their own link to come back.">
+            <Joiners tripId={trip.id} joiners={sharing.joiners} />
+          </Section>
+        )}
         {sharing && canInvite && (
           <Section title="Invite by email" hint="Adds them to warbag (if they're new) and to this trip in one step.">
             <InviteByEmail tripId={trip.id} />

@@ -46,7 +46,7 @@ export type Sharing = {
 async function shareablePeople(actor: Actor, ownerId: string) {
   const { rows } = await pool.query<{ id: string; name: string; email: string }>(
     actor.isAdmin
-      ? `select id, name, email from "user" where id <> $1 order by lower(coalesce(nullif(name, ''), email))`
+      ? `select id, name, email from "user" where id <> $1 and not "isGuest" order by lower(coalesce(nullif(name, ''), email))`
       : `select distinct u.id, u.name, u.email from "user" u
          join group_members m on m.user_id = u.id
          where m.group_id in (select group_id from group_members where user_id = $1) and u.id <> $1

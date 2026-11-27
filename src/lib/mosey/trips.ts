@@ -46,6 +46,10 @@ type TripRow = {
   place: string;
   start_date: string;
   end_date: string;
+  /** People with the trip link can join and edit (like chirk). */
+  link_join: boolean;
+  /** Guests who joined by link see Money too. */
+  link_money: boolean;
 };
 
 export const STATUSES = ["tentative", "asked", "confirmed", "booked"] as const;
@@ -89,6 +93,12 @@ export type TripDetail = TripSummary & {
   role: Role;
   /** The trip's owner (or an admin): only they share it or delete it. Co-organizers do the rest. */
   owner: boolean;
+  /** May open Money: members, and guests when the trip puts Money on the link. */
+  money: boolean;
+  /** Joined by the trip link (a guest account). */
+  guest: boolean;
+  /** The trip link lets people join and edit. */
+  linkJoin: boolean;
   days: string[];
   /** Area and tag by day, only for days that have one. */
   dayInfo: Record<string, DayInfo>;
@@ -155,7 +165,7 @@ async function tripRow(id: string): Promise<TripRow | null> {
   if (!UUID.test(id)) return null;
   const { rows } = await pool.query<TripRow>(
     `select id, owner_id, name, place, to_char(start_date, 'YYYY-MM-DD') as start_date,
-       to_char(end_date, 'YYYY-MM-DD') as end_date
+       to_char(end_date, 'YYYY-MM-DD') as end_date, link_join, link_money
      from mosey_trips where id = $1`,
     [id],
   );
@@ -176,6 +186,15 @@ export async function tripWithRole(actor: Actor | null, id: string, need: Role, 
   const role = await itemRole(actor, ref(trip), { linkToken });
   if (!atLeast(role, need)) throw new AccessDenied();
   return { trip, role: role! };
+}
+
+/**
+ * Money (expenses, households, who owes whom): members and organizers; a
+ * guest who joined by link only when the owner put Money on the link.
+ */
+export function canSeeMoney(actor: Actor, trip: { link_money: boolean }, role: Role | null): boolean {
+  if (!atLeast(role, "contribute")) return false;
+  return actor.guest !== true || trip.link_money;
 }
 
 export async function canUseMosey(actor: Actor): Promise<boolean> {
@@ -262,7 +281,7 @@ export async function tripsFor(actor: Actor): Promise<TripSummary[]> {
   const shared = (await itemsSharedWith(actor, APP, "trip")).map((s) => s.id).filter((id) => UUID.test(id));
   const { rows } = await pool.query<TripRow>(
     `select id, owner_id, name, place, to_char(start_date, 'YYYY-MM-DD') as start_date,
-       to_char(end_date, 'YYYY-MM-DD') as end_date
+       to_char(end_date, 'YYYY-MM-DD') as end_date, link_join, link_money
      from mosey_trips where owner_id = $1 or id = any($2::uuid[])
      order by start_date desc`,
     [actor.id, shared],
@@ -457,6 +476,9 @@ export async function getTrip(actor: Actor, id: string): Promise<TripDetail> {
     endDate: trip.end_date,
     organizer: role === "manage",
     owner: trip.owner_id === actor.id || actor.isAdmin,
+    money: canSeeMoney(actor, trip, role),
+    guest: actor.guest === true,
+    linkJoin: trip.link_join,
     role,
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
@@ -499,6 +521,9 @@ export async function tripByLink(token: string): Promise<TripDetail | null> {
     endDate: trip.end_date,
     organizer: false,
     owner: false,
+    money: false,
+    guest: false,
+    linkJoin: trip.link_join,
     role: "view",
     days: daysBetween(trip.start_date, trip.end_date),
     dayInfo: await dayInfoOf(trip.id, daysBetween(trip.start_date, trip.end_date)),
@@ -745,7 +770,21 @@ export type TripSharing = {
   groups: { id: string; name: string }[];
   people: { id: string; name: string }[];
   links: { id: string; token: string }[];
+  /** What the trip link allows: join and edit, and Money for those who joined. */
+  linkJoin: boolean;
+  linkMoney: boolean;
+  /** Guests who joined by the link, each with their own link. */
+  joiners: Joiner[];
 };
+
+export type Joiner = { id: string; name: string; joinedAt: Date };
+
+/** Guest accounts among these ids. */
+export async function guestIds(ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const { rows } = await pool.query<{ id: string }>(`select id from "user" where id = any($1::text[]) and "isGuest"`, [ids]);
+  return new Set(rows.map((r) => r.id));
+}
 
 /** People an organizer may add: everyone in their groups (admins: everyone). */
 /**
@@ -762,10 +801,10 @@ async function moseyGroups(actor: Actor) {
 async function addablePeople(actor: Actor, ownerId: string) {
   const { rows } = await pool.query<{ id: string; name: string; email: string }>(
     actor.isAdmin
-      ? `select id, name, email from "user" where id <> $1 order by lower(coalesce(nullif(name, ''), email))`
+      ? `select id, name, email from "user" where id <> $1 and not "isGuest" order by lower(coalesce(nullif(name, ''), email))`
       : `select distinct u.id, u.name, u.email from "user" u
          join group_members m on m.user_id = u.id
-         where m.group_id in (select group_id from group_members where user_id = $1) and u.id <> $1
+         where m.group_id in (select group_id from group_members where user_id = $1) and u.id <> $1 and not u."isGuest"
          order by 1`,
     [actor.id],
   );
@@ -780,8 +819,22 @@ export async function tripSharing(actor: Actor, tripId: string): Promise<TripSha
   const people = await addablePeople(actor, trip.owner_id);
   const names = new Map(people.map((p) => [p.id, p.name]));
   const all = await listItemGrants(actor, r);
-  const grants = all.filter((g) => g.role !== "manage");
+  const guests = await guestIds(all.filter((g) => g.userId).map((g) => g.userId!));
+  // Guests are listed under the trip link (Joined by link), not here.
+  const grants = all.filter((g) => g.role !== "manage" && !(g.userId && guests.has(g.userId)));
+  const joiners = await pool.query<Joiner>(
+    `select u.id, coalesce(p.name, u.name) as name, l.created_at as "joinedAt"
+       from mosey_guest_links l
+       join "user" u on u.id = l.user_id
+       left join mosey_people p on p.trip_id = l.trip_id and p.user_id = l.user_id
+      where l.trip_id = $1 and l.revoked_at is null
+      order by l.created_at`,
+    [trip.id],
+  );
   return {
+    linkJoin: trip.link_join,
+    linkMoney: trip.link_money,
+    joiners: joiners.rows,
     organizers: all.filter((g) => g.role === "manage" && g.userId).map((g) => ({ id: g.userId!, name: names.get(g.userId!) ?? (g.email ?? "").split("@")[0] })),
     members: grants.map((g) =>
       g.groupId
@@ -804,8 +857,11 @@ export async function setTripMembers(actor: Actor, tripId: string, input: { grou
   for (const id of groupIds) if (!allowedGroups.has(id)) throw new InputError("You can only add your own groups.");
   for (const id of userIds) if (!allowedPeople.has(id)) throw new InputError("You can only add people in your groups.");
   const r = ref(trip);
-  for (const g of await listItemGrants(actor, r)) {
+  const current = await listItemGrants(actor, r);
+  const guests = await guestIds(current.filter((g) => g.userId).map((g) => g.userId!));
+  for (const g of current) {
     if (g.role === "manage") continue; // co-organizers are set on their own
+    if (g.userId && guests.has(g.userId)) continue; // joined by link: turned off on their own
     const keep = g.groupId ? groupIds.includes(g.groupId) : userIds.includes(g.userId!);
     if (!keep) await revokeItem(actor, r, g.groupId ? { groupId: g.groupId } : { userId: g.userId! });
   }
@@ -839,4 +895,12 @@ export async function createTripLink(actor: Actor, tripId: string): Promise<void
 export async function revokeTripLink(actor: Actor, tripId: string, linkId: string): Promise<void> {
   const { trip } = await ownerOnly(actor, tripId);
   await revokeShareLink(actor, ref(trip), linkId);
+}
+
+/** A new trip link in place of the old one, which stops working. Guests' own links keep working. */
+export async function replaceTripLink(actor: Actor, tripId: string): Promise<void> {
+  const { trip } = await ownerOnly(actor, tripId);
+  const r = ref(trip);
+  for (const l of await listShareLinks(actor, r)) await revokeShareLink(actor, r, l.id);
+  await createShareLink(actor, r, { role: "view" });
 }

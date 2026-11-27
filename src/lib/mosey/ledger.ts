@@ -3,7 +3,7 @@ import type { PoolClient } from "pg";
 import { pool } from "../db";
 import { InputError } from "../errors";
 import { AccessDenied, listItemGrants, type Actor } from "../access";
-import { parseDay, tripWithRole } from "./trips";
+import { canSeeMoney, parseDay, tripWithRole } from "./trips";
 import {
   balances,
   MoneyError,
@@ -66,6 +66,8 @@ export type Ledger = {
 
 async function member(actor: Actor, tripId: string) {
   const { trip, role } = await tripWithRole(actor, tripId, "contribute");
+  // Guests who joined by link see Money only when the trip's owner allows it.
+  if (!canSeeMoney(actor, trip, role)) throw new AccessDenied();
   return { trip, organizer: role === "manage" };
 }
 
@@ -374,7 +376,8 @@ export async function addExpense(actor: Actor, tripId: string, input: ExpenseInp
   const { trip } = await member(actor, tripId);
   return inTx(async (c) => {
     if (input.receiptId) {
-      if (!UUID.test(input.receiptId)) throw new AccessDenied();
+      // Receipt photos need a real sign-in.
+      if (actor.guest || !UUID.test(input.receiptId)) throw new AccessDenied();
       const r = await c.query<{ expense_id: string | null }>(
         "select expense_id from mosey_receipts where id = $1 and trip_id = $2 for update",
         [input.receiptId, trip.id],

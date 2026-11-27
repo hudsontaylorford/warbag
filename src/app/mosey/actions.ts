@@ -1,6 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { runAction } from "@/lib/run-action";
 import type { FormState } from "@/components/ui/form-state";
 import {
@@ -10,6 +12,7 @@ import {
   deleteStop,
   deleteTrip,
   planStop,
+  replaceTripLink,
   revokeTripLink,
   setAttendance,
   createChoice,
@@ -35,6 +38,7 @@ import {
   updatePerson,
 } from "@/lib/mosey/ledger";
 import { approveTripJoin, declineTripJoin, inviteToTrip, requestToJoinTrip, requestToJoinTripById } from "@/lib/mosey/invites";
+import { joinByLink, openGuestLink, setLinkOptions, turnOffJoiner } from "@/lib/mosey/link-join";
 import { discardReceipt, uploadReceipt, type UploadResult } from "@/lib/mosey/receipts";
 import { currentActor } from "@/lib/session";
 import { AccessDenied } from "@/lib/access";
@@ -166,6 +170,68 @@ export async function createLinkAction(_: FormState, form: FormData): Promise<Fo
 
 export async function revokeLinkAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction((actor) => revokeTripLink(actor, text(form, "id"), text(form, "linkId")));
+}
+
+/** A new trip link; the old one stops working. */
+export async function replaceLinkAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await replaceTripLink(actor, text(form, "id"));
+    return "New link made. The old one doesn't work anymore";
+  });
+}
+
+/** What the trip link allows: see and ask to join, or join and edit (with or without Money). */
+export async function linkOptionsAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction((actor) =>
+    setLinkOptions(actor, text(form, "id"), { join: text(form, "mode") === "join", money: form.get("money") === "on" }),
+  );
+}
+
+/** Turns off someone who joined by the trip link. */
+export async function turnOffJoinerAction(_: FormState, form: FormData): Promise<FormState> {
+  return runAction(async (actor) => {
+    await turnOffJoiner(actor, text(form, "id"), text(form, "userId"));
+    return "Turned off";
+  });
+}
+
+/** Signs this device in as a guest who just joined, or who opened their own link. */
+async function signInGuest(userId: string) {
+  await auth.api.signInGuest({ body: { userId }, headers: await headers() });
+}
+
+/**
+ * "Join" on a trip link that lets people join: signed in, as yourself;
+ * signed out, as a new guest on this device. Then opens the trip.
+ */
+export async function joinByLinkAction(_: FormState, form: FormData): Promise<FormState> {
+  let tripId: string;
+  try {
+    const actor = await currentActor();
+    const picked = text(form, "person");
+    const joined = await joinByLink(actor, text(form, "token"), picked && picked !== "new" ? { personId: picked } : { name: text(form, "name") });
+    if (joined.newGuestId) await signInGuest(joined.newGuestId);
+    tripId = joined.tripId;
+  } catch (err) {
+    if (err instanceof InputError) return { error: err.message };
+    if (err instanceof AccessDenied) return { error: "That didn't work. Reload the page and try again." };
+    console.error("trip link join failed", err);
+    return { error: "Something went wrong and you weren't added. Try again." };
+  }
+  redirect(`/mosey/${tripId}`);
+}
+
+/** A guest's own link: signs this device in as them and opens the trip. */
+export async function openGuestLinkAction(_: FormState, form: FormData): Promise<FormState> {
+  const link = await openGuestLink(text(form, "token"));
+  if (!link) return { error: "This link isn't working anymore. Ask the organizer for the trip link." };
+  try {
+    await signInGuest(link.userId);
+  } catch (err) {
+    console.error("guest sign-in failed", err);
+    return { error: "Something went wrong. Try again." };
+  }
+  redirect(`/mosey/${link.tripId}`);
 }
 
 // ------------------------------------------------------------ money

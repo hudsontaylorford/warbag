@@ -90,6 +90,8 @@ export async function listPeople(actor: Actor): Promise<PersonRow[]> {
      from "user" u
      left join group_members m on m.user_id = u.id
      left join groups g on g.id = m.group_id
+     -- Guests (joined a Mosey trip by link) belong to their trips, not here.
+     where not u."isGuest"
      group by u.id
      order by u."isAdmin" desc, lower(coalesce(nullif(u.name, ''), u.email))`,
   );

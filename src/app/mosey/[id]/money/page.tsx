@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireMosey } from "@/lib/mosey/page";
 import { AccessDenied } from "@/lib/access";
 import { getTrip } from "@/lib/mosey/trips";
@@ -28,17 +29,21 @@ function defaultDay(start: string, end: string) {
 export default async function TripMoneyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { user, actor } = await requireMosey(`/mosey/${id}/money`, { trip: true });
-  const loaded = await Promise.all([getTrip(actor, id), ledger(actor, id)]).catch((err) => {
+  const trip = await getTrip(actor, id).catch((err) => {
     if (err instanceof AccessDenied) return null;
     throw err;
   });
-  if (!loaded) return <NotShared tripId={id} />;
-  const [trip, l] = loaded;
+  if (!trip) return <NotShared tripId={id} />;
+  // Joined by link, on a trip that keeps Money off the link: the plan instead.
+  if (!trip.money) redirect(`/mosey/${trip.id}`);
+  const l = await ledger(actor, id);
+  // Receipt photos need a real sign-in: never for guests who joined by link.
+  const photos = receiptsConfigured() && !actor.guest;
   const [accounts, log, receipts, unsaved] = await Promise.all([
     l.organizer ? linkableAccounts(actor, id) : Promise.resolve([]),
     moneyLog(actor, id, 30),
     receiptsByExpense(actor, id),
-    receiptsConfigured() ? unsavedReceipts(actor, id) : Promise.resolve([]),
+    photos ? unsavedReceipts(actor, id) : Promise.resolve([]),
   ]);
   const day = defaultDay(trip.startDate, trip.endDate);
   const people = l.people.map((p) => ({ id: p.id, name: p.name, kid: p.kid, householdId: p.householdId }));
@@ -80,7 +85,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
         ) : (
           <section className="flex flex-col gap-3">
             <h2 className="heading">Add an expense</h2>
-            {receiptsConfigured() && <ReceiptAdd tripId={trip.id} people={people} me={l.me} defaultDay={day} unsaved={unsaved} />}
+            {photos && <ReceiptAdd tripId={trip.id} people={people} me={l.me} defaultDay={day} unsaved={unsaved} />}
             <ExpenseForm tripId={trip.id} people={people} me={l.me} defaultDay={day} />
           </section>
         )}

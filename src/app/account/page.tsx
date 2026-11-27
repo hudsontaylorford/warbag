@@ -21,10 +21,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <h1 className="title">Account</h1>
         </div>
         <NameForm name={user.name ?? ""} />
-        <Section title="Email">
-          <p className="break-words">{user.email}</p>
-          <p className="text-sm text-soft">You sign in with a code sent here.</p>
-        </Section>
+        {user.isGuest ? (
+          <Section title="Signing in">
+            <p className="text-sm text-soft">You joined a trip by its link, so there&apos;s no email here. This device remembers you; on another device, open your own link from the trip.</p>
+          </Section>
+        ) : (
+          <Section title="Email">
+            <p className="break-words">{user.email}</p>
+            <p className="text-sm text-soft">You sign in with a code sent here.</p>
+          </Section>
+        )}
         <div className="max-w-xs">
           <SignOutButton />
         </div>

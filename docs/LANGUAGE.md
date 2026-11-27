@@ -45,6 +45,9 @@
 | Trip link | A link to a trip anyone can open: the plan and ideas, never money or members-only details; they can ask to join. (Was "View link".) |
 | Ask to join / Asking to join | Leaving a name and email on a trip link, or (signed in) asking from a trip's own page; the owner adds or declines. |
 | Share link / Copy link | Sending the trip link: Share opens the phone's share sheet; Copy puts it on the clipboard. |
+| Join / Joined by link | Joining a trip from its trip link by picking your name, without an account (when the owner allows it). |
+| Your link | A person's own private link to a trip they joined by link, to come back on another device. |
+| Turn off | Stops something working for good (a trip link, or someone who joined by link). |
 | Invite by email | Adding someone to warbag and a trip in one step from Manage. |
 | Member (trip) | Sees the trip and its money, adds ideas and expenses, suggests a day. |
 | Co-organizer | Does everything the owner can on a trip except share it or delete it. |

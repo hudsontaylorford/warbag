@@ -2,6 +2,19 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · Mosey: join from the trip link, like chirk (Hudson)
+
+Hudson: keep the chirk way, where full functionality works from a private or shared link, with saving optional, and the owner choosing per trip which ways of sharing are on. He approved Money as its own opt-in switch (receipt photos always need a sign-in) and saving with an emailed code, not a password.
+
+- **Per trip, in Manage → Trip link:** "People with the link can" **See the plan and ask to join** (as before, the default) or **Join and edit, no sign-in**. Owner only (co-organizers don't share the trip).
+- **Joining:** the link asks "Who are you?": the names on the trip's people list nobody has picked yet (adults only), or "Someone else" and a name. Signed out, that makes a **guest account** for this device (no email, no sign-in by code) that is a **member of that trip only**. Signed in, you join as yourself. A name is picked once; typing a name already on the trip is refused with what to do.
+- **Your link:** every guest gets their own private link (`/m/me/<token>`, shown at the top of the trip as "You joined as Ann · Your link"). Opening it on another device takes one tap ("Open the trip as Ann"), not the open itself, so link previews in Messages never sign anything in. One guest joining a second trip by link stays the same guest.
+- **Money is its own switch,** "Include Money for people who joined by link", off by default. Members are unaffected. **Receipt photos are never shown to or added by guests**, whatever the switch (checked on the server).
+- **The owner stays in control:** **Joined by link** lists everyone who joined that way, each with **Turn off** (off the trip, their own link off, signed out everywhere, their name free to pick again). **New link** replaces the trip link (the old one stops working; people who joined keep their own links). Turning joining off stops new joins; people already in stay until turned off.
+- **Guests stay out of the rest of warbag:** never in People, sharing pickers or Gyfte; never emailed (their address is a made-up `.invalid` one; `sendEmail` skips those). They can't organize, create trips or see other apps. Joins are limited (20 an hour per trip, 80 people per trip).
+- **How it's built:** guests are ordinary accounts with `isGuest`, so every existing access check applies unchanged; a server-only Better Auth endpoint (no URL) signs a guest in after their link is checked.
+- **Next:** saving by email (a code to their email turns the guest into a normal account, or joins it to the account they already have).
+
 ## 2026-11-25 · Stickies comes in as Jot
 
 Hudson: "let's start with stickies, we can bring it in. I would like to rename it to Jot." Source: the handover pack `stickies.zip` (Drive, "Warbag — Project Archive").
