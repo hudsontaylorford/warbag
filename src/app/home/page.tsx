@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { nativeApps, seesHub } from "@/lib/hub";
 import { requireUser } from "@/lib/session";
 import { appsFor } from "@/lib/apps";
 import { AppHeader } from "@/components/shell/AppHeader";
@@ -9,6 +11,11 @@ export const metadata: Metadata = { title: "Home · warbag" };
 /** The signed-in launcher: the apps this person may use, by name, on the navy field. */
 export default async function HomePage() {
   const user = await requireUser("/home");
+  // Someone who only uses one app goes straight to it: the launcher is warbag's, not theirs.
+  if (!(await seesHub())) {
+    const [only] = await nativeApps(user);
+    if (only) redirect(only.href);
+  }
   const apps = await appsFor({ id: user.id, isAdmin: user.isAdmin === true });
   const first = user.name?.trim().split(/\s+/)[0];
 

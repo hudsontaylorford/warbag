@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Monogram } from "@/components/ui/Monogram";
 import { openGuestLink } from "@/lib/mosey/link-join";
 import { currentUser } from "@/lib/session";
 import { OpenGuestLink } from "@/app/mosey/LinkJoin";
 
-export const metadata: Metadata = { title: "Trip · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Trip · Mosey", robots: { index: false, follow: false } };
 
 /**
  * Someone's own link to a trip they joined by the trip link. One tap signs
@@ -21,7 +20,7 @@ export default async function GuestLinkPage({ params }: { params: Promise<{ toke
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <p className="flex items-center gap-2 text-sm text-soft">
         <Monogram letter="M" size="sm" tone="ember" />
-        Mosey · warbag
+        Mosey
       </p>
       {link ? (
         <>
@@ -36,11 +35,6 @@ export default async function GuestLinkPage({ params }: { params: Promise<{ toke
         <>
           <h1 className="title">This link isn&apos;t working</h1>
           <p>The organizer may have turned it off. Ask them for the trip link.</p>
-          <p>
-            <Link href="/" className="text-accent underline-offset-4 hover:underline">
-              warbag home
-            </Link>
-          </p>
         </>
       )}
     </main>

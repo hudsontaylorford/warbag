@@ -39,7 +39,7 @@ export function tripInviteEmail(from: string, trip: { id: string; name: string; 
   return {
     subject: `${from} added you to ${trip.name}`,
     text:
-      `${from} added you to the trip "${trip.name}" (${rangeText(trip.start, trip.end)}) on warbag.\n\n` +
+      `${from} added you to the trip "${trip.name}" (${rangeText(trip.start, trip.end)}) on Mosey.\n\n` +
       `To see it, go to ${site}/sign-in?next=${encodeURIComponent(`/mosey/${trip.id}`)} and enter ${email}. ` +
       `We'll email you a 6-digit code. No password needed.\n`,
   };

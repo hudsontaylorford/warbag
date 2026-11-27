@@ -7,7 +7,7 @@ import { GroupTools } from "./GroupTools";
 import { GyfteNav } from "./GyfteNav";
 import { AppHeader } from "@/components/shell/AppHeader";
 
-export const metadata: Metadata = { title: "Gyfte · warbag" };
+export const metadata: Metadata = { title: "Gyfte" };
 
 const rowLink =
   "flex min-h-14 items-center justify-between gap-4 py-2 hover:bg-wash " +

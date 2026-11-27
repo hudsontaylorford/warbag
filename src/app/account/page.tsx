@@ -7,7 +7,7 @@ import { NameForm } from "./NameForm";
 import { backFrom } from "@/lib/back";
 import { BackLink } from "@/components/shell/BackLink";
 
-export const metadata: Metadata = { title: "Account · warbag" };
+export const metadata: Metadata = { title: "Account" };
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ from?: string | string[] }> }) {
   const user = await requireUser("/account");

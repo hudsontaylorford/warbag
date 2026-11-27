@@ -39,7 +39,8 @@ test("a family member without Gyfte opens a list shared with them, but can't mak
 
   const theirs = await (await browser.newContext({ ...test.info().project.use })).newPage();
   await signIn(theirs, member);
-  await theirs.getByRole("link", { name: /Gyfte/ }).click();
+  // Gyfte is their only app, so signing in lands there.
+  await expect(theirs).toHaveURL(/\/gyfte$/);
   await expect(theirs.getByRole("link", { name: "New list" })).toHaveCount(0);
   await theirs.getByRole("link", { name: new RegExp(`Shared ${tag}`) }).click();
   await expect(theirs.getByText("Wool scarf")).toBeVisible();

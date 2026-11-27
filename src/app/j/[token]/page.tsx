@@ -7,7 +7,7 @@ import { memberGroupIdForLink, publicGroupPage, returnPath, type GroupRowView } 
 import { ThisIsMe } from "../ThisIsMe";
 import { AskToJoin } from "../AskToJoin";
 
-export const metadata: Metadata = { title: "Gift lists · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Gift lists · Gyfte", robots: { index: false, follow: false } };
 
 /**
  * A family link: the group's people, years and wanted gifts, with no claims
@@ -71,7 +71,7 @@ export default async function FamilyLinkPage({
       <div>
         <p className="flex items-center gap-2 text-sm text-soft">
           <Monogram letter="G" size="sm" tone="ember" />
-          Gyfte · warbag
+          Gyfte
         </p>
         <h1 className="mt-1 title break-words">{page.name}</h1>
         <p className="mt-2 text-soft">

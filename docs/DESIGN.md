@@ -64,7 +64,7 @@ One serif letter straight on the background, with no tile, square or frame (`src
 External apps (Chirk, Crewmaxxing) get no monogram: they aren't ours to brand, and the ↗ says they leave warbag. The launcher shows no monograms at all (text only, Hudson 2026-11-24); letters still mark the header, sign-in and share pages.
 
 - **No tile, square or frame behind a letter, anywhere.** This replaces the squares from 2026-11-21. Don't bring them back without Hudson.
-- **The one exception is the favicon** (`src/app/icon.svg`): a cream W on a navy square, so it reads in a browser tab.
+- **The one exception is the favicon** (`src/app/icon.svg`): a cream W on a navy square, so it reads in a browser tab. Each app's pages use its own letter the same way (`icon.svg` in `mosey`, `m`, `gyfte`, `g`, `j`, `roomtune`, `rt`, `jot`), so a tab says Mosey, not warbag (2026-11-27).
 - Letter tiles in the launcher (C for Chirk, X for Crewmaxxing) and a text-only setting were considered on 2026-11-24 and not adopted.
 
 ## Per-app stance

@@ -36,7 +36,7 @@ function Fields({ person, households, accounts }: { person?: Person; households:
         </span>
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold">Their warbag account</span>
+        <span className="text-sm font-semibold">Their sign-in</span>
         <select name="userId" defaultValue={person?.userId ?? ""} className="min-h-12 rounded-[var(--radius-control)] border border-line bg-field px-3 text-base">
           <option value="">None (just a name)</option>
           {accounts.map((a) => (

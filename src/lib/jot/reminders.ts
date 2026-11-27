@@ -23,7 +23,7 @@ type Due = { id: string; owner_id: string; body: string; email: string; is_admin
 export function reminderEmail(body: string, noteUrl: string): { subject: string; text: string } {
   const line = firstLine(body) || "A note in Jot";
   const subject = `Reminder: ${line.length > 70 ? `${line.slice(0, 69)}…` : line}`;
-  return { subject, text: `${body.trim() || "(empty note)"}\n\nOpen it in Jot: ${noteUrl}\n\nYou set this reminder in Jot on warbag.` };
+  return { subject, text: `${body.trim() || "(empty note)"}\n\nOpen it in Jot: ${noteUrl}\n\nYou set this reminder in Jot.` };
 }
 
 export async function sendDueReminders(now = new Date()): Promise<{ sent: number; skipped: number; failed: number }> {

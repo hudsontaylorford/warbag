@@ -34,10 +34,10 @@ test("the owner invites someone, gives them Gyfte through a group, then takes it
   await apps.getByRole("checkbox", { name: /Gyfte/ }).check();
   await expect(apps.getByText("Saved ✓")).toBeVisible();
 
-  // They sign in and see Gyfte, nothing else, and no People page.
+  // They sign in and land in Gyfte (their only app), with no People page.
   const theirs = await freshPage(browser);
   await signIn(theirs, email);
-  await expect(theirs.getByRole("region", { name: "Apps" }).getByText("Gyfte")).toBeVisible();
+  await expect(theirs).toHaveURL(/\/gyfte$/);
   await expect(theirs.getByText("Chirk")).toHaveCount(0);
   await expect(theirs.getByRole("link", { name: "People" })).toHaveCount(0);
   const res = await theirs.goto("/admin");

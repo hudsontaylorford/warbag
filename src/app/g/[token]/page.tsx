@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { listByLink } from "@/lib/gyfte/sharing";
 import { storeName } from "@/lib/gyfte/links";
 
-export const metadata: Metadata = { title: "Gift list · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Gift list · Gyfte", robots: { index: false, follow: false } };
 
 /**
  * A Gyfte list opened from a share link: the wanted gifts only. No claim
@@ -22,7 +22,7 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
       <div>
         <p className="flex items-center gap-2 text-sm text-soft">
           <Monogram letter="G" size="sm" tone="ember" />
-          Gyfte · warbag
+          Gyfte
         </p>
         <ListTitle title={list.title} className="mt-1" />
       </div>
@@ -54,7 +54,7 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
         <p className="text-soft">No gifts on this list yet.</p>
       )}
       <p className="text-sm text-soft">
-        Family on warbag can{" "}
+        Family can{" "}
         <Link href="/sign-in" className="text-accent underline-offset-4 hover:underline">
           sign in
         </Link>{" "}

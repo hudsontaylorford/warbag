@@ -3,7 +3,7 @@ import { requireJot } from "@/lib/jot/page";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { Editor } from "../Editor";
 
-export const metadata: Metadata = { title: "New note · Jot · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "New note · Jot", robots: { index: false, follow: false } };
 
 export default async function NewNotePage() {
   const { user, actor } = await requireJot("/jot/new");

@@ -5,7 +5,7 @@ import { tripsFor } from "@/lib/mosey/trips";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { rangeLabel } from "./format";
 
-export const metadata: Metadata = { title: "Mosey · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Mosey", robots: { index: false, follow: false } };
 
 /** Your trips: ones you organize or were added to. */
 export default async function MoseyPage() {

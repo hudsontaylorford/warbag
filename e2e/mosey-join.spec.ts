@@ -50,7 +50,15 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   await again.goto(link);
   await expect(again.getByText("You're on this trip.")).toBeVisible();
 
-  // Invite by email from Manage: on warbag and on the trip in one step.
+  // Someone who only has Mosey sees Mosey, not warbag: no warbag link, and "home" is their trips.
+  await again.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));
+  await expect(again.getByRole("link", { name: "warbag", exact: true })).toHaveCount(0);
+  await expect(again).toHaveTitle("Trip · Mosey");
+  await again.goto("/home");
+  await expect(again).toHaveURL(/\/mosey$/);
+  await expect(again.locator("body")).not.toContainText("warbag");
+
+  // Invite by email from Manage: a sign-in and the trip in one step.
   const email2 = `uncle-${randomUUID().slice(0, 8)}@example.test`;
   await page.getByLabel("Their name").fill("Uncle Lou");
   await page.getByLabel("Their email").fill(email2);
@@ -93,4 +101,5 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   const out = await freshPage(browser);
   await out.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));
   await expect(out.getByText("This trip is private.")).toBeVisible();
+  await expect(out.getByRole("heading", { name: "Sign in to Mosey" })).toBeVisible();
 });

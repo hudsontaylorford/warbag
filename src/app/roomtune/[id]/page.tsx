@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/site";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { Tuner } from "../Tuner";
 
-export const metadata: Metadata = { title: "Room Tuner · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Room Tuner", robots: { index: false, follow: false } };
 
 export default async function SetupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

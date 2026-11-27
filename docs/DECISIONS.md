@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · App first: warbag only for people who use more than one app (Hudson)
+
+Hudson: on Mosey, Gyfte and the rest, no warbag branding or mention of warbag beyond the address, unless you're the owner or use other apps.
+
+- **Who sees warbag** (`seesHub`, `src/lib/hub.ts`): admins, people managers, and anyone with two or more of warbag's own apps. Everyone else, trip guests included, sees only the app they use.
+- **For everyone else:** no "warbag" link in the header; `/home` goes straight to their one app (so signing in lands there); "warbag home" links are hidden.
+- **For everyone:** app pages' tab titles name the app ("Trip · Mosey", "Gift list · Gyfte"); share pages say "Mosey", "Gyfte", "Room Tuner"; each app's pages get their own favicon letter (M, G, R, J on the navy square); the sign-in page on the way into an app says "Sign in to Mosey" with its letter; sign-in, trip-invite, family-link and reminder emails don't name warbag; organizer copy says "sign-in" or "account", not "warbag".
+- **Unchanged:** warbag's own pages (launcher, People, the public home, plain sign-in) and the People page's invite email ("invited you to warbag"), which only admins and people managers send. The sender name on emails comes from the `EMAIL_FROM` setting in Vercel.
+
 ## 2026-11-27 · Mosey: join from the trip link, like chirk (Hudson)
 
 Hudson: keep the chirk way, where full functionality works from a private or shared link, with saving optional, and the owner choosing per trip which ways of sharing are on. He approved Money as its own opt-in switch (receipt photos always need a sign-in) and saving with an emailed code, not a password.

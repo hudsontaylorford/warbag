@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { Board } from "./Board";
 import { ImportForm } from "./ImportForm";
 
-export const metadata: Metadata = { title: "Jot · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Jot", robots: { index: false, follow: false } };
 
 const tab = "min-h-11 content-center rounded-[var(--radius-control)] px-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
