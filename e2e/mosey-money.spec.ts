@@ -146,7 +146,7 @@ test("Mosey money: people and a couple, expenses, a prepaid share, settle up, fr
   await expect(guest.getByRole("link", { name: "Money" })).toHaveCount(0);
   await expect(guest.getByText("Dinner")).toHaveCount(0);
   // The view link shows the stop and its status, never who's going.
-  await expect(guest.getByText("Boat tour")).toBeVisible();
+  await expect(guest.getByRole("region", { name: /Sat, Jun 5/ }).getByText("Boat tour")).toBeVisible();
   await expect(guest.getByText("Booked", { exact: true })).toBeVisible();
   await expect(guest.getByText(/Going:|Who's going/)).toHaveCount(0);
   const res = await guest.goto(`${trip.replace(/.*\/mosey\//, "/mosey/")}/money`);

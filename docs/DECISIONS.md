@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · Mosey: the trip one line per day (Hudson, from WRB-20261127-02)
+
+Instinct's proposal: on a phone the month calendar filled a screen with dots and "4p +2" and never said what was happening. Hudson approved part 1 of the review (WRB-20261127-02 v2).
+
+- **One line per day replaces the calendar for every trip** (`DayList`): the weekday and date, the day's planned stops in plan order with a short time on exact-time stops, and the day's area and tag under it. Tapping a row jumps to its day card. Today is marked; days already over are quieter.
+- **Flags only where something isn't settled,** in the app's own words: Tentative, Inquiry sent, and Pick one for a set of options (shown once, by its title). Confirmed and Booked need no flag. Nothing is inferred: no lodging, no "not booked".
+- Empty days say "Nothing planned yet". Same list on the trip link, from what the link already shows.
+- Not done yet (each needs Hudson's go): time-of-day headings inside day cards, a "Staying" line per day. Held until after the trial: a separate swipe-between-days screen.
+- The trip's end date is December 24 (Hudson), settling the open date question.
+
 ## 2026-11-27 · More than one admin (Hudson)
 
 Hudson asked whether he can make other people admins; he chose an Admin switch "with proper safeguards" over relying on people managers.
