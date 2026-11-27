@@ -102,6 +102,7 @@ export function StopRow({
   attend,
   choicesHere,
   brief = false,
+  under,
 }: {
   stop: Stop;
   days: string[];
@@ -116,6 +117,8 @@ export function StopRow({
   choicesHere?: { id: string; title: string }[];
   /** On the Plan's day cards: notes fold to one line, so the day reads as a plan. */
   brief?: boolean;
+  /** The heading this row sits under in a day card ("Morning", "Any time"): the row doesn't repeat it. */
+  under?: string;
 }) {
   const editor = useEditor(`stop:${stop.id}`);
   const open = editor.open;
@@ -131,7 +134,10 @@ export function StopRow({
           <span
             className={`w-18 shrink-0 pt-0.5 text-sm ${stop.time || (stop.part && stop.part !== "tbd") || mealInTime ? "font-semibold" : "text-soft"}`}
           >
-            {mealInTime ? MEAL_LABEL[stop.meal!] : whenLabel(stop)}
+            {(() => {
+              const label = mealInTime ? MEAL_LABEL[stop.meal!] : whenLabel(stop);
+              return label === under ? "" : label;
+            })()}
           </span>
         )}
         <div className="flex min-w-0 flex-1 flex-col">

@@ -46,6 +46,16 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(day2.getByText("6:30 PM")).toBeVisible();
   // The day's line on top says it too.
   await expect(dayList.getByRole("link", { name: /Sunday, June 6/ })).toContainText("6:30p Lobster dinner");
+  // One part of the day: no headings yet.
+  await expect(day2.getByRole("heading", { name: "Evening" })).toHaveCount(0);
+  // A morning stop too (the add box is still open): Morning and Evening headings, and the walk doesn't repeat "Morning".
+  await day2.getByLabel("Add to Sun, Jun 6").fill("Harbor walk");
+  await day2.getByRole("button", { name: "Add a time, place, meal or link" }).click();
+  await day2.getByLabel("When").fill("Morning");
+  await day2.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(day2.getByRole("heading", { name: "Morning" })).toBeVisible();
+  await expect(day2.getByRole("heading", { name: "Evening" })).toBeVisible();
+  await expect(day2.getByText("Morning", { exact: true })).toHaveCount(1);
   await expect(day2.getByRole("link", { name: /Thurston's Lobster Pound/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
 
   // An optional area and tag for the day, shown quietly under its date.
@@ -62,7 +72,7 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   // A day collapses and opens again.
   await day2.getByRole("button", { name: /Sun, Jun 6/ }).click();
   await expect(day2.getByText("Lobster dinner")).toHaveCount(0);
-  await expect(day2.getByText("1 planned")).toBeVisible();
+  await expect(day2.getByText("2 planned")).toBeVisible();
   await day2.getByRole("button", { name: /Sun, Jun 6/ }).click();
   await expect(day2.getByText("Lobster dinner")).toBeVisible();
 
