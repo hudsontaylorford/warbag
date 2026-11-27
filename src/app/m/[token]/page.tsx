@@ -9,7 +9,7 @@ import { AskToJoinTrip } from "@/app/mosey/TripInvite";
 import { JoinByLink } from "@/app/mosey/LinkJoin";
 import { joinableNames } from "@/lib/mosey/link-join";
 
-export const metadata: Metadata = { title: "Trip · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Trip · Mosey", robots: { index: false, follow: false } };
 
 /**
  * A trip link: the plan, no sign-in, no money or members-only details, and
@@ -27,7 +27,7 @@ export default async function TripLinkPage({ params }: { params: Promise<{ token
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
       <p className="flex items-center gap-2 text-sm text-soft">
         <Monogram letter="M" size="sm" tone="ember" />
-        Mosey · warbag
+        Mosey
       </p>
       <TripHeader trip={trip} base={`/m/${token}`} current="plan" />
       <section className="flex flex-col gap-3 rounded-[calc(var(--radius-control)*2)] border border-line bg-field p-4">

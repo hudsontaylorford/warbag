@@ -5,7 +5,7 @@ import { setupsFor } from "@/lib/roomtune/setups";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { ImportForm } from "./ImportForm";
 
-export const metadata: Metadata = { title: "Room Tuner · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Room Tuner", robots: { index: false, follow: false } };
 
 /** Your setups: one per speaker and room. */
 export default async function RoomTunerPage() {

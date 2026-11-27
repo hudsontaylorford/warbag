@@ -5,7 +5,7 @@ import { publicGroupList } from "@/lib/gyfte/groups";
 import { storeName } from "@/lib/gyfte/links";
 import { ListTitle } from "@/app/gyfte/ListTitle";
 
-export const metadata: Metadata = { title: "Gift list · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Gift list · Gyfte", robots: { index: false, follow: false } };
 
 /** One list from a family link: wanted gifts, no claims. */
 export default async function FamilyLinkListPage({ params }: { params: Promise<{ token: string; listId: string }> }) {

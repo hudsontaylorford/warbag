@@ -86,7 +86,7 @@ export function SignInForm({ next }: { next: string }) {
         If {email.trim()} has access, a 6-digit code is on its way. It works for 10 minutes.
       </Alert>
       <p className="text-sm text-soft">
-        No code after a couple of minutes? Check spam. warbag is invite only, so if nobody has invited this email yet, ask the person who sent you here to add it.
+        No code after a couple of minutes? Check spam. Sign-in is by invite only, so if nobody has invited this email yet, ask the person who sent you here to add it.
       </p>
       <Field
         label="Code"

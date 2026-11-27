@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/session";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { AskToJoinById } from "./TripInvite";
+import { seesHub } from "@/lib/hub";
 
 /**
  * A trip that isn't shared with you, or doesn't exist: the same words for
@@ -11,6 +12,7 @@ import { AskToJoinById } from "./TripInvite";
  */
 export async function NotShared({ tripId }: { tripId?: string }) {
   const user = await currentUser();
+  const hub = await seesHub();
   return (
     <>
       {user && <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={user.isAdmin === true} people={user.isPeopleManager === true} />}
@@ -35,9 +37,11 @@ export async function NotShared({ tripId }: { tripId?: string }) {
           <Link href="/mosey" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
             Your trips
           </Link>
-          <Link href="/home" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
-            warbag home
-          </Link>
+          {hub && (
+            <Link href="/home" className="min-h-11 content-center text-accent underline-offset-4 hover:underline">
+              warbag home
+            </Link>
+          )}
         </p>
       </main>
     </>

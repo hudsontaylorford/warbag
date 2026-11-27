@@ -2,13 +2,16 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { HeaderLink } from "./HeaderLink";
 import { Monogram } from "@/components/ui/Monogram";
+import { seesHub } from "@/lib/hub";
 
 /**
  * The top bar on every signed-in page: the W letter mark (back to the launcher),
  * the current app's name in the display serif, then People (admins) and
  * Account (which remember the page you came from; each is left out on its own pages, where its letter leads). `tone="dark"` is for the navy launcher.
+ * The quiet "warbag" link shows only to people who see warbag itself (`seesHub`):
+ * someone who just uses Mosey or Gyfte sees only that app.
  */
-export function AppHeader({
+export async function AppHeader({
   email,
   app,
   isAdmin,
@@ -32,6 +35,7 @@ export function AppHeader({
   const ring = `focus-visible:outline-2 focus-visible:outline-offset-2 ${dark ? "focus-visible:outline-cream" : "focus-visible:outline-accent"}`;
   const link = `min-h-11 content-center rounded-[var(--radius-control)] px-1 text-sm underline-offset-4 hover:underline ${ring} ${dark ? "text-cream" : "text-accent"}`;
   const own = Boolean(letter && appHref);
+  const hub = await seesHub();
   return (
     <header className={dark ? "" : "border-b border-line"}>
       <div className={`mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 ${dark ? "md:max-w-5xl" : ""}`}>
@@ -58,7 +62,7 @@ export function AppHeader({
           )}
         </nav>
         <div className="flex items-center gap-4">
-          {own && (
+          {own && hub && (
             <Link href="/home" className={link}>
               warbag
             </Link>

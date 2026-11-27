@@ -38,5 +38,6 @@ export async function signIn(page: Page, email: string) {
   await requestCode(page, email);
   await page.getByLabel("Code").fill(await latestCode(email));
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/home$/);
+  // The launcher, or straight into someone's only app.
+  await expect(page).toHaveURL(/\/(home|mosey|gyfte|roomtune|jot)$/);
 }

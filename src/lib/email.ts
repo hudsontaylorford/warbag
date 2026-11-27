@@ -40,16 +40,16 @@ export async function sendEmail({ to, subject, text }: Message): Promise<void> {
 
 export function signInCodeEmail(code: string): { subject: string; text: string } {
   return {
-    subject: `${code} is your warbag code`,
-    text: `Your warbag sign-in code is ${code}\n\nIt works for 10 minutes. If you didn't ask for it, you can ignore this email.`,
+    subject: `${code} is your sign-in code`,
+    text: `Your sign-in code is ${code}\n\nIt works for 10 minutes. If you didn't ask for it, you can ignore this email.`,
   };
 }
 
 export function signInLinkEmail(url: string, group: string): { subject: string; text: string } {
   return {
-    subject: group ? `Your sign-in link for ${group}` : "Your warbag sign-in link",
+    subject: group ? `Your sign-in link for ${group}` : "Your sign-in link",
     text:
-      `Tap to sign in${group ? ` and see ${group}` : ""} on warbag:\n\n${url}\n\n` +
+      `Tap to sign in${group ? ` and see ${group}` : ""}:\n\n${url}\n\n` +
       "It works once, for the next hour, and keeps you signed in on that phone. " +
       "If you didn't ask for it, you can ignore this email.",
   };

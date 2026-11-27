@@ -6,7 +6,7 @@ import { AccessDenied } from "@/lib/access";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { Editor } from "../Editor";
 
-export const metadata: Metadata = { title: "Note · Jot · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Note · Jot", robots: { index: false, follow: false } };
 
 export default async function NotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

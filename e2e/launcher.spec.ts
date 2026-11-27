@@ -32,9 +32,10 @@ test("a member sees only the apps shared with them", async ({ page }) => {
   await db.query(`insert into app_grants (app, user_id) values ('gyfte', $1)`, [id]);
   await db.end();
 
+  // With just one app, "home" is that app: no launcher, no other sites, no warbag link.
   await signIn(page, email);
-  await expect(page.getByRole("region", { name: "Apps" }).getByText("Gyfte")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Other sites" })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/gyfte$/);
   await expect(page.getByText("Chirk")).toHaveCount(0);
   await expect(page.getByText("Crewmaxxing")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "warbag", exact: true })).toHaveCount(0);
 });

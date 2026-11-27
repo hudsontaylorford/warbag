@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { SetupBuilder } from "../SetupBuilder";
 import { eqAiConfigured } from "@/lib/roomtune/eq-ai";
 
-export const metadata: Metadata = { title: "New setup · Room Tuner · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "New setup · Room Tuner", robots: { index: false, follow: false } };
 
 export default async function NewSetupPage() {
   const { user, actor } = await requireRoomTuner("/roomtune/new");

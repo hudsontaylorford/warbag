@@ -40,7 +40,7 @@ export function TripManage({
       hint={
         canInvite
           ? "From the trip link or the trip's page. Add puts them on the trip and emails them how to sign in."
-          : "From the trip link or the trip's page. An admin adds new people to warbag."
+          : "From the trip link or the trip's page. An admin adds new people."
       }
     >
       <JoinRequests requests={requests} />
@@ -72,7 +72,7 @@ export function TripManage({
           </Section>
         )}
         {sharing && canInvite && (
-          <Section title="Invite by email" hint="Adds them to warbag (if they're new) and to this trip in one step.">
+          <Section title="Invite by email" hint="Gives them a sign-in (if they're new) and adds them to this trip in one step.">
             <InviteByEmail tripId={trip.id} />
           </Section>
         )}

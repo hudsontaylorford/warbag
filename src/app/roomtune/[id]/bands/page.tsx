@@ -7,7 +7,7 @@ import { AccessDenied } from "@/lib/access";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { SetupBuilder } from "../../SetupBuilder";
 
-export const metadata: Metadata = { title: "EQ layout · Room Tuner · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "EQ layout · Room Tuner", robots: { index: false, follow: false } };
 
 export default async function EditBandsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

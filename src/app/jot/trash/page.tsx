@@ -7,7 +7,7 @@ import { ConfirmForm } from "@/components/ui/forms";
 import { emptyTrashAction } from "../actions";
 import { TrashRow } from "./TrashRow";
 
-export const metadata: Metadata = { title: "Trash · Jot · warbag", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Trash · Jot", robots: { index: false, follow: false } };
 
 export default async function TrashPage() {
   const { user, actor } = await requireJot("/jot/trash");
