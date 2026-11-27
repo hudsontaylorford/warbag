@@ -19,12 +19,15 @@ export function DayList({
   planned,
   info,
   choices,
+  staying = {},
 }: {
   days: string[];
   /** Each day's planned stops, in plan order. */
   planned: Record<string, Stop[]>;
   info: Record<string, DayInfo>;
   choices: Record<string, { title: string }>;
+  /** Where people stay, on the nights it changes (members only). */
+  staying?: Record<string, string>;
 }) {
   const today = useToday();
   const underway = today !== null && days[0] <= today && today <= days[days.length - 1];
@@ -66,6 +69,7 @@ export function DayList({
                     )}
                   </span>
                   {meta && <span className="text-sm break-words text-soft">{meta}</span>}
+                  {staying[day] && <span className="text-sm break-words text-soft">Staying: {staying[day]}</span>}
                 </span>
               </a>
             </li>

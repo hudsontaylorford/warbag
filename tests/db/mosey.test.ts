@@ -186,8 +186,8 @@ describeDb("Mosey trips", () => {
 
   it("a day's area and tag: organizers set them, everyone who sees the plan sees them", async () => {
     await grantItem(hudson, { app: "mosey", type: "trip", id: tripId, ownerId: hudson.id }, { userId: aunt.id }, "view");
-    await setDayInfo(hudson, tripId, "2027-06-06", { area: " Bar Harbor → Acadia ", tag: "Travel day" });
-    expect((await getTrip(molly, tripId)).dayInfo).toEqual({ "2027-06-06": { area: "Bar Harbor → Acadia", tag: "Travel day" } });
+    await setDayInfo(hudson, tripId, "2027-06-06", { area: " Bar Harbor → Acadia ", tag: "Travel day", staying: "" });
+    expect((await getTrip(molly, tripId)).dayInfo).toEqual({ "2027-06-06": { area: "Bar Harbor → Acadia", tag: "Travel day", staying: "" } });
     expect((await getTrip(aunt, tripId)).dayInfo["2027-06-06"].tag).toBe("Travel day");
     await createTripLink(hudson, tripId);
     const [link] = (await tripSharing(hudson, tripId)).links;
@@ -195,17 +195,29 @@ describeDb("Mosey trips", () => {
 
     // Members suggest stops but don't label days; nobody else can at all.
     for (const who of [molly, aunt, outsider]) {
-      await expect(setDayInfo(who, tripId, "2027-06-06", { area: "Hijack", tag: "" })).rejects.toBeInstanceOf(AccessDenied);
+      await expect(setDayInfo(who, tripId, "2027-06-06", { area: "Hijack", tag: "", staying: "" })).rejects.toBeInstanceOf(AccessDenied);
     }
-    await expect(setDayInfo(hudson, tripId, "2027-06-20", { area: "Later", tag: "" })).rejects.toBeInstanceOf(InputError);
-    await expect(setDayInfo(hudson, tripId, "June 6", { area: "x", tag: "" })).rejects.toBeInstanceOf(InputError);
-    await expect(setDayInfo(hudson, tripId, "2027-06-06", { area: "x".repeat(81), tag: "" })).rejects.toBeInstanceOf(InputError);
+    await expect(setDayInfo(hudson, tripId, "2027-06-20", { area: "Later", tag: "", staying: "" })).rejects.toBeInstanceOf(InputError);
+    await expect(setDayInfo(hudson, tripId, "June 6", { area: "x", tag: "", staying: "" })).rejects.toBeInstanceOf(InputError);
+    await expect(setDayInfo(hudson, tripId, "2027-06-06", { area: "x".repeat(81), tag: "", staying: "" })).rejects.toBeInstanceOf(InputError);
 
-    // A day the trip no longer covers isn't shown; clearing both removes it.
+    // Where people stay: members see it; a view grant and the trip link never do (it may be an address).
+    await setDayInfo(hudson, tripId, "2027-06-06", { area: "Bar Harbor → Acadia", tag: "", staying: " Cabin on Ocean Drive " });
+    await setDayInfo(hudson, tripId, "2027-06-07", { area: "", tag: "", staying: "Cabin on Ocean Drive" });
+    expect((await getTrip(molly, tripId)).dayInfo["2027-06-06"].staying).toBe("Cabin on Ocean Drive");
+    expect((await getTrip(hudson, tripId)).dayInfo["2027-06-07"]).toEqual({ area: "", tag: "", staying: "Cabin on Ocean Drive" });
+    expect((await getTrip(aunt, tripId)).dayInfo["2027-06-06"].staying).toBe("");
+    expect((await getTrip(aunt, tripId)).dayInfo["2027-06-07"]).toBeUndefined();
+    expect((await tripByLink(link.token))!.dayInfo["2027-06-06"]).toEqual({ area: "Bar Harbor → Acadia", tag: "", staying: "" });
+    expect((await tripByLink(link.token))!.dayInfo["2027-06-07"]).toBeUndefined();
+    await expect(setDayInfo(hudson, tripId, "2027-06-06", { area: "", tag: "", staying: "x".repeat(121) })).rejects.toBeInstanceOf(InputError);
+    await setDayInfo(hudson, tripId, "2027-06-07", { area: "", tag: "", staying: "" });
+
+    // A day the trip no longer covers isn't shown; clearing all three removes it.
     await updateTrip(hudson, tripId, { ...maine, start: "2027-06-07" });
     expect((await getTrip(hudson, tripId)).dayInfo).toEqual({});
     await updateTrip(hudson, tripId, maine);
-    await setDayInfo(hudson, tripId, "2027-06-06", { area: "", tag: "" });
+    await setDayInfo(hudson, tripId, "2027-06-06", { area: "", tag: "", staying: "" });
     expect((await admin.query("select count(*)::int as n from mosey_days where trip_id = $1", [tripId])).rows[0].n).toBe(0);
   });
 

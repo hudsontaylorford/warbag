@@ -106,7 +106,7 @@ export async function setAttendanceAction(_: FormState, form: FormData): Promise
 /** A day's area and tag. Organizers only. */
 export async function setDayAction(_: FormState, form: FormData): Promise<FormState> {
   return runAction(async (actor) => {
-    await setDayInfo(actor, text(form, "id"), text(form, "day"), { area: text(form, "area"), tag: text(form, "tag") });
+    await setDayInfo(actor, text(form, "id"), text(form, "day"), { area: text(form, "area"), tag: text(form, "tag"), staying: text(form, "staying") });
     return "Saved";
   });
 }

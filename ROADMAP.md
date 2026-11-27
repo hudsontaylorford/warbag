@@ -13,7 +13,7 @@ Order of work. Each step is approved by Hudson before it starts.
      - Hard commitments and deadlines on the plan (van return at noon), later reminders.
      - A shareable day or whole-trip schedule: printable view, copyable update, optional calendar (.ics) feed. Nothing sent automatically.
      - "What's changed" since you last looked.
-     - Lodging by night (who sleeps where), only if real use needs it.
+     - Lodging by night: done as a per-day "Staying" line (2026-11-27); room-by-room assignments only if real use needs them.
      - Meal duties and a short shopping list on a group meal (opt-in, never required).
      - An estimated cost on a stop, kept apart from real expenses (never double counted).
      - Suggestions from people without an account (reviewed by an organizer; never Money access).

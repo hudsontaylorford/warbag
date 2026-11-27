@@ -2,6 +2,14 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · Mosey: where people stay, per day (Hudson, from WRB-20261127-02)
+
+Part 3 of the agenda review. ROADMAP had "lodging by night, only if real use needs it"; the Christmas trip moves between homes, so it does.
+
+- **An optional "Staying" line per day** (migration 0027, `mosey_days.staying`, up to 120 characters), set by organizers next to Area and Tag. Whatever is typed is what shows ("Lake house, details pending"); nothing is inferred or marked settled.
+- **Shown only where it changes from the night before** (`stayingChanges`): the first night if set, then each change, on the day card and in the one-line-per-day list.
+- **Members only.** It may be an address, so a view grant and the trip link never receive it (left out on the server, not hidden in the page).
+
 ## 2026-11-27 · Mosey: Morning, Afternoon, Evening inside a day (Hudson, from WRB-20261127-02)
 
 Part 2 of the agenda review: day cards repeated "Any time" or "Morning" on every row.
