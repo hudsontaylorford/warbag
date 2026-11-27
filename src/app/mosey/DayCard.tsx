@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { Fragment, useActionState, useId, useState } from "react";
 import type { DayInfo, Stop } from "@/lib/mosey/trips";
 import { setDayAction } from "./actions";
 import { StopRow } from "./StopRow";
@@ -12,6 +12,7 @@ import { Field } from "@/components/ui/Field";
 import { SaveStatus, useAutosave } from "@/components/ui/forms";
 import { dayLabel } from "./format";
 import { useToday } from "./useToday";
+import { DAY_PART_LABEL, dayHeadings, dayPartOf } from "@/lib/mosey/day-line";
 
 type Row = { stop: Stop; canEdit: boolean };
 
@@ -98,6 +99,10 @@ export function DayCard({
     if (!c) items.push({ kind: "stop", row });
     else if (!items.some((it) => it.kind === "options" && it.id === c)) items.push({ kind: "options", id: c, rows: planned.filter((r) => r.stop.choiceId === c) });
   }
+  // Morning / Afternoon / Evening / Any time headings where the part of the day changes, in saved order.
+  const headings = dayHeadings(items.map((it) => dayPartOf(it.kind === "stop" ? it.row.stop : it.rows[0].stop)));
+  const underAt: (string | undefined)[] = [];
+  headings.reduce<string | undefined>((cur, h, i) => (underAt[i] = h ? DAY_PART_LABEL[h] : cur), undefined);
   const isToday = day === today;
   const underway = today !== null && days[0] <= today && today <= days[days.length - 1];
   const open = openChoice ?? !(underway && day < today!);
@@ -140,25 +145,38 @@ export function DayCard({
             <Reorder stops={planned.map((r) => r.stop)} onDone={() => setReordering(false)} />
           ) : count > 0 ? (
             <ul className="divide-y divide-line border-t border-line">
-              {items.map((it) =>
-                it.kind === "stop" ? (
-                  <li key={it.row.stop.id}>
-                    <StopRow
-                      stop={it.row.stop}
-                      days={days}
-                      canEdit={it.row.canEdit}
-                      canPlan={canPlan}
-                      choicesHere={choicesHere}
-                      attend={attend && { ...attend, marks: attend.marks[it.row.stop.id] ?? [] }}
-                      brief
-                    />
-                  </li>
+              {items.map((it, i) => {
+                const heading = headings[i];
+                const row =
+                  it.kind === "stop" ? (
+                    <li key={it.row.stop.id}>
+                      <StopRow
+                        stop={it.row.stop}
+                        days={days}
+                        canEdit={it.row.canEdit}
+                        canPlan={canPlan}
+                        choicesHere={choicesHere}
+                        attend={attend && { ...attend, marks: attend.marks[it.row.stop.id] ?? [] }}
+                        brief
+                        under={underAt[i]}
+                      />
+                    </li>
+                  ) : (
+                    <li key={it.id}>
+                      <OptionsBlock choiceId={it.id} title={choices[it.id].title} rows={it.rows} days={days} canPlan={canPlan} attend={attend} choicesHere={choicesHere} />
+                    </li>
+                  );
+                return heading ? (
+                  <Fragment key={`h:${heading}:${i}`}>
+                    <li className="!border-b-0 pt-3 -mb-1.5">
+                      <h3 className="text-sm font-semibold text-soft">{DAY_PART_LABEL[heading]}</h3>
+                    </li>
+                    {row}
+                  </Fragment>
                 ) : (
-                  <li key={it.id}>
-                    <OptionsBlock choiceId={it.id} title={choices[it.id].title} rows={it.rows} days={days} canPlan={canPlan} attend={attend} choicesHere={choicesHere} />
-                  </li>
-                ),
-              )}
+                  row
+                );
+              })}
             </ul>
           ) : (
             <p className="border-t border-line pt-3 text-sm text-soft">Nothing planned yet.</p>

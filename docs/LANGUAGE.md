@@ -55,7 +55,7 @@
 | Kid | On the trip's people list, the plan and who's going; left out of money splits unless ticked in (their share goes to their household); never pays. |
 | All adults | The split shortcut when a trip has kids (otherwise "Everyone"). |
 | Going / Maybe | Who's coming to a stop, from the trip's people list. Not marked is neither. |
-| Morning / Afternoon / Evening / Time TBD / Any time | When, without an exact time. |
+| Morning / Afternoon / Evening / Time TBD / Any time | When, without an exact time. Also the headings inside a day card (Morning before noon, Afternoon until 5, then Evening). |
 
 ## Room Tuner words
 

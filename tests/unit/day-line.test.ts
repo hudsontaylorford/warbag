@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayLine } from "@/lib/mosey/day-line";
+import { dayHeadings, dayLine, dayPartOf } from "@/lib/mosey/day-line";
 import type { Stop } from "@/lib/mosey/trips";
 
 const stop = (s: Partial<Stop>): Stop => ({
@@ -39,5 +39,28 @@ describe("a day in one line", () => {
   });
   it("is empty for a day with nothing planned", () => {
     expect(dayLine([], {})).toEqual([]);
+  });
+});
+
+describe("headings inside a day card", () => {
+  it("reads the part of the day from a time, a typed part or an untimed meal", () => {
+    expect(dayPartOf({ time: "09:30", part: null, meal: null })).toBe("morning");
+    expect(dayPartOf({ time: "12:00", part: null, meal: null })).toBe("afternoon");
+    expect(dayPartOf({ time: "16:59", part: null, meal: null })).toBe("afternoon");
+    expect(dayPartOf({ time: "17:00", part: null, meal: null })).toBe("evening");
+    expect(dayPartOf({ time: null, part: "evening", meal: null })).toBe("evening");
+    expect(dayPartOf({ time: null, part: null, meal: "dinner" })).toBe("evening");
+    expect(dayPartOf({ time: null, part: null, meal: "food" })).toBe("any");
+    expect(dayPartOf({ time: null, part: null, meal: null })).toBe("any");
+    expect(dayPartOf({ time: null, part: "tbd", meal: null })).toBeNull();
+  });
+  it("adds a heading where the part changes, in saved order, never re-sorting", () => {
+    expect(dayHeadings(["morning", "morning", "any", "afternoon", null, "evening"])).toEqual(["morning", null, "any", "afternoon", null, "evening"]);
+    // A hand-placed any-time stop between two afternoon stops gets its own heading, and the next afternoon stop gets one again.
+    expect(dayHeadings(["afternoon", "any", "afternoon"])).toEqual(["afternoon", "any", "afternoon"]);
+  });
+  it("adds no headings to a day that's all one part", () => {
+    expect(dayHeadings(["evening", "evening", null])).toEqual([null, null, null]);
+    expect(dayHeadings([])).toEqual([]);
   });
 });

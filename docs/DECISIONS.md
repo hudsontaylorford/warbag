@@ -2,6 +2,15 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-27 · Mosey: Morning, Afternoon, Evening inside a day (Hudson, from WRB-20261127-02)
+
+Part 2 of the agenda review: day cards repeated "Any time" or "Morning" on every row.
+
+- **Headings inside each day card** where the part of the day changes: Morning (before noon), Afternoon (until 5), Evening, and Any time (`dayPartOf`, `dayHeadings`). A typed part counts as itself; an untimed meal by its meal (breakfast, lunch, dinner); "Time TBD" has no part and stays where it is.
+- **They follow the day's saved order and never re-sort it.** A hand-placed "Any time" stop between two afternoon stops gets its own heading, and the next afternoon stop gets one again.
+- **Only on days that span two or more parts;** a day that's all evening stays plain.
+- **A row doesn't repeat its heading** (no "Morning" under Morning). Exact times, "Time TBD" and meal words like "Dinner" still show.
+
 ## 2026-11-27 · Mosey: the trip one line per day (Hudson, from WRB-20261127-02)
 
 Instinct's proposal: on a phone the month calendar filled a screen with dots and "4p +2" and never said what was happening. Hudson approved part 1 of the review (WRB-20261127-02 v2).
