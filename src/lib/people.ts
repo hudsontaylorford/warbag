@@ -335,4 +335,51 @@ export async function setPeopleManager(actor: Actor, userId: string, on: boolean
   await audit(pool, actor.id, on ? "person.peopleManager.on" : "person.peopleManager.off", `user/${userId}`);
 }
 
+/**
+ * Makes someone an admin, or not (Hudson, 2026-11-27). Admins only. The
+ * safeguards: never yourself (so nobody demotes themselves by accident and
+ * nobody promotes themselves), never a trip guest or a made-up sample
+ * person, and warbag always keeps at least one admin. Becoming an admin
+ * replaces people manager (admins can do all of it). Takes effect on the
+ * person's next page load; logged in the audit trail. CLAUDE.md: the
+ * assistant's account is never made an admin.
+ */
+export async function setAdmin(actor: Actor, userId: string, on: boolean): Promise<void> {
+  requireAdmin(actor);
+  if (userId === actor.id) throw new InputError("You can't change your own admin access. Ask another admin.");
+  if (!UUID.test(userId) && !/^[A-Za-z0-9_-]{10,64}$/.test(userId)) throw new AccessDenied();
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    // Lock every admin row, so two admins removing each other at once can't leave nobody.
+    await client.query(`select id from "user" where "isAdmin" for update`);
+    const { rows } = await client.query<{ email: string; isAdmin: boolean; isGuest: boolean | null }>(
+      `select email, "isAdmin", "isGuest" from "user" where id = $1 for update`,
+      [userId],
+    );
+    const person = rows[0];
+    if (!person) throw new InputError("That person isn't on warbag anymore.");
+    if (on && (person.isGuest || person.email.toLowerCase().endsWith(".invalid"))) {
+      throw new InputError("Only people with their own sign-in can be admins.");
+    }
+    if (!on && person.isAdmin) {
+      const others = await client.query(`select count(*)::int as n from "user" where "isAdmin" and id <> $1`, [userId]);
+      if (others.rows[0].n < 1) throw new InputError("warbag needs at least one admin.");
+    }
+    if (person.isAdmin !== on) {
+      await client.query(
+        `update "user" set "isAdmin" = $2, "isPeopleManager" = case when $2 then false else "isPeopleManager" end, "updatedAt" = now() where id = $1`,
+        [userId, on],
+      );
+      await audit(client, actor.id, on ? "person.admin.on" : "person.admin.off", `user/${userId}`);
+    }
+    await client.query("commit");
+  } catch (err) {
+    await client.query("rollback");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export { AccessDenied };
