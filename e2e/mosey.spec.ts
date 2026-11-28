@@ -136,7 +136,19 @@ test("Mosey: make a trip, plan a day, add and schedule an idea, share a view lin
   await expect(day1.getByText("12 Private Road")).toBeVisible();
   await expect(day1.getByText("Afternoon", { exact: true })).toBeVisible();
 
+  // Organizers get Manage beside the tabs: from Ideas it goes to Plan with Manage open.
+  const tabs = page.getByRole("navigation", { name: "Trip" });
+  await tabs.getByRole("link", { name: /^Ideas/ }).click();
+  await expect(page).toHaveURL(/\/ideas$/);
+  await tabs.getByRole("link", { name: "Manage" }).click();
+  await expect(page).toHaveURL(/\?manage=1#manage$/);
+  await expect(page.locator("details#manage")).toHaveAttribute("open", "");
+  await expect(page.getByRole("heading", { name: "Trip link" })).toBeInViewport();
+  // On Plan it opens Manage in place (closed first, then opened by the link).
   await page.locator("summary", { hasText: "Manage" }).click();
+  await expect(page.locator("details#manage")).not.toHaveAttribute("open", "");
+  await tabs.getByRole("link", { name: "Manage" }).click();
+  await expect(page.locator("details#manage")).toHaveAttribute("open", "");
   // Settings save themselves: no Save buttons; renaming saves on leaving the field.
   await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
   await page.getByLabel("Trip name").fill(`Maine ${tag} trip`);

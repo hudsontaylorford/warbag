@@ -58,6 +58,9 @@ test("Mosey: from a trip link to on the trip, and clear words when you're not", 
   await expect(again.getByRole("heading", { name: `Lake ${tag}` })).toBeVisible();
   await again.goto(link);
   await expect(again.getByText("You're on this trip.")).toBeVisible();
+  // Members don't get Manage beside the tabs.
+  await again.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));
+  await expect(again.getByRole("navigation", { name: "Trip" }).getByRole("link", { name: "Manage" })).toHaveCount(0);
 
   // Someone who only has Mosey sees Mosey, not warbag: no warbag link, and "home" is their trips.
   await again.goto(tripUrl.replace(/.*\/mosey\//, "/mosey/"));

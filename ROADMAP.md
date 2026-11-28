@@ -33,7 +33,7 @@ External links in the launcher from day one: **Chirk** (chirk.fyi) and **Crewmax
 - Personal bookmarks: anyone can add any site or URL to their launcher.
 - The look is settled (see docs/DESIGN.md): the text-only Masthead, bare letters with no tiles, no slogans or decorative marks.
 - **Polish pass** (2026-11-24): top fixes shipped; short trips now get a one-row calendar; left is a Manage link beside Plan / Ideas / Money.
-- **Contrast and tap-target check** before the December 1 family trial.
+- **Contrast and tap-target check:** done for Mosey and sign-in (2026-11-28); Gyfte when it's unpaused.
 - Back pocket: "press and arrive" motion (a tapped launcher row settles into the app's header), off under reduced motion.
 
 **Sign-in and accounts** (Hudson, 2026-11-23; each needs Hudson's go):

@@ -23,7 +23,7 @@ export default async function TripIdeasPage({ params, searchParams }: { params: 
     <>
       <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
-        <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="ideas" back money={trip.money} />
+        <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="ideas" back money={trip.money} manage={trip.organizer} />
         <IdeaList trip={trip} canAdd={canAdd} canPlan={trip.organizer} viewerOnly={!canAdd} food={show === "food"} base={`/mosey/${trip.id}/ideas`} />
       </main>
     </>

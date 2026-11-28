@@ -2,6 +2,16 @@
 
 Durable decisions, newest first. Each one says what was decided and why. When a decision changes, add a new entry and mark the old one superseded rather than editing history.
 
+## 2026-11-28 · Mosey: contrast and tap-target check, and Manage beside the tabs (Hudson)
+
+Before the December 1 trial, a measured check of every page the family uses (sign-in, trips, Plan with Manage, the stop editor and add box, Ideas, Money, Settle up, Account, the trip link and its Ideas), at iPhone size, as organizer and signed out.
+
+- **Text contrast:** every piece of text passed WCAG AA (4.5:1, or 3:1 for large text), including placeholders.
+- **Tap targets:** one failure, the place link ("Brooklyn · Maps ›") at 20px tall; now 44px, with padding offset by margin so the layout barely moves.
+- **Found by eye on the way:** the "Who's going?" row was pulled up 16px and covered the last line above it (a note, a place or "Handling it"); the pull-up is gone.
+- **Manage beside Plan / Ideas / Money,** for organizers only (from the 2026-11-24 critique): on Plan it opens Manage in place and scrolls to it; from Ideas or Money it goes to Plan with Manage open (`?manage=1#manage`).
+- The check was a one-off script, not part of the test suite. Gyfte's pages weren't included (Gyfte is paused).
+
 ## 2026-11-27 · Mosey: where people stay, per day (Hudson, from WRB-20261127-02)
 
 Part 3 of the agenda review. ROADMAP had "lodging by night, only if real use needs it"; the Christmas trip moves between homes, so it does.

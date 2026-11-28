@@ -162,7 +162,7 @@ export function StopRow({
             )}
           </div>
           {stop.place && (
-            <a href={mapsUrl(stop.place)} target="_blank" rel="noopener noreferrer" className="text-sm break-words text-soft underline-offset-4 hover:underline">
+            <a href={mapsUrl(stop.place)} target="_blank" rel="noopener noreferrer" className="-my-2 self-start py-3 text-sm break-words text-soft underline-offset-4 hover:underline">
               {stop.place} · <span className="text-accent">Maps ›</span>
             </a>
           )}

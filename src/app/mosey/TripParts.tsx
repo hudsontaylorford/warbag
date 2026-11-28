@@ -5,10 +5,26 @@ import { QuickAdd } from "./QuickAdd";
 import { rangeLabel } from "./format";
 import { DayCard } from "./DayCard";
 import { DayList } from "./DayList";
+import { ManageLink } from "./ManageLink";
 import { stayingChanges } from "@/lib/mosey/day-line";
 
-/** Trip name, dates and place, with Plan / Ideas. */
-export function TripHeader({ trip, base, current, back, money }: { trip: TripDetail; base: string; current: "plan" | "ideas" | "money"; back?: boolean; money?: boolean }) {
+/** Trip name, dates and place, with Plan / Ideas / Money, and Manage for organizers. */
+export function TripHeader({
+  trip,
+  base,
+  current,
+  back,
+  money,
+  manage,
+}: {
+  trip: TripDetail;
+  base: string;
+  current: "plan" | "ideas" | "money";
+  back?: boolean;
+  money?: boolean;
+  /** Organizers: a Manage link at the end of the tabs. */
+  manage?: boolean;
+}) {
   const ideas = trip.stops.filter((s) => !s.day).length;
   const tab = (id: "plan" | "ideas" | "money", label: string, href: string) => (
     <Link
@@ -37,6 +53,13 @@ export function TripHeader({ trip, base, current, back, money }: { trip: TripDet
         {tab("plan", "Plan", base)}
         {tab("ideas", ideas ? `Ideas (${ideas})` : "Ideas", `${base}/ideas`)}
         {money && tab("money", "Money", `${base}/money`)}
+        {manage && (
+          <ManageLink
+            base={base}
+            here={current === "plan"}
+            className="-mb-px ml-auto flex min-h-12 items-center border-b-2 border-transparent px-3 font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          />
+        )}
       </nav>
     </div>
   );
