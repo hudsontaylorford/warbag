@@ -13,8 +13,8 @@
 - Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
 
 ### Next (each needs Hudson's go)
-1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"; on day cards notes show one line). Then a one-row calendar for trips of a week or less. Left from the critique: a Manage link beside Plan / Ideas / Money.
-2. **Contrast and tap-target check** on the pages the family will use, before December 1.
+1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"; on day cards notes show one line). Then a one-row calendar for trips of a week or less. The Manage link beside Plan / Ideas / Money shipped 2026-11-28.
+2. **Contrast and tap-target check:** done 2026-11-28 for every Mosey page and sign-in (all text passes AA; the place link enlarged; Who's going no longer covers the line above it). Gyfte not checked yet.
 3. **Launcher, next round:** show, hide and reorder your own apps; personal bookmarks.
 4. **Sign-in and accounts:** signed-in devices, passkeys, a dedicated assistant identity (see ROADMAP.md).
 5. Kept for later, not approved: "press and arrive" motion from a launcher row into the app's header (off for reduced motion).

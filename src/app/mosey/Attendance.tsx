@@ -80,7 +80,7 @@ export function Attendance({
       : "Who's going?";
 
   return (
-    <div className={`-mt-4 flex flex-col gap-1 text-sm ${pad}`}>
+    <div className={`flex flex-col gap-1 text-sm ${pad}`}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <button
           type="button"

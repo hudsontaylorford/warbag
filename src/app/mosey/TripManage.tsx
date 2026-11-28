@@ -15,6 +15,7 @@ export function TripManage({
   sharing,
   siteUrl,
   requests = [],
+  open = false,
   canInvite = false,
 }: {
   trip: TripDetail;
@@ -22,6 +23,8 @@ export function TripManage({
   siteUrl: string;
   /** People asking to join from the trip link (owner only). */
   requests?: { id: string; name: string; email: string }[];
+  /** Start open (the Manage link from Ideas or Money). */
+  open?: boolean;
   /** May add new people to warbag from here (admins and people managers). */
   canInvite?: boolean;
 }) {
@@ -48,7 +51,7 @@ export function TripManage({
   );
   return (
     // Open, with requests first, while someone is asking to join.
-    <ManageDetails initiallyOpen={requests.length > 0}>
+    <ManageDetails initiallyOpen={open || requests.length > 0}>
       <summary className="min-h-11 cursor-pointer content-center font-semibold">
         Manage
         {requests.length > 0 && <span className="font-normal text-soft"> · {requests.length} asking to join</span>}

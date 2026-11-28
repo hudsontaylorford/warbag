@@ -53,7 +53,7 @@ export default async function TripMoneyPage({ params }: { params: Promise<{ id: 
     <>
       <AppHeader email={user.email} app="Mosey" letter="M" appHref="/mosey" isAdmin={actor.isAdmin} people={actor.peopleManager} />
       <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8">
-        <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="money" back money />
+        <TripHeader trip={trip} base={`/mosey/${trip.id}`} current="money" back money manage={trip.organizer} />
 
         {l.problem && <Alert>{l.problem}</Alert>}
 
