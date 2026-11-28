@@ -1,60 +1,69 @@
 # Status
 
-**2026-11-24.** Mosey's build is done and waits on Hudson's own checks before a private family trial on **December 1**. Gyfte is paused and ready for Christmas. Room Tuner is live at /roomtune. Jot (sticky notes, the old Stickies) is live at /jot since 2026-11-25 (PR 76). Everything below is live at https://warbag.rodeo (last change: PR 67, the text-only launcher and bare letters). Screenshots of every Mosey page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Mosey · All pages · current (after PR 55, 2026-11-23)"; latest Claude note: WRB-20261124-01 (this status and the full roadmap); latest Instinct note: WRB-20261123-02 (newcomer field test and rerun). What's next and later: ROADMAP.md; why: docs/DECISIONS.md.
+**2026-11-28.** Mosey is ready for a private family trial on **December 1** with the Ford Christmas Trip (Dec 17 to 24); what's left is Hudson's own checks. Gyfte is paused and ready for Christmas. Room Tuner and Jot are live for Hudson. Everything below is live at https://warbag.rodeo (last change: PR 90).
 
-## warbag (the hub)
+- **Next and later:** ROADMAP.md. **Why:** docs/DECISIONS.md (newest first). **Words:** docs/LANGUAGE.md. **Look:** docs/DESIGN.md.
+- **Drive, "Warbag — AI Handoffs":** latest Claude note WRB-20261124-01 v2 (this status and the full roadmap); latest Instinct notes WRB-20261123-02 (newcomer field test), WRB-20261127-01 (People cleanup brief) and WRB-20261127-02 (agenda view, answered in v2); screenshots of every Mosey page, phone and desktop, made-up data: "Mosey · All pages · current (after PR 90, 2026-11-28)".
 
-### Live
-- **Launcher, "Masthead"** (PR 67, 2026-11-24): navy field, a big cream "Hi, Hudson", then app names only (no letters, no descriptions) under **Apps** (warbag's own, ›) and **Other sites** (Chirk, Crewmaxxing, ↗). No lines under the header or labels; no setting for another style. Two columns on desktop.
-- **Letters:** every page's header shows its place's letter as a bare ember serif letter with no square (G Gyfte, M Mosey, R Room Tuner, J Jot, P People, A Account); W is warbag itself. Only the favicon keeps a square.
-- **App first** (2026-11-27): only admins, people managers and people with two or more apps see warbag (the header link, the launcher). Everyone else sees just their app: signing in lands there, tabs, share pages, the sign-in page and emails name the app, and each app has its own favicon letter.
-- **More than one admin** (2026-11-27): People → a person → Admin → "Make admin" (after a confirm). Never yourself, never a guest or sample person, always at least one admin, logged.
-- **Link previews** (2026-11-27): trip links, guest links, gift list and family links and Room Tuner view links preview like Chirk's ("You're invited: Lake weekend", dates and place, a card in the app's look).
-- Sign-in (email code, invite only), people, groups, app access, people managers, a way back from every page. Details under "Accounts and access" below.
+## Before December 1 (Hudson)
 
-### Next (each needs Hudson's go)
-1. **Polish pass** (2026-11-24): the top fixes shipped (bigger back links, text buttons in ink, one action per day card, cream focus on the launcher, note formatting with bullets and "Show all"; on day cards notes show one line). Then a one-row calendar for trips of a week or less. The Manage link beside Plan / Ideas / Money shipped 2026-11-28.
-2. **Contrast and tap-target check:** done 2026-11-28 for every Mosey page and sign-in (all text passes AA; the place link enlarged; Who's going no longer covers the line above it). Gyfte not checked yet.
-3. **Launcher, next round:** show, hide and reorder your own apps; personal bookmarks.
-4. **Sign-in and accounts:** signed-in devices, passkeys, a dedicated assistant identity (see ROADMAP.md).
-5. Kept for later, not approved: "press and arrive" motion from a launcher row into the app's header (off for reduced motion).
+1. **Christmas trip tidy-up:** Money → People and households: tick **Kid** for the three kids and check their households (one name may be Lenox or Lennox); link your own account to your name. On the Plan, fill in **Staying** for the nights you move (More for this day → Add area, tag or staying).
+2. **People cleanup** (WRB-20261127-01): Gyfte → Family → Sample family → **Delete sample family**; then rename the 2-person "Ford Family" to "Ford Family (old)", check nothing uses it (the trip's Who's on the trip, Gyfte families, list sharing), and delete it. Keep or remove "Instinct test (newcomer)": your call (suggested: keep until after the trial).
+3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
+4. **Check the sender name:** sign out and in; the code email should come from **Hudson** (`warbag@chirk.fyi`).
+5. **Pick how family join:** Ask to join (you tap Add; they sign in with an email code; verified by Instinct) or **Join and edit, no sign-in** (Manage → Trip link; not yet tried by a person). Then an Instinct real-phone run of that path and your own **iPhone walkthrough in Safari** (automated tests emulate an iPhone in Chromium).
+6. **Go / no-go,** then send the family the **trip link** (Manage → Trip link → Share link). Its preview reads "You're invited: Ford Christmas Trip". Nothing goes to family until Hudson says so.
+
+Not yet checked anywhere: a real iPhone; the "No code?" wording after Send code; the "you've been added" email arriving; PRs 66 to 90 by a person.
 
 ## Mosey (trip planner)
 
 ### Live
-- **Plan:** the trip one line per day on top (what's planned, flags for Tentative, Inquiry sent and Pick one, the day's area; tap a row to jump to it), then one card per day (with Morning / Afternoon / Evening / Any time headings when a day spans more than one, and an optional members-only "Staying" line shown when it changes) with an optional area and tag, Today, and days already over collapsed. One "+ Add to this day" per day. Organizers can **Reorder** a day (times set the order; untimed stops go anywhere).
-- **Stops:** typed "When" the Crewmaxxing way (7pm, 9:30a, Morning, TBD); status (Tentative, Inquiry sent, Confirmed, Booked); meals (Breakfast, Lunch, Dinner, Food & drink) with "Who's handling it"; members-only details hidden on view links.
+- **Plan:** the trip one line per day on top (the day's stops in plan order with short times; flags only for Tentative, Inquiry sent and Pick one; the day's area and tag; "Staying" where it changes; tap a row to jump to its card). Then one card per day: optional area, tag and members-only **Staying**; Morning / Afternoon / Evening / Any time headings when a day spans more than one; Today marked; days already over collapsed; one "+ Add to this day"; organizers can **Reorder** (times set the order; untimed stops go anywhere) and **Add options**.
+- **Stops:** typed "When" the Crewmaxxing way (7pm, 9:30a, Morning, TBD); status (Tentative, Inquiry sent, Confirmed, Booked); meals (Breakfast, Lunch, Dinner, Food & drink) with "Who's handling it"; notes fold to one line on the Plan with "Show all"; members-only details hidden on the trip link.
 - **Who's going:** only on stops that ask ("Ask who's going"), from the trip's people list; one tap "I'm going" / "Maybe".
 - **Options:** "Monday afternoon: ski, hike or spa" as one block; each person picks one; "Who picked what".
 - **Ideas:** Food & drink filter; "Move to a day" opens the days as buttons; pasting a link files it as the link.
 - **Money:** expenses, payments already made, people and households, settle-up (Direct or through one person), frozen versions, change log. **Kids** are on the trip but left out of splits unless ticked in (their share goes to their household); they never pay.
-- **Receipts:** photo → AI draft → a person checks and saves. Paper rules (handwritten tips, card slips), asks when unsure (tip tables, added tips, lines that don't add up), never guesses a date, warns about IDs or cards in the photo, unsaved photos can be discarded. Checked on 8 of Hudson's real receipts: 7/8 (the miss: a handwritten 4 read as a 9; the form asks and "Something else" covers it).
-- **Getting people in:** **Invite by email** from Manage (on warbag and the trip in one step, as Member or Co-organizer, with an email naming the trip). The **trip link** (anyone sees the plan and ideas, never money or names) has **Join this trip**: name and email, now or later; the owner taps Add under Manage → Asking to join. Someone signed in who opens a trip's own address without being on it gets **Ask to join** right there (same answer whether or not the trip exists). Signed out, the sign-in page says the trip is private and points at the trip link; sign-in says plainly that warbag is invite only. The trip link sits at the top of Manage with **Share link** (phone share sheet) and Copy. When someone asks to join, the trip shows "1 asking to join · Review" at the top and Manage opens with the request first.
-- **Sharing:** members, **co-organizers** (everything except sharing or deleting the trip), the trip link.
-- **Join from the trip link** (2026-11-27, off by default per trip): Manage → Trip link → "Join and edit, no sign-in". People pick their name and are members without an account; each gets their own link; Money is a separate switch; receipt photos need a sign-in. The owner sees **Joined by link** with Turn off, and can make a **New link**. Saving by email is next.
-- **Editing:** one editor open at a time, named ("Editing: Van pickup"); unsaved changes are kept until Save or Cancel; Save closes it with "Saved ✓". Settings (Manage, People, Account) save themselves.
-- **Test trips:** Maine and North Shore entered and compared with the sheets: they match, except the Maine cabins, which the sheet marks as paid directly.
-
-### Left before December 1 (Hudson)
-1. **iPhone walkthrough in Safari** (automated tests emulate an iPhone in Chromium).
-2. **Christmas trip tidy-up:** on Money → People and households, tick **Kid** for the three kids and check their households (assignments were provisional; one name may be Lenox or Lennox). Link your own account to your name to get the one-tap "I'm going" and "Pick this".
-3. **Discard the test receipt photos** on the live trip (Money → "photos not saved as expenses").
-4. **Go / no-go** before inviting anyone, then send the family the **trip link** (Manage → Trip link) and add people as they ask. Nothing goes to family until Hudson says so.
-5. **Have Instinct repeat the newcomer flow on a real phone:** open the trip link, ask to join, then you tap "Review" at the top of the trip and Add. Not yet checked anywhere: a real iPhone, the "No code?" wording after Send code, the "you've been added" email arriving.
+- **Receipts:** photo → AI draft → a person checks and saves. Paper rules (handwritten tips, card slips), asks when unsure, never guesses a date, warns about IDs or cards, unsaved photos can be discarded. 7 of Hudson's 8 real receipts read right (the miss: a handwritten 4 read as a 9; the form asks).
+- **Getting people in:**
+  - **Invite by email** from Manage (a sign-in and the trip in one step, as Member or Co-organizer; the email names the trip).
+  - The **trip link** (`/m/…`): anyone sees the plan and ideas, never money or members-only details, and can **Join this trip** with a name and email; the owner taps Add. Its link preview: "You're invited: <trip>", dates and place, and a card.
+  - **Join and edit, no sign-in** (off by default per trip; Manage → Trip link): people pick their name and become members without an account, each with their own link; Money is a separate switch; receipt photos need a sign-in.
+  - Someone signed in who opens a trip's own address without being on it gets **Ask to join** right there (same answer whether or not the trip exists). Signed out, the sign-in page says "Sign in to Mosey" and points at the trip link.
+  - When someone asks, the owner sees "N asking to join · Review" at the top of the trip; Manage opens with the request first.
+- **Roles:** Member (sees everything, adds ideas and expenses, suggests a day); **Co-organizer** (everything except sharing or deleting the trip); the owner.
+- **Manage:** organizers get **Manage** beside Plan / Ideas / Money; the trip link sits at its top with **Share link** (phone share sheet) and Copy.
+- **Editing:** one editor open at a time, named ("Editing: Van pickup"); unsaved changes kept until Save or Cancel. Settings (Manage, People, Account) save themselves.
+- **Readability:** every Mosey page and sign-in measured at iPhone size (2026-11-28): all text passes WCAG AA; tap targets at least 44px.
 
 ### Field tests so far
-- **Instinct newcomer test, 2026-11-23** (WRB-20261123-02): a dead end on the trip's app address, fixed in PR 65; the rerun verified Ask to join, the trip link signed out, member controls (no organizer tools), edits that persist, Who's going and Delete. Its two follow-ups (requests hard to find, no way back from People) were fixed in PR 66, which hasn't been tried by a person yet.
 - **Hudson's Christmas trip entry, 2026-11-22** (WRB-20261122-02): drove PRs 33 to 50.
-
-### Open questions (from the Christmas trip notes)
-- Duplicate "Ford Family" groups (one empty) look the same in pickers; clean up deliberately.
-- Christmas dates: settled, Dec 17 to 24 (Hudson, 2026-11-27).
+- **Instinct newcomer test, 2026-11-23** (WRB-20261123-02): a dead end on the trip's app address, fixed in PR 65; the rerun verified Ask to join, the trip link signed out, member controls, edits that persist, Who's going and Delete. Its follow-ups were fixed in PR 66.
+- **Instinct agenda proposal, 2026-11-27** (WRB-20261127-02): parts 1 to 3 shipped (PRs 87 to 89); a swipe-between-days screen is held until after the trial.
 
 ### Known gaps
 - Inviting new people from a trip needs an admin or people manager (by design; today Hudson and his agent).
 - Nobody is emailed when someone asks to join a trip; the owner sees "N asking to join" at the top of the trip.
-- Asking to join from a trip's page tells whoever floods it with requests that the trip exists ("try again in an hour"); the address is a random id nobody can guess, so this is accepted.
-- Gyfte's sharing still has its own Share / Save step (Gyfte is paused).
+- Flooding a trip's page with join requests reveals that the trip exists ("try again in an hour"); the address is a random id nobody can guess, so this is accepted.
+- Test trips Maine and North Shore match their sheets, except the Maine cabins (paid directly).
+
+## warbag (the hub) and accounts
+
+### Live
+- **Launcher, "Masthead"** (PR 67): navy field, a big cream "Hi, Hudson", app names only under **Apps** and **Other sites** (Chirk, Crewmaxxing ↗). Two columns on desktop.
+- **App first** (2026-11-27): only admins, people managers and people with two or more apps see warbag (the header link, the launcher). Everyone else sees just their app: signing in lands there; tab titles, tab icons (M, G, R, J), share pages, the sign-in page and emails name the app. Emails come from "Hudson" at `warbag@chirk.fyi`.
+- **Letters:** each page's header shows its place's letter, bare, in ember (G Gyfte, M Mosey, R Room Tuner, J Jot, P People, A Account); W is warbag itself.
+- **Link previews** (2026-11-27): Mosey trip and guest links, Gyfte list and family links, Room Tuner view links preview like Chirk's, in the app's look, never naming warbag.
+- **Sign-in:** invite only, email code or link; it says so plainly when no code arrives.
+- **People:** invite, groups, app access per person or group, **people managers** (invite, groups, app access; never their own access or an admin's), and **admins** (People → a person → Admin → Make admin, after a confirm; never yourself, never a guest or sample person, always at least one admin, logged). Admins never open anyone's lists, notes or trips.
+- **A way back:** People and Account remember the page you came from ("‹ Back to Ford Christmas Trip"); every page has a "‹" link up.
+- **Assistant (Instinct):** its own non-admin account, a people manager, co-organizer on the trips Hudson picks; never admin. It joins the Drive handoff protocol (only when Hudson asks). Its browser starts fresh each run, so it signs in by email code each time; a trip link needs no sign-in.
+
+### Next (each needs Hudson's go)
+- Launcher: show, hide and reorder your own apps; personal bookmarks.
+- Sign-in: signed-in devices on Account, passkeys, a dedicated assistant identity (see ROADMAP.md).
+- Kept for later, not approved: "press and arrive" motion from a launcher row into the app's header.
 
 ## Room Tuner (room EQ)
 
@@ -84,22 +93,12 @@
 ### Next (needs Hudson's go)
 - Its own roadmap is in docs/JOT.md; first up is texting reminders.
 
-## Accounts and access
-- **A way back:** People and Account remember the page you came from ("‹ Back to Ford Christmas"), including through a person's or group's page. Room Tuner's setup, layout and new-setup pages have "‹ Setups" links.
-
-- **Assistant (agent) access**, Hudson's decision 2026-11-23: its own non-admin account. It can be a trip's **co-organizer** and a **people manager** (invite people, manage groups and app access; never its own access or an admin's, no removing people or deleting groups). It never gets admin.
-- Setting it up (🟢 PRODUCTION, warbag.rodeo): People → Invite someone (the agent's email) → open it → tick **People manager**; give it **Mosey** under Apps if it should start trips; on each trip, Manage → **Co-organizers** → tick it.
-- An agent's browser starts fresh each run, so it signs in with an email code every time. For read-only review, a trip's view link needs no sign-in.
-- **Roadmap (each needs Hudson's go):** signed-in devices on Account, passkeys, a dedicated assistant identity with revocable tokens and an audit trail.
-
 ## Gyfte
 
-**2026-11-22. Gyfte is paused, feature-complete for Christmas 2026 and not yet opened to the family.** Everything below is live at https://warbag.rodeo (last change: PR 24). Screenshots of every page, phone and desktop, made-up data: Drive "Warbag — AI Handoffs" › "Warbag · All pages · current (after PR 24, 2026-11-21)".
+**Paused since 2026-11-22, feature-complete for Christmas 2026 and not yet opened to the family.** Since then it has picked up the hub's changes: app-first branding (family see "Gyfte", not warbag), share-link previews, and its own tab letter. Screenshots (made-up data, before those changes): Drive "Warbag — AI Handoffs" › "Warbag · All pages · current (after PR 24, 2026-11-21)".
 
 ### What's live
 
-- **warbag:** invite-only email-code sign-in, access rules (users, groups, per-item grants, share links, audit log), People admin, the launcher (now the text-only Masthead, see "warbag (the hub)" above), a public page with only the name and Sign in.
-- **Look:** paper and navy palette, serif titles, bare W and G letters (no squares since 2026-11-24), no slogans or decorative marks (personal app). See docs/DESIGN.md.
 - **Gyfte, everyday:** three tabs: My list (yours and your kids'), Family (opens your family group), I'm getting (your claims). Lists for Christmas and birthdays; one add box, bulk add, star, Got it, History (read-only after the date plus 14 days, "Edit history" to change), copy to this year (owner or a co-parent).
 - **Gyfte, family:** family groups (year › people › lists, kids nested under parents, joint kids' lists); names open their list, or their latest earlier one. Claims are never shown to the person a list is for. Organizer tools are under Manage on each page.
 - **Getting people in:** a family link for the group chat (all years, names and wanted gifts, never claims). "This is me" emails that person a one-tap sign-in link back to the list they had open. "Ask to join" takes a name and email; Hudson taps Add or Decline under Manage (a count shows beside Manage).
@@ -108,7 +107,7 @@
 
 ### Left to do before the family uses it (Hudson)
 
-1. **Check it on your phone in Safari.** Automated tests use Chromium emulating an iPhone.
+1. **Check it on your phone in Safari.** Automated tests use Chromium emulating an iPhone. The readability and tap-size check done for Mosey hasn't been run on Gyfte yet.
 2. **Run the real import** of "2025 Ford Family Christmas Gifting": pick the family group and go tab by tab, in any order. Then use Connect for any name-only lists that belong to someone with an account.
 3. **Go / no-go before inviting anyone:** who sees what, claim surprises protected, a walkthrough as a family member. Nothing goes to family until Hudson says so.
 4. Then share the family link in the group chat.
@@ -122,7 +121,7 @@
 ### Later (parked)
 
 - Turn off the family link once everyone has an account.
-- Request-a-group for non-admins; photos (upload or image link); automatic link previews; list/grid view; drag to reorder; Chirk gift-exchange link; screenshot import.
+- Request-a-group for non-admins; photos (upload or image link); previews of gift links inside a list; list/grid view; drag to reorder; Chirk gift-exchange link; screenshot import.
 - Last Gyfte-specific ChatGPT review: WRB-20261121-07; last Gyfte-specific Claude note: WRB-20261121-06 v2.
 
 ### Where to pick up
